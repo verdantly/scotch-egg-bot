@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  scotch-egg-bot:
+    build: .
+    container_name: scotch-egg-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Maps the physical events.json on your host to the container.
+      # NOTE: Adjust "/app" to match the WORKDIR in your Dockerfile if it differs.
+      - ./events.json:/app/events.json
