@@ -11,3 +11,4 @@ services:
       # Maps the physical events.json on your host to the container.
       # NOTE: Adjust "/app" to match the WORKDIR in your Dockerfile if it differs.
       - ./events.json:/app/events.json
+      - ./config.json:/app/config.json

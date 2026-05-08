@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
@@ -13,21 +13,8 @@ const client = new Client({
     ] 
 });
 
-const GLOBAL_ANNOUNCEMENT_CHANNEL_ID = process.env.ANNOUNCEMENT_CHANNEL_ID;
-let SERVER_CHANNELS = {};
-
-try {
-    SERVER_CHANNELS = JSON.parse(process.env.ANNOUNCEMENT_CHANNELS || '{}');
-} catch (err) {
-    console.error('FATAL ERROR: ANNOUNCEMENT_CHANNELS in .env must be valid JSON.');
-    process.exit(1);
-}
-
-if (!GLOBAL_ANNOUNCEMENT_CHANNEL_ID && Object.keys(SERVER_CHANNELS).length === 0) {
-    console.error('FATAL ERROR: You must define either ANNOUNCEMENT_CHANNEL_ID or ANNOUNCEMENT_CHANNELS in your .env file.');
-    process.exit(1);
-}
 const DB_PATH = path.join(__dirname, 'events.json');
+const CONFIG_PATH = path.join(__dirname, 'config.json');
 
 // Database format: { eventId: { messageId: '...', users: ['userId1', ...] } }
 let eventDb = {};
@@ -58,6 +45,30 @@ try {
         console.error('Failed to back up the corrupted database:', renameErr);
     }
     console.warn('Initializing a fresh database so the bot can continue running.');
+}
+
+// Config format: { guildId: 'channelId' }
+let serverConfig = {};
+try {
+    if (fs.existsSync(CONFIG_PATH)) {
+        const fileContent = fs.readFileSync(CONFIG_PATH, 'utf8');
+        if (fileContent.trim() !== '') {
+            serverConfig = JSON.parse(fileContent);
+        }
+    }
+} catch (err) {
+    console.error('Failed to load config.json:', err);
+    // Don't backup config, just start fresh. It's not as critical as user data.
+}
+
+function getAnnouncementChannelId(guildId) {
+    // Prioritize DB config, then fall back to .env
+    return serverConfig[guildId] || process.env.ANNOUNCEMENT_CHANNEL_ID;
+}
+
+async function saveConfig() {
+    // No need for a queue here, as config saves are rare and admin-invoked.
+    await fs.promises.writeFile(CONFIG_PATH, JSON.stringify(serverConfig, null, 2));
 }
 
 let savePromise = Promise.resolve();
@@ -127,8 +138,8 @@ async function syncEventReminders(guild) {
             if (alert.time > now) {
                 if (schedule.scheduledJobs[alert.id]) schedule.scheduledJobs[alert.id].cancel();
                 schedule.scheduleJob(alert.id, new Date(alert.time), async () => {
-                    const channelId = SERVER_CHANNELS[guild.id] || GLOBAL_ANNOUNCEMENT_CHANNEL_ID;
-                    const channel = channelId ? guild.channels.cache.get(channelId) : null;
+                    const channelId = getAnnouncementChannelId(guild.id);
+                    const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
                     if (channel) {
                         try {
                             let sentToDms = false;
@@ -191,38 +202,101 @@ client.on(Events.GuildScheduledEventCreate, async e => {
     syncEventReminders(e.guild);
     
     // Post announcement message for the new event
-    const channelId = SERVER_CHANNELS[e.guild.id] || GLOBAL_ANNOUNCEMENT_CHANNEL_ID;
-    const channel = channelId ? e.guild.channels.cache.get(channelId) : null;
-    if (channel) {
-        const embed = new EmbedBuilder()
-            .setTitle(`New Event: ${e.name}`)
-            .setDescription(`Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!`)
-            .setFooter({ text: `EventID:${e.id}` })
-            .setColor('#0099ff');
+    const channelId = getAnnouncementChannelId(e.guild.id);
+    const channel = channelId ? await e.guild.channels.fetch(channelId).catch(() => null) : null;
+    if (!channel) {
+        console.error(`Cannot post announcement for event ${e.id}: Announcement channel not configured or found for guild ${e.guild.id}.`);
+        return;
+    }
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`remind_${e.id}`)
-                    .setLabel('Remind Me!')
-                    .setStyle(ButtonStyle.Primary)
-                    .setEmoji('⏰')
-            );
-
-        try {
-            const message = await channel.send({ embeds: [embed], components: [row] });
-            
-            // Save the message ID and initialize users array into our JSON database
-            eventDb[e.id] = { messageId: message.id, users: [] };
-            await saveDb();
-            
-        } catch (err) {
-            console.error('Could not post announcement message:', err);
-        }
+    try {
+        await postAnnouncement(e, channel);
+    } catch (err) {
+        // The error is already logged by postAnnouncement, no need to do anything else here.
     }
 });
 
+async function postAnnouncement(event, channel) {
+    const embed = new EmbedBuilder()
+        .setTitle(`New Event: ${event.name}`)
+        .setDescription(`Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!`)
+        .setFooter({ text: `EventID:${event.id}` })
+        .setColor('#0099ff');
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+    );
+
+    try {
+        const message = await channel.send({ embeds: [embed], components: [row] });
+        eventDb[event.id] = { messageId: message.id, users: [] };
+        await saveDb();
+    } catch (err) {
+        console.error(`Could not post announcement message for event ${event.id} in channel ${channel.id}:`, err);
+        throw err;
+    }
+}
+
 client.on(Events.InteractionCreate, async interaction => {
+    if (interaction.isChatInputCommand()) {
+        if (interaction.commandName === 'setchannel') {
+            const channel = interaction.options.getChannel('channel');
+
+            if (channel.type !== ChannelType.GuildText) {
+                return interaction.reply({ content: 'Please select a valid text channel within this server.', ephemeral: true });
+            }
+
+            serverConfig[interaction.guildId] = channel.id;
+            await saveConfig();
+
+            await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, ephemeral: true });
+        }
+
+        if (interaction.commandName === 'checkchannel') {
+            const channelId = getAnnouncementChannelId(interaction.guildId);
+
+            if (channelId) {
+                await interaction.reply({ content: `Event announcements are currently configured to be sent to <#${channelId}>.`, ephemeral: true });
+            } else {
+                await interaction.reply({ content: `No announcement channel has been configured for this server. An administrator can set one using the \`/setchannel\` command.`, ephemeral: true });
+            }
+        }
+
+        if (interaction.commandName === 'announceevent') {
+            const eventIdentifier = interaction.options.getString('event_link_or_id');
+            // Regex to extract a Discord snowflake ID from a string, optionally preceded by an event URL structure.
+            const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
+            const eventId = match ? match[1] : null;
+
+            if (!eventId) {
+                return interaction.reply({ content: 'Invalid event link or ID provided. Please provide a valid Discord event link or the event ID.', ephemeral: true });
+            }
+
+            if (eventDb[eventId]) {
+                return interaction.reply({ content: 'An announcement for this event has already been posted.', ephemeral: true });
+            }
+
+            const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
+            if (!event) {
+                return interaction.reply({ content: 'Could not find an event with that ID in this server.', ephemeral: true });
+            }
+
+            const channelId = getAnnouncementChannelId(interaction.guildId);
+            const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
+            if (!channel) {
+                return interaction.reply({ content: 'The announcement channel is not configured for this server. Please use `/setchannel` first.', ephemeral: true });
+            }
+
+            try {
+                await postAnnouncement(event, channel);
+                await interaction.reply({ content: `Successfully posted an announcement for **${event.name}**.`, ephemeral: true });
+            } catch (err) {
+                await interaction.reply({ content: 'An error occurred while trying to post the announcement. Please check the bot\'s permissions in the target channel.', ephemeral: true });
+            }
+        }
+        return;
+    }
+
     if (!interaction.isButton()) return;
     
     if (interaction.customId.startsWith('remind_')) {

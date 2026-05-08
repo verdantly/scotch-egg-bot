@@ -14,23 +14,32 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 ## Prerequisites
 - Node.js (v16.14.0 or higher recommended)
 - A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).
+- Your bot's Client ID from the Developer Portal.
 - The bot must have the following **Privileged Intents** enabled in the Developer Portal:
   - `Message Content Intent`
-  - `Server Members Intent`
+  - `Server Members Intent` (Optional, but recommended for potential future features).
 - Docker (Optional, if you wish to run via containers).
 
 ## Configuration
 
 **Environment Variables:**
-   Create a `.env` file in the root directory and configure your bot token and channels:
+   Create a `.env` file in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/setchannel` command has not been used in a server.
    ```env
    DISCORD_TOKEN=your_actual_token_here
-   
-   # For single-server setups:
-   ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id_here
-   # For multi-server setups (JSON map of ServerID:ChannelID):
-   # ANNOUNCEMENT_CHANNELS={"123456789":"987654321", "22334455":"66778899"}
+   CLIENT_ID=your_bot_client_id_here
+   ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id_here # Optional fallback
    ```
+
+## Slash Command Setup
+
+This bot uses slash commands for configuration. Before running the bot for the first time, you must register its commands with Discord.
+
+1.  Make sure your `.env` file is configured with your `DISCORD_TOKEN` and `CLIENT_ID`.
+2.  Run the deployment script:
+    ```bash
+    node deploy-commands.js
+    ```
+    You only need to do this once, or whenever you add/change a command.
 
 ## Local Installation
 
@@ -62,9 +71,10 @@ This bot is designed to be easily containerized and run quietly in the backgroun
 Using Docker Compose makes it much easier to manage the container and perfectly map the `events.json` file so that your reminder database survives container restarts.
 
 1. **Create an empty database file first:**
-   Before starting the container, you *must* create an empty `events.json` file on your host machine. If you skip this, Docker will mistakenly create a directory named `events.json`.
+   Before starting the container, you *must* create empty database and config files on your host machine. If you skip this, Docker will mistakenly create directories instead of files.
    ```bash
    echo "{}" > events.json
+   echo "{}" > config.json
    ```
 
 2. **Start the bot:**
@@ -73,6 +83,20 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    docker-compose up -d --build
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
+
+## Admin Commands
+
+*   `/setchannel [channel]`
+    -   **Permission:** Administrator
+    -   **Action:** Sets the specific channel where the bot will post new event announcements and fallback reminders for the current server. This is the recommended way to configure the bot and overrides any settings in the `.env` file.
+
+*   `/announceevent [event_link_or_id]`
+    -   **Permission:** Administrator
+    -   **Action:** Manually posts an announcement for an existing event. This is useful if the bot was offline when the event was created.
+
+*   `/checkchannel`
+    -   **Permission:** Everyone
+    -   **Action:** Displays the currently configured channel for event announcements.
 
 ## How It Works (Storage Architecture)
 To minimize disk wear on single-board computers (like the Raspberry Pi):
