@@ -99,21 +99,21 @@ function cancelEventReminders(eventId) {
  * @param {String} msg Message to send
  * @returns {Promise<Boolean>} True if at least one message was sent successfully
  */
-async function sendDMsWithRateLimit(users, msg) {
-    let sentCount = 0;
+async function sendDMsWithRateLimit(users, msg, guild) {
+    const failedUserIds = [];
     for (const user of users) {
         if (!user.bot) {
             try {
                 await user.send(msg);
-                sentCount++;
                 // 500ms delay between DMs to avoid hitting rate limits
                 await new Promise(resolve => setTimeout(resolve, 500));
             } catch (err) {
                 console.log(`Could not send DM to ${user.tag}`);
+                failedUserIds.push(user.id);
             }
         }
     }
-    return sentCount > 0;
+    return failedUserIds;
 }
 
 async function syncEventReminders(guild) {
@@ -141,9 +141,7 @@ async function syncEventReminders(guild) {
                     const channelId = getAnnouncementChannelId(guild.id);
                     const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
                     if (channel) {
-                        try {
-                            let sentToDms = false;
-                            
+                        try {                            
                             const eventData = eventDb[event.id];
                             
                             if (eventData && eventData.users && eventData.users.length > 0) {
@@ -156,12 +154,16 @@ async function syncEventReminders(guild) {
                                         console.log(`Could not fetch user ${userId}`);
                                     }
                                 }
-                                sentToDms = await sendDMsWithRateLimit(users, alert.msg);
-                            }
-                            
-                            // Fallback: If nobody opted in, we send the reminder to the channel instead so it's not lost.
-                            if (!sentToDms) {
-                                channel.send(alert.msg);
+                                const failedUserIds = await sendDMsWithRateLimit(users, alert.msg);
+
+                                // Fallback for users who couldn't be DMed
+                                if (failedUserIds.length > 0) {
+                                    const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
+                                    channel.send(`${alert.msg}\n\nCould not DM: ${mentions}`);
+                                }
+                            } else {
+                                // Fallback if nobody opted in at all
+                                await channel.send(alert.msg);
                             }
 
                         } catch (err) {
