@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+.env
+events.json
+events.json.*.bak
+config.json
+.git
+.gitignore

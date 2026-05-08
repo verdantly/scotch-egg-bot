@@ -109,5 +109,16 @@ Users who want to be notified simply click the **⏰ Remind Me!** button attache
 
 ---
 
+## 🔄 Phase 6: Updating the Bot
+
+If you ever edit the code or download an updated version of the bot, applying the changes is simple and won't delete your data.
+
+1. Run the following command to rebuild the container with the new code:
+   `docker-compose up -d --build`
+2. If your update includes changes to slash commands, register them by running:
+   `docker exec -it scotch-egg-bot node deploy-commands.js`
+
+---
+
 ### 🎉 You're All Set!
 Your Scotch Egg Bot is now actively monitoring your server, ready to keep your community engaged and on time. If you ever restart the bot, don't worry—your `events.json` and `config.json` files safely preserve all opted-in users and settings!
