@@ -54,7 +54,7 @@ This is the best method, especially for devices like a Raspberry Pi, as it maps 
 1. Ensure Docker and Docker Compose are installed.
 2. In the project directory, start the container:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 ### Option B: Local Node.js
@@ -75,11 +75,24 @@ If you prefer not to use Docker:
 
 Because the bot uses modern Discord slash (`/`) commands, you need to register them with Discord's API. **You only need to do this once.**
 
-Run the deployment script from your terminal (or inside your docker container):
-```bash
-node deploy-commands.js
-```
-You should see a message saying: *Successfully reloaded application (/) commands.*
+### Option A: Registering Locally (Outside Docker)
+If you have Node.js installed on your computer, you can register the commands directly:
+1. Open your terminal in the project directory.
+2. Ensure you have run `npm install` and your `.env` file is set up.
+3. Run the following command:
+   ```bash
+   node deploy-commands.js
+   ```
+
+### Option B: Registering Inside Docker
+If you are running the bot purely through Docker and don't have Node.js installed locally, you can run the script inside the active container:
+1. Ensure your container is running by deploying with `docker compose up -d`.
+2. Run the following command in your host terminal:
+   ```bash
+   docker exec -it scotch-egg-bot node deploy-commands.js
+   ```
+
+If successful, you should see a message saying: *Successfully reloaded application (/) commands.*
 
 ---
 
@@ -115,7 +128,7 @@ Users who want to be notified simply click the **⏰ Remind Me!** button attache
 If you ever edit the code or download an updated version of the bot, applying the changes is simple and won't delete your data.
 
 1. Run the following command to rebuild the container with the new code:
-   `docker-compose up -d --build`
+   `docker compose up -d --build`
 2. If your update includes changes to slash commands, register them by running:
    `docker exec -it scotch-egg-bot node deploy-commands.js`
 

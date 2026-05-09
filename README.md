@@ -79,9 +79,9 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    ```
 
 2. **Start the bot:**
-   Run the following command in the same directory as your `docker-compose.yml`:
+   Run the following command in the same directory as your `compose.yaml` (or `docker-compose.yml`):
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
 
@@ -105,6 +105,27 @@ To minimize disk wear on single-board computers (like the Raspberry Pi):
 - When a user clicks the "Remind Me!" button, their Discord User ID is safely added to (or removed from) this local list.
 - When it is time to send a reminder, the bot reads the opted-in users directly from the database and DMs them, respecting Discord rate limits with artificial delays.
 - The database is automatically pruned when events are deleted, canceled, or completed to keep it lightweight.
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    Admin[Discord Admin] -->|Creates Event| DiscordAPI((Discord API))
+    DiscordAPI -->|EventCreate| Bot[Scotch Egg Bot]
+    Bot -->|Reads Channel config| Config[(config.json)]
+    Bot -->|Posts Announcement| Channel[Discord Channel]
+    
+    User[Discord User] -->|Clicks 'Remind Me!'| Channel
+    Channel -->|InteractionCreate| Bot
+    Bot -->|Saves User ID| DB[(events.json)]
+    
+    Bot -->|Schedules Reminder| Scheduler{Node Schedule}
+    Scheduler -->|Triggers at 24h & 1h| Bot
+    
+    Bot -->|Reads Opt-ins| DB
+    Bot -->|Sends DMs (Rate Limited)| User
+    Bot -.->|Fallback if DMs fail| Channel
+```
 
 ## Dependencies
 - [discord.js](https://discord.js.org/) - The primary library for interacting with the Discord API.
