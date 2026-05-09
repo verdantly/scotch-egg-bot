@@ -27,6 +27,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
    ```env
    DISCORD_TOKEN=your_actual_token_here
    CLIENT_ID=your_bot_client_id_here
+   ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
    ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id_here # Optional fallback
    ```
 

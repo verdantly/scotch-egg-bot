@@ -71,6 +71,22 @@ async function saveConfig() {
     await fs.promises.writeFile(CONFIG_PATH, JSON.stringify(serverConfig, null, 2));
 }
 
+async function notifyAdmin(contextMessage, error) {
+    const adminId = process.env.ADMIN_USER_ID;
+    if (!adminId || !client.isReady()) return;
+
+    try {
+        const admin = await client.users.fetch(adminId);
+        if (admin) {
+            const errorMessage = error instanceof Error ? error.stack : error;
+            const msg = `⚠️ **Bot Error Alert** ⚠️\n**Context:** ${contextMessage}\n\`\`\`js\n${String(errorMessage).slice(0, 1800)}\n\`\`\``;
+            await admin.send(msg);
+        }
+    } catch (err) {
+        console.error('Failed to notify admin via DM:', err);
+    }
+}
+
 let savePromise = Promise.resolve();
 
 async function saveDb() {
@@ -79,6 +95,7 @@ async function saveDb() {
             await fs.promises.writeFile(DB_PATH, JSON.stringify(eventDb, null, 2));
         } catch (err) {
             console.error('Failed to save events database:', err);
+            notifyAdmin('Failed to save events database (events.json)', err);
         }
     });
     return savePromise;
@@ -99,7 +116,7 @@ function cancelEventReminders(eventId) {
  * @param {String} msg Message to send
  * @returns {Promise<Boolean>} True if at least one message was sent successfully
  */
-async function sendDMsWithRateLimit(users, msg, guild) {
+async function sendDMsWithRateLimit(users, msg) {
     const failedUserIds = [];
     for (const user of users) {
         if (!user.bot) {
@@ -120,61 +137,67 @@ async function syncEventReminders(guild) {
     const events = await guild.scheduledEvents.fetch();
     const now = Date.now();
     events.forEach(event => {
-        // Skip events that are already completed or canceled
-        if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
-            return;
-        }
+        scheduleRemindersForEvent(event, now);
+    });
+}
 
-        const startTime = event.scheduledStartTimestamp;
-        const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
-        const description = event.description ? `\n\n${event.description}` : '';
-        const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
-        
-        const alerts = [
-            { id: `${event.id}-24h`, time: startTime - (24 * 60 * 60 * 1000), msg: `📢 24h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` },
-            { id: `${event.id}-1h`, time: startTime - (1 * 60 * 60 * 1000), msg: `📢 1h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` }
-        ];
-        alerts.forEach(alert => {
-            if (alert.time > now) {
-                if (schedule.scheduledJobs[alert.id]) schedule.scheduledJobs[alert.id].cancel();
-                schedule.scheduleJob(alert.id, new Date(alert.time), async () => {
-                    const channelId = getAnnouncementChannelId(guild.id);
-                    const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
-                    if (channel) {
-                        try {                            
-                            const eventData = eventDb[event.id];
-                            
-                            if (eventData && eventData.users && eventData.users.length > 0) {
-                                const users = [];
-                                for (const userId of eventData.users) {
-                                    try {
-                                        const user = await client.users.fetch(userId);
-                                        if (user) users.push(user);
-                                    } catch (e) {
-                                        console.log(`Could not fetch user ${userId}`);
-                                    }
-                                }
-                                const failedUserIds = await sendDMsWithRateLimit(users, alert.msg);
+function scheduleRemindersForEvent(event, now = Date.now()) {
+    // Skip events that are already completed or canceled
+    if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
+        return;
+    }
 
-                                // Fallback for users who couldn't be DMed
-                                if (failedUserIds.length > 0) {
-                                    const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
-                                    channel.send(`${alert.msg}\n\nCould not DM: ${mentions}`);
+    const startTime = event.scheduledStartTimestamp;
+    const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
+    const description = event.description ? `\n\n${event.description}` : '';
+    const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
+    
+    const alerts = [
+        { id: `${event.id}-24h`, time: startTime - (24 * 60 * 60 * 1000), msg: `📢 24h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` },
+        { id: `${event.id}-1h`, time: startTime - (1 * 60 * 60 * 1000), msg: `📢 1h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` }
+    ];
+    alerts.forEach(alert => {
+        if (alert.time > now) {
+            if (schedule.scheduledJobs[alert.id]) schedule.scheduledJobs[alert.id].cancel();
+            schedule.scheduleJob(alert.id, new Date(alert.time), async () => {
+                const channelId = getAnnouncementChannelId(event.guild.id);
+                const channel = channelId ? await event.guild.channels.fetch(channelId).catch(() => null) : null;
+                if (channel) {
+                    try {                            
+                        const eventData = eventDb[event.id];
+                        
+                        if (eventData && eventData.users && eventData.users.length > 0) {
+                            const users = [];
+                            for (const userId of eventData.users) {
+                                try {
+                                    const user = await client.users.fetch(userId);
+                                    if (user) users.push(user);
+                                } catch (e) {
+                                    console.log(`Could not fetch user ${userId}`);
                                 }
-                            } else {
-                                // Fallback if nobody opted in at all
-                                await channel.send(alert.msg);
                             }
+                            const failedUserIds = await sendDMsWithRateLimit(users, alert.msg);
 
-                        } catch (err) {
-                            console.error('Error sending reminders:', err);
+                            // Fallback for users who couldn't be DMed
+                            if (failedUserIds.length > 0) {
+                                const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
+                                await channel.send(`${alert.msg}\n\nCould not DM: ${mentions}`);
+                            }
+                        } else {
+                            // Fallback if nobody opted in at all
+                            await channel.send(alert.msg);
                         }
-                    } else {
-                        console.error('Reminder failed: Announcement channel not found in guild.');
+
+                    } catch (err) {
+                        console.error('Error sending reminders:', err);
+                        notifyAdmin(`Error sending reminders for event ${event.id}`, err);
                     }
-                });
-            }
-        });
+                } else {
+                    console.error('Reminder failed: Announcement channel not found in guild.');
+                    notifyAdmin(`Reminder failed: Announcement channel not found in guild ${event.guild.id}`, new Error('Channel missing'));
+                }
+            });
+        }
     });
 }
 
@@ -201,7 +224,7 @@ client.on(Events.ClientReady, async c => {
 });
 
 client.on(Events.GuildScheduledEventCreate, async e => {
-    syncEventReminders(e.guild);
+    scheduleRemindersForEvent(e);
     
     // Post announcement message for the new event
     const channelId = getAnnouncementChannelId(e.guild.id);
@@ -235,6 +258,7 @@ async function postAnnouncement(event, channel) {
         await saveDb();
     } catch (err) {
         console.error(`Could not post announcement message for event ${event.id} in channel ${channel.id}:`, err);
+        notifyAdmin(`Could not post announcement message for event ${event.id} in channel ${channel.id}`, err);
         throw err;
     }
 }
@@ -372,3 +396,13 @@ async function shutdown() {
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    notifyAdmin('Unhandled Promise Rejection', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    notifyAdmin('Uncaught Exception', error);
+});

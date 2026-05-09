@@ -29,6 +29,7 @@ Create a new file named `.env` in the root directory of the project and add your
 ```env
 DISCORD_TOKEN=your_actual_token_here
 CLIENT_ID=your_bot_client_id_here
+ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
 ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
 ```
 *(Note: `ANNOUNCEMENT_CHANNEL_ID` acts as a fallback. You will configure the primary channel inside Discord later).*
