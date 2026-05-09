@@ -120,10 +120,10 @@ graph TD
     Bot -->|Saves User ID| DB[(events.json)]
     
     Bot -->|Schedules Reminder| Scheduler{Node Schedule}
-    Scheduler -->|Triggers at 24h & 1h| Bot
+    Scheduler -->|Triggers at 24h and 1h| Bot
     
     Bot -->|Reads Opt-ins| DB
-    Bot -->|Sends DMs (Rate Limited)| User
+    Bot -->|Sends Rate-Limited DMs| User
     Bot -.->|Fallback if DMs fail| Channel
 ```
 
