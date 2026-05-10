@@ -113,15 +113,15 @@ function cancelEventReminders(eventId) {
 /**
  * Sends DMs to an array of users with a delay between each message to respect Discord's rate limits.
  * @param {Array} users Array of User objects
- * @param {String} msg Message to send
+ * @param {Object|String} messagePayload Message payload to send
  * @returns {Promise<Boolean>} True if at least one message was sent successfully
  */
-async function sendDMsWithRateLimit(users, msg) {
+async function sendDMsWithRateLimit(users, messagePayload) {
     const failedUserIds = [];
     for (const user of users) {
         if (!user.bot) {
             try {
-                await user.send(msg);
+                await user.send(messagePayload);
                 // 500ms delay between DMs to avoid hitting rate limits
                 await new Promise(resolve => setTimeout(resolve, 500));
             } catch (err) {
@@ -176,7 +176,11 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                     console.log(`Could not fetch user ${userId}`);
                                 }
                             }
-                            const failedUserIds = await sendDMsWithRateLimit(users, alert.msg);
+                            
+                            const dmRow = new ActionRowBuilder().addComponents(
+                                new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
+                            );
+                            const failedUserIds = await sendDMsWithRateLimit(users, { content: alert.msg, components: [dmRow] });
 
                             // Fallback for users who couldn't be DMed
                             if (failedUserIds.length > 0) {
@@ -242,11 +246,21 @@ client.on(Events.GuildScheduledEventCreate, async e => {
 });
 
 async function postAnnouncement(event, channel) {
+    const startTime = event.scheduledStartTimestamp;
+    const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
+    const description = event.description ? `\n\n${event.description}` : '';
+    const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
+
     const embed = new EmbedBuilder()
         .setTitle(`New Event: ${event.name}`)
-        .setDescription(`Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!`)
+        .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*`)
         .setFooter({ text: `EventID:${event.id}` })
         .setColor('#0099ff');
+
+    const coverImage = event.coverImageURL({ size: 512 });
+    if (coverImage) {
+        embed.setImage(coverImage);
+    }
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
@@ -352,6 +366,26 @@ client.on(Events.InteractionCreate, async interaction => {
             eventDb[eventId].users.push(userId);
             await saveDb();
             await interaction.reply({ content: 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.', ephemeral: true });
+        }
+    }
+
+    if (interaction.customId.startsWith('cancel_remind_')) {
+        const eventId = interaction.customId.replace('cancel_remind_', '');
+        
+        if (eventDb[eventId]) {
+            const users = eventDb[eventId].users || [];
+            const userId = interaction.user.id;
+            
+            if (users.includes(userId)) {
+                eventDb[eventId].users = users.filter(id => id !== userId);
+                await saveDb();
+                // Replaces the button with text confirming the cancellation to avoid spam clicks
+                await interaction.update({ content: `${interaction.message.content}\n\n*(Reminders cancelled)*`, components: [] });
+            } else {
+                await interaction.update({ content: `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`, components: [] });
+            }
+        } else {
+            await interaction.update({ content: `${interaction.message.content}\n\n*(This event is no longer active)*`, components: [] });
         }
     }
 });
