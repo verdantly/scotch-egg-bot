@@ -417,12 +417,15 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
             });
 
-            await interaction.reply({ content: replyMessage, ephemeral: true });
             if (currentRow.components.length > 0) {
                 actionRows.push(currentRow);
             }
 
-            await interaction.reply({ content: replyMessage, components: actionRows, ephemeral: true });
+            const replyOptions = { content: replyMessage, ephemeral: true };
+            if (actionRows.length > 0) {
+                replyOptions.components = actionRows;
+            }
+            await interaction.reply(replyOptions);
         }
         return;
     }
