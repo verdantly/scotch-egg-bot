@@ -116,10 +116,11 @@ Users who want to be notified simply click the **⏰ Remind Me!** button attache
 - The bot will DM them exactly 24 hours and 1 hour before the event starts.
 - If they click it again, they will be opted out.
 
-### 4. Admin Commands Reference
+### 4. Commands Reference
 - `/setchannel [channel]` - Sets or changes the server's announcement channel.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
 - `/checkchannel` - Public command that tells users which channel is currently configured for announcements.
+- `/myreminders` - Public command that lists all upcoming events you are currently receiving reminders for in this server.
 
 ---
 

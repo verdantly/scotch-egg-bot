@@ -88,16 +88,34 @@ async function notifyAdmin(contextMessage, error) {
 }
 
 let savePromise = Promise.resolve();
+let saveTimeout = null;
+
+async function executeSave() {
+    try {
+        await fs.promises.writeFile(DB_PATH, JSON.stringify(eventDb, null, 2));
+    } catch (err) {
+        console.error('Failed to save events database:', err);
+        notifyAdmin('Failed to save events database (events.json)', err);
+    }
+}
 
 async function saveDb() {
-    savePromise = savePromise.then(async () => {
-        try {
-            await fs.promises.writeFile(DB_PATH, JSON.stringify(eventDb, null, 2));
-        } catch (err) {
-            console.error('Failed to save events database:', err);
-            notifyAdmin('Failed to save events database (events.json)', err);
-        }
-    });
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+    }
+    // Wait 5 seconds after the last interaction to batch disk writes
+    saveTimeout = setTimeout(() => {
+        savePromise = savePromise.then(executeSave);
+        saveTimeout = null;
+    }, 5000);
+}
+
+async function forceSaveDb() {
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+        savePromise = savePromise.then(executeSave);
+    }
     return savePromise;
 }
 
@@ -122,12 +140,12 @@ async function sendDMsWithRateLimit(users, messagePayload) {
         if (!user.bot) {
             try {
                 await user.send(messagePayload);
-                // 500ms delay between DMs to avoid hitting rate limits
-                await new Promise(resolve => setTimeout(resolve, 500));
             } catch (err) {
                 console.log(`Could not send DM to ${user.tag}`);
                 failedUserIds.push(user.id);
             }
+            // 500ms delay between DMs to avoid hitting rate limits
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
     }
     return failedUserIds;
@@ -185,7 +203,12 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             // Fallback for users who couldn't be DMed
                             if (failedUserIds.length > 0) {
                                 const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
-                                await channel.send(`${alert.msg}\n\nCould not DM: ${mentions}`);
+                                const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
+                                if (fallbackMsg.length > 2000) {
+                                    await channel.send(`${alert.msg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`);
+                                } else {
+                                    await channel.send(fallbackMsg);
+                                }
                             }
                         } else {
                             // Fallback if nobody opted in at all
@@ -334,6 +357,73 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.reply({ content: 'An error occurred while trying to post the announcement. Please check the bot\'s permissions in the target channel.', ephemeral: true });
             }
         }
+
+        if (interaction.commandName === 'myreminders') {
+            const userId = interaction.user.id;
+            const myEventIds = [];
+
+            // Find all event IDs the user is opted into
+            for (const [eventId, data] of Object.entries(eventDb)) {
+                if (data.users && data.users.includes(userId)) {
+                    myEventIds.push(eventId);
+                }
+            }
+
+            if (myEventIds.length === 0) {
+                return interaction.reply({ content: 'You are not currently opted-in to receive reminders for any events.', ephemeral: true });
+            }
+
+            // Fetch the actual events from the current guild to filter out events from other servers
+            const guildEvents = await interaction.guild.scheduledEvents.fetch();
+            const myGuildEvents = guildEvents.filter(event => myEventIds.includes(event.id));
+
+            if (myGuildEvents.size === 0) {
+                 return interaction.reply({ content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.', ephemeral: true });
+            }
+
+            let replyMessage = '**Your Upcoming Reminders for this Server:**\n\n';
+            const actionRows = [];
+            let currentRow = new ActionRowBuilder();
+            let buttonCount = 0;
+
+            myGuildEvents.forEach(event => {
+                const timeString = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:f>`;
+                const nextLine = `• **${event.name}** - ${timeString}\n`;
+                
+                if (replyMessage.length + nextLine.length < 1900) {
+                    replyMessage += nextLine;
+                } else if (!replyMessage.endsWith('...and more!\n')) {
+                    replyMessage += '...and more!\n';
+                }
+
+                // Discord has a hard limit of 5 Action Rows and 5 Buttons per Row (Max 25 buttons total)
+                if (buttonCount < 25) {
+                    let label = `Cancel Reminders for: ${event.name}`;
+                    if (label.length > 80) label = label.substring(0, 77) + '...';
+                    
+                    currentRow.addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(`list_cancel_${event.id}`)
+                            .setLabel(label)
+                            .setStyle(ButtonStyle.Danger)
+                            .setEmoji('🔕')
+                    );
+                    buttonCount++;
+
+                    if (currentRow.components.length === 5) {
+                        actionRows.push(currentRow);
+                        currentRow = new ActionRowBuilder();
+                    }
+                }
+            });
+
+            await interaction.reply({ content: replyMessage, ephemeral: true });
+            if (currentRow.components.length > 0) {
+                actionRows.push(currentRow);
+            }
+
+            await interaction.reply({ content: replyMessage, components: actionRows, ephemeral: true });
+        }
         return;
     }
 
@@ -388,6 +478,39 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.update({ content: `${interaction.message.content}\n\n*(This event is no longer active)*`, components: [] });
         }
     }
+
+    if (interaction.customId.startsWith('list_cancel_')) {
+        const eventId = interaction.customId.replace('list_cancel_', '');
+        
+        if (eventDb[eventId]) {
+            const users = eventDb[eventId].users || [];
+            const userId = interaction.user.id;
+            
+            if (users.includes(userId)) {
+                eventDb[eventId].users = users.filter(id => id !== userId);
+                await saveDb();
+                
+                // Rebuilds the components to disable the clicked button and change its text
+                const updatedComponents = interaction.message.components.map(row => {
+                    const updatedRow = new ActionRowBuilder();
+                    row.components.forEach(component => {
+                        const button = ButtonBuilder.from(component);
+                        if (component.customId === interaction.customId) {
+                            button.setDisabled(true).setLabel('Opted Out').setStyle(ButtonStyle.Secondary).setEmoji('✅');
+                        }
+                        updatedRow.addComponents(button);
+                    });
+                    return updatedRow;
+                });
+                
+                await interaction.update({ components: updatedComponents });
+            } else {
+                await interaction.reply({ content: 'You are already not receiving reminders for this event.', ephemeral: true });
+            }
+        } else {
+            await interaction.reply({ content: 'This event is no longer active.', ephemeral: true });
+        }
+    }
 });
 
 client.on(Events.GuildScheduledEventDelete, async e => {
@@ -403,7 +526,7 @@ client.on(Events.GuildScheduledEventDelete, async e => {
 client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
     if (o.scheduledStartTimestamp !== n.scheduledStartTimestamp) {
         cancelEventReminders(n.id);
-        syncEventReminders(n.guild);
+        scheduleRemindersForEvent(n);
     }
     
     // Clean up if the event was completed or canceled
@@ -421,7 +544,7 @@ client.login(process.env.DISCORD_TOKEN);
 // Graceful Shutdown handler for Docker / Ctrl+C
 async function shutdown() {
     console.log('\nReceived stop signal. Shutting down gracefully...');
-    await savePromise; // Wait for any pending database saves to finish
+    await forceSaveDb(); // Flush any pending batched saves to disk immediately
     await schedule.gracefulShutdown(); // Cancel all pending reminder jobs
     client.destroy(); // Disconnect bot from Discord safely
     console.log('Shutdown complete. Safe to exit.');

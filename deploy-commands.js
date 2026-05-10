@@ -20,6 +20,9 @@ const commands = [
         .setName('checkchannel')
         .setDescription('Checks the currently configured channel for event announcements.'),
     new SlashCommandBuilder()
+        .setName('myreminders')
+        .setDescription('Lists all upcoming events you are currently receiving reminders for in this server.'),
+    new SlashCommandBuilder()
         .setName('announceevent')
         .setDescription('Manually posts an announcement for an existing event.')
         .addStringOption(option =>

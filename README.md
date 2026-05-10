@@ -85,7 +85,7 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
 
-## Admin Commands
+## Commands Reference
 
 *   `/setchannel [channel]`
     -   **Permission:** Administrator
@@ -98,6 +98,10 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 *   `/checkchannel`
     -   **Permission:** Everyone
     -   **Action:** Displays the currently configured channel for event announcements.
+
+*   `/myreminders`
+    -   **Permission:** Everyone
+    -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server.
 
 ## How It Works (Storage Architecture)
 To minimize disk wear on single-board computers (like the Raspberry Pi):
