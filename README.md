@@ -13,6 +13,18 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
 - **Dynamic Updates:** Automatically resyncs reminders if an event's start time is updated, and cleans up scheduled jobs/data if an event is deleted.
 
+## Example Reminder Message
+**Public Reminder (24-Hour Alert)**  
+> 📢 24h until **Weekly Community Meeting**!
+> 🗓️ Tuesday, October 24, 2023 8:00 PM
+> 📍 #general-voice
+> 
+> Let's get together and discuss the plans for next month!
+> 
+> @User1 @User2 @User3
+> 
+> `[ ⏰ Remind Me! ]` *(Interactive Button)*
+
 ## Prerequisites
 - Node.js (v16.14.0 or higher recommended)
 - A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).

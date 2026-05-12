@@ -213,11 +213,19 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 mentions = '\n\n' + userIds.map(id => `<@${id}>`).join(' ');
                             }
                             const publicMsg = `${alert.msg}${mentions}`;
+                            
+                            const payload = {};
                             if (publicMsg.length > 2000) {
-                                await channel.send(`${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`);
+                                payload.content = `${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
                             } else {
-                                await channel.send(publicMsg);
+                                payload.content = publicMsg;
                             }
+                            
+                            if (alert.id.endsWith('-24h')) {
+                                payload.components = [new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'))];
+                            }
+                            
+                            await channel.send(payload);
                         } else if (userIds.length > 0) {
                             const users = [];
                             const fetchFailedUserIds = [];
@@ -564,7 +572,19 @@ client.on(Events.InteractionCreate, async interaction => {
             await saveDb();
             
             const mode = getAnnouncementMode(interaction.guildId);
-            const replyText = mode === 'public' ? 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.' : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+            const timeUntilEvent = event.scheduledStartTimestamp - Date.now();
+            const isPast24h = timeUntilEvent <= 24 * 60 * 60 * 1000;
+            
+            let replyText = '';
+            if (mode === 'public') {
+                replyText = isPast24h 
+                    ? 'Reminder set! You will be pinged in the announcement channel 1 hour before the event begins.'
+                    : 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.';
+            } else {
+                replyText = isPast24h
+                    ? 'Reminder set! I will DM you 1 hour before the event begins.'
+                    : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+            }
             await interaction.reply({ content: replyText, ephemeral: true });
         }
         } catch (error) {
