@@ -1,6 +1,6 @@
 # 🥚 Scotch Egg Bot: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends personalized, opt-in DM reminders to your community exactly 24 hours and 1 hour before an event begins.
+Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly 24 hours and 1 hour before an event begins.
 
 This guide will walk you through the setup process step-by-step.
 
@@ -14,7 +14,7 @@ Before running the code, you need to create a bot application on Discord and gat
 2. **Get your Client ID:** On the "General Information" tab, copy your **Application ID** (this is your `CLIENT_ID`).
 3. **Get your Bot Token:** Navigate to the "Bot" tab, click **Reset Token**, and copy the new token (this is your `DISCORD_TOKEN`). *Never share this publicly!*
 4. **Enable Privileged Intents:** Scroll down on the "Bot" tab and toggle on:
-   - **Server Members Intent** (Optional, but recommended for potential future features).
+   - **Server Members Intent**
 5. **Invite the Bot:** Go to "OAuth2" -> "URL Generator". Check the `bot` and `applications.commands` scopes. Give it the necessary permissions (Send Messages, Read Message History, View Channels, Embed Links), copy the generated URL, and paste it into your browser to invite the bot to your server.
 
 ---
@@ -112,7 +112,7 @@ The moment you create an event, the bot will instantly post a rich-embed announc
 
 ### 3. Opting In (The "Remind Me!" Button)
 Users who want to be notified simply click the **⏰ Remind Me!** button attached to the bot's announcement message. 
-- The bot will DM them exactly 24 hours and 1 hour before the event starts.
+- Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel exactly 24 hours and 1 hour before the event starts.
 - If they click it again, they will be opted out.
 
 ### 4. Commands Reference

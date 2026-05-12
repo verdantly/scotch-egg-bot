@@ -4,10 +4,12 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 
 ## Features
 - **Event Announcements:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created.
-- **Opt-in DM Reminders:** Users can click the interactive **"Remind Me!" button** on the announcement message to seamlessly opt-in or out of personalized DM reminders.
+- **Flexible Opt-in Reminders:** Administrators can choose between two modes:
+  - **Private Mode (Default):** Sends personalized DM reminders to users.
+  - **Public Mode:** Posts the reminder directly in the announcement channel, publicly @ mentioning the opted-in users.
 - **Automated Alerts:** Sends out reminders exactly 24 hours and 1 hour before an event's start time.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
-- **Graceful Fallback:** If no users opt-in, or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost.
+- **Graceful Fallback:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost.
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
 - **Dynamic Updates:** Automatically resyncs reminders if an event's start time is updated, and cleans up scheduled jobs/data if an event is deleted.
 
@@ -115,7 +117,7 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 To minimize disk wear on single-board computers (like the Raspberry Pi):
 - When an announcement is posted, it saves an entry to a local `events.json` file mapping the event ID to an array of opted-in users.
 - When a user clicks the "Remind Me!" button, their Discord User ID is safely added to (or removed from) this local list.
-- When it is time to send a reminder, the bot reads the opted-in users directly from the database and DMs them, respecting Discord rate limits with artificial delays.
+- When it is time to send a reminder, the bot reads the opted-in users directly from the database and either DMs them or pings them publicly in the channel, depending on the server's configured mode.
 - The database is automatically pruned when events are deleted, canceled, or completed to keep it lightweight.
 
 ### Architecture Diagram
@@ -135,7 +137,7 @@ graph TD
     Scheduler -->|Triggers at 24h and 1h| Bot
     
     Bot -->|Reads Opt-ins| DB
-    Bot -->|Sends Rate-Limited DMs| User
+    Bot -->|Sends Rate-Limited DMs / Public Pings| User
     Bot -.->|Fallback if DMs fail| Channel
 ```
 

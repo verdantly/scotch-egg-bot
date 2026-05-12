@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
@@ -266,8 +266,12 @@ client.on(Events.ClientReady, async c => {
     
     // Sync all events and collect active IDs
     for (const guild of c.guilds.cache.values()) {
-        await syncEventReminders(guild);
-        guild.scheduledEvents.cache.forEach(e => activeEventIds.add(e.id));
+        try {
+            await syncEventReminders(guild);
+            guild.scheduledEvents.cache.forEach(e => activeEventIds.add(e.id));
+        } catch (err) {
+            console.error(`Failed to sync events for guild ${guild.id}:`, err);
+        }
     }
 
     // Offline Garbage Collection: Remove events deleted while bot was offline
@@ -299,7 +303,7 @@ client.on(Events.GuildScheduledEventCreate, async e => {
     }
 });
 
-async function postAnnouncement(event, channel) {
+function buildAnnouncementEmbed(event) {
     const startTime = event.scheduledStartTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
@@ -320,6 +324,12 @@ async function postAnnouncement(event, channel) {
     if (coverImage) {
         embed.setImage(coverImage);
     }
+
+    return embed;
+}
+
+async function postAnnouncement(event, channel) {
+    const embed = buildAnnouncementEmbed(event);
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
@@ -346,6 +356,11 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
                     return interaction.reply({ content: 'Please select a valid text channel within this server.', ephemeral: true });
+                }
+
+                const botPermissions = channel.permissionsFor(interaction.guild.members.me);
+                if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
+                    return interaction.reply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!`, ephemeral: true });
                 }
 
                 if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
@@ -426,22 +441,22 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.deferReply({ ephemeral: true });
 
             const userId = interaction.user.id;
-            const myEventIds = [];
+            const myEventIds = new Set();
 
             // Find all event IDs the user is opted into
             for (const [eventId, data] of Object.entries(eventDb)) {
                 if (data.users && data.users[userId]) {
-                    myEventIds.push(eventId);
+                    myEventIds.add(eventId);
                 }
             }
 
-            if (myEventIds.length === 0) {
+            if (myEventIds.size === 0) {
                 return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any events.' });
             }
 
             // Fetch the actual events from the current guild to filter out events from other servers
             const guildEvents = await interaction.guild.scheduledEvents.fetch();
-            const myGuildEvents = guildEvents.filter(event => myEventIds.includes(event.id));
+            const myGuildEvents = guildEvents.filter(event => myEventIds.has(event.id));
 
             if (myGuildEvents.size === 0) {
                  return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.' });
@@ -517,7 +532,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const eventId = interaction.customId.replace('remind_', '');
         
         // Ensure the event still actively exists in Discord
-        const event = interaction.guild?.scheduledEvents.cache.get(eventId);
+        const event = await interaction.guild?.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
             return interaction.reply({ content: 'This event is no longer active or has been deleted.', ephemeral: true });
         }
@@ -557,7 +572,11 @@ client.on(Events.InteractionCreate, async interaction => {
                 delete eventDb[eventId].users[userId];
                 await saveDb();
                 // Replaces the button with text confirming the cancellation to avoid spam clicks
-                await interaction.update({ content: `${interaction.message.content}\n\n*(Reminders cancelled)*`, components: [] });
+                let newContent = `${interaction.message.content}\n\n*(Reminders cancelled)*`;
+                if (newContent.length > 2000) {
+                    newContent = `${interaction.message.content.substring(0, 1950)}...\n\n*(Reminders cancelled)*`;
+                }
+                await interaction.update({ content: newContent, components: [] });
             } else {
                 await interaction.update({ content: `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`, components: [] });
             }
@@ -665,25 +684,7 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                 if (channel) {
                     const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);
                     if (msg && msg.embeds.length > 0) {
-                        const startTime = n.scheduledStartTimestamp;
-                        const location = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
-                        const description = n.description ? `\n\n${n.description}` : '';
-                        const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
-
-                        const mode = getAnnouncementMode(n.guild.id);
-                        const reminderText = mode === 'public' 
-                            ? '*Click the button below to be pinged via @mention 24 hours and 1 hour before the event begins!*'
-                            : '*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*';
-
-                        const updatedEmbed = new EmbedBuilder()
-                            .setTitle(`New Event: ${n.name}`)
-                            .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`)
-                            .setFooter({ text: `EventID:${n.id}` })
-                            .setColor('#0099ff');
-
-                        const coverImage = n.coverImageURL({ size: 512 });
-                        if (coverImage) updatedEmbed.setImage(coverImage);
-
+                        const updatedEmbed = buildAnnouncementEmbed(n);
                         await msg.edit({ embeds: [updatedEmbed] });
                     }
                 }
