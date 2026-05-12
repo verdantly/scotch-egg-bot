@@ -80,8 +80,13 @@ function getAnnouncementMode(guildId) {
 }
 
 async function saveConfig() {
-    // No need for a queue here, as config saves are rare and admin-invoked.
-    await fs.promises.writeFile(CONFIG_PATH, JSON.stringify(serverConfig, null, 2));
+    try {
+        const tempPath = `${CONFIG_PATH}.tmp`;
+        await fs.promises.writeFile(tempPath, JSON.stringify(serverConfig, null, 2));
+        await fs.promises.rename(tempPath, CONFIG_PATH);
+    } catch (err) {
+        console.error('Failed to save config:', err);
+    }
 }
 
 async function notifyAdmin(contextMessage, error) {
@@ -105,7 +110,9 @@ let saveTimeout = null;
 
 async function executeSave() {
     try {
-        await fs.promises.writeFile(DB_PATH, JSON.stringify(eventDb, null, 2));
+        const tempPath = `${DB_PATH}.tmp`;
+        await fs.promises.writeFile(tempPath, JSON.stringify(eventDb, null, 2));
+        await fs.promises.rename(tempPath, DB_PATH);
     } catch (err) {
         console.error('Failed to save events database:', err);
         notifyAdmin('Failed to save events database (events.json)', err);
@@ -542,6 +549,7 @@ client.on(Events.InteractionCreate, async interaction => {
             eventDb[eventId] = { messageId: interaction.message.id, users: {} };
         }
         
+        try {
         const users = eventDb[eventId].users || {};
         const userId = interaction.user.id;
         
@@ -559,6 +567,9 @@ client.on(Events.InteractionCreate, async interaction => {
             const replyText = mode === 'public' ? 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.' : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
             await interaction.reply({ content: replyText, ephemeral: true });
         }
+        } catch (error) {
+            console.error('Failed to handle remind interaction:', error);
+        }
     }
 
     if (interaction.customId.startsWith('cancel_remind_')) {
@@ -568,6 +579,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const users = eventDb[eventId].users || {};
             const userId = interaction.user.id;
             
+            try {
             if (users[userId]) {
                 delete eventDb[eventId].users[userId];
                 await saveDb();
@@ -579,6 +591,9 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.update({ content: newContent, components: [] });
             } else {
                 await interaction.update({ content: `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`, components: [] });
+            }
+            } catch (error) {
+                console.error('Failed to handle cancel_remind interaction:', error);
             }
         } else {
             await interaction.update({ content: `${interaction.message.content}\n\n*(This event is no longer active)*`, components: [] });
@@ -592,6 +607,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const users = eventDb[eventId].users || {};
             const userId = interaction.user.id;
             
+            try {
             if (users[userId]) {
                 delete eventDb[eventId].users[userId];
                 await saveDb();
@@ -612,6 +628,9 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.update({ components: updatedComponents });
             } else {
                 await interaction.reply({ content: 'You are already not receiving reminders for this event.', ephemeral: true });
+            }
+            } catch (error) {
+                console.error('Failed to handle list_cancel interaction:', error);
             }
         } else {
             await interaction.reply({ content: 'This event is no longer active.', ephemeral: true });
