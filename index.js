@@ -8,7 +8,6 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
         GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildScheduledEvents
     ] 
 });
@@ -28,9 +27,15 @@ try {
             // Migration from old format (eventId: messageId)
             for (const [key, value] of Object.entries(rawDb)) {
                 if (typeof value === 'string') {
-                    eventDb[key] = { messageId: value, users: [] };
+                    eventDb[key] = { messageId: value, users: {} };
                 } else {
-                    eventDb[key] = value;
+                    let usersObj = {};
+                    if (Array.isArray(value.users)) {
+                        value.users.forEach(id => usersObj[id] = true);
+                    } else {
+                        usersObj = value.users || {};
+                    }
+                    eventDb[key] = { messageId: value.messageId, users: usersObj };
                 }
             }
         }
@@ -63,7 +68,15 @@ try {
 
 function getAnnouncementChannelId(guildId) {
     // Prioritize DB config, then fall back to .env
-    return serverConfig[guildId] || process.env.ANNOUNCEMENT_CHANNEL_ID;
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null) return config.channelId || process.env.ANNOUNCEMENT_CHANNEL_ID;
+    return config || process.env.ANNOUNCEMENT_CHANNEL_ID;
+}
+
+function getAnnouncementMode(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null) return config.mode || 'private';
+    return 'private';
 }
 
 async function saveConfig() {
@@ -183,15 +196,32 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                 if (channel) {
                     try {                            
                         const eventData = eventDb[event.id];
+                        const mode = getAnnouncementMode(event.guild.id);
                         
-                        if (eventData && eventData.users && eventData.users.length > 0) {
+                        const userIds = eventData && eventData.users ? Object.keys(eventData.users) : [];
+                        
+                        if (mode === 'public') {
+                            let mentions = '';
+                            if (userIds.length > 0) {
+                                mentions = '\n\n' + userIds.map(id => `<@${id}>`).join(' ');
+                            }
+                            const publicMsg = `${alert.msg}${mentions}`;
+                            if (publicMsg.length > 2000) {
+                                await channel.send(`${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`);
+                            } else {
+                                await channel.send(publicMsg);
+                            }
+                        } else if (userIds.length > 0) {
                             const users = [];
-                            for (const userId of eventData.users) {
+                            const fetchFailedUserIds = [];
+                            for (const userId of userIds) {
                                 try {
                                     const user = await client.users.fetch(userId);
                                     if (user) users.push(user);
+                                    else fetchFailedUserIds.push(userId);
                                 } catch (e) {
                                     console.log(`Could not fetch user ${userId}`);
+                                    fetchFailedUserIds.push(userId);
                                 }
                             }
                             
@@ -201,11 +231,12 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             const failedUserIds = await sendDMsWithRateLimit(users, { content: alert.msg, components: [dmRow] });
 
                             // Fallback for users who couldn't be DMed
-                            if (failedUserIds.length > 0) {
-                                const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
+                            const allFailedUserIds = [...fetchFailedUserIds, ...failedUserIds];
+                            if (allFailedUserIds.length > 0) {
+                                const mentions = allFailedUserIds.map(id => `<@${id}>`).join(' ');
                                 const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
                                 if (fallbackMsg.length > 2000) {
-                                    await channel.send(`${alert.msg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`);
+                                    await channel.send(`${alert.msg}\n\n*Could not DM ${allFailedUserIds.length} users (mentions hidden to save space).*`);
                                 } else {
                                     await channel.send(fallbackMsg);
                                 }
@@ -274,9 +305,14 @@ async function postAnnouncement(event, channel) {
     const description = event.description ? `\n\n${event.description}` : '';
     const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
 
+    const mode = getAnnouncementMode(event.guild.id);
+    const reminderText = mode === 'public' 
+        ? '*Click the button below to be pinged via @mention 24 hours and 1 hour before the event begins!*'
+        : '*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*';
+
     const embed = new EmbedBuilder()
         .setTitle(`New Event: ${event.name}`)
-        .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*`)
+        .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`)
         .setFooter({ text: `EventID:${event.id}` })
         .setColor('#0099ff');
 
@@ -291,86 +327,116 @@ async function postAnnouncement(event, channel) {
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
-        eventDb[event.id] = { messageId: message.id, users: [] };
+        eventDb[event.id] = { messageId: message.id, users: {} };
         await saveDb();
     } catch (err) {
-        console.error(`Could not post announcement message for event ${event.id} in channel ${channel.id}:`, err);
-        notifyAdmin(`Could not post announcement message for event ${event.id} in channel ${channel.id}`, err);
+        console.error(`Could not post announcement message for event ${event.id} in channel ${channel?.id}:`, err);
+        notifyAdmin(`Could not post announcement message for event ${event.id} in channel ${channel?.id}`, err);
         throw err;
     }
 }
 
 client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
-        if (interaction.commandName === 'setchannel') {
-            const channel = interaction.options.getChannel('channel');
+        if (interaction.commandName === 'settings') {
+            const subcommand = interaction.options.getSubcommand();
 
-            if (channel.type !== ChannelType.GuildText) {
-                return interaction.reply({ content: 'Please select a valid text channel within this server.', ephemeral: true });
+            if (subcommand === 'channel') {
+                const channel = interaction.options.getChannel('channel');
+
+                if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
+                    return interaction.reply({ content: 'Please select a valid text channel within this server.', ephemeral: true });
+                }
+
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].channelId = channel.id;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: channel.id, mode: 'private' };
+                }
+                await saveConfig();
+
+                await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, ephemeral: true });
             }
 
-            serverConfig[interaction.guildId] = channel.id;
-            await saveConfig();
+            if (subcommand === 'mode') {
+                const mode = interaction.options.getString('mode');
 
-            await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, ephemeral: true });
-        }
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].mode = mode;
+                } else {
+                    const existingChannel = serverConfig[interaction.guildId];
+                    // Handle legacy config formatting gracefully
+                    serverConfig[interaction.guildId] = { channelId: typeof existingChannel === 'string' ? existingChannel : null, mode: mode };
+                }
+                await saveConfig();
 
-        if (interaction.commandName === 'checkchannel') {
-            const channelId = getAnnouncementChannelId(interaction.guildId);
-
-            if (channelId) {
-                await interaction.reply({ content: `Event announcements are currently configured to be sent to <#${channelId}>.`, ephemeral: true });
-            } else {
-                await interaction.reply({ content: `No announcement channel has been configured for this server. An administrator can set one using the \`/setchannel\` command.`, ephemeral: true });
+                const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+                await interaction.reply({ content: `Success! Event reminders will now be sent via: **${modeText}**.`, ephemeral: true });
             }
+
+            if (subcommand === 'view') {
+                const channelId = getAnnouncementChannelId(interaction.guildId);
+                const mode = getAnnouncementMode(interaction.guildId);
+                const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+
+                let replyMessage = '**Current Server Settings:**\n';
+                replyMessage += `**Announcement Channel:** ${channelId ? `<#${channelId}>` : '*Not configured*'}\n`;
+                replyMessage += `**Reminder Mode:** ${modeText}`;
+
+                await interaction.reply({ content: replyMessage, ephemeral: true });
+            }
+            return;
         }
 
         if (interaction.commandName === 'announceevent') {
+            await interaction.deferReply({ ephemeral: true });
+
             const eventIdentifier = interaction.options.getString('event_link_or_id');
-            // Regex to extract a Discord snowflake ID from a string, optionally preceded by an event URL structure.
             const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
             const eventId = match ? match[1] : null;
 
             if (!eventId) {
-                return interaction.reply({ content: 'Invalid event link or ID provided. Please provide a valid Discord event link or the event ID.', ephemeral: true });
+                return interaction.editReply({ content: 'Invalid event link or ID provided. Please provide a valid Discord event link or the event ID.' });
             }
 
             if (eventDb[eventId]) {
-                return interaction.reply({ content: 'An announcement for this event has already been posted.', ephemeral: true });
+                return interaction.editReply({ content: 'An announcement for this event has already been posted.' });
             }
 
             const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
             if (!event) {
-                return interaction.reply({ content: 'Could not find an event with that ID in this server.', ephemeral: true });
+                return interaction.editReply({ content: 'Could not find an event with that ID in this server.' });
             }
 
             const channelId = getAnnouncementChannelId(interaction.guildId);
             const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
             if (!channel) {
-                return interaction.reply({ content: 'The announcement channel is not configured for this server. Please use `/setchannel` first.', ephemeral: true });
+                return interaction.editReply({ content: 'The announcement channel is not configured for this server. Please use `/settings channel` first.' });
             }
 
             try {
                 await postAnnouncement(event, channel);
-                await interaction.reply({ content: `Successfully posted an announcement for **${event.name}**.`, ephemeral: true });
+                await interaction.editReply({ content: `Successfully posted an announcement for **${event.name}**.` });
             } catch (err) {
-                await interaction.reply({ content: 'An error occurred while trying to post the announcement. Please check the bot\'s permissions in the target channel.', ephemeral: true });
+                await interaction.editReply({ content: 'An error occurred while trying to post the announcement. Please check the bot\'s permissions in the target channel.' });
             }
         }
 
         if (interaction.commandName === 'myreminders') {
+            await interaction.deferReply({ ephemeral: true });
+
             const userId = interaction.user.id;
             const myEventIds = [];
 
             // Find all event IDs the user is opted into
             for (const [eventId, data] of Object.entries(eventDb)) {
-                if (data.users && data.users.includes(userId)) {
+                if (data.users && data.users[userId]) {
                     myEventIds.push(eventId);
                 }
             }
 
             if (myEventIds.length === 0) {
-                return interaction.reply({ content: 'You are not currently opted-in to receive reminders for any events.', ephemeral: true });
+                return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any events.' });
             }
 
             // Fetch the actual events from the current guild to filter out events from other servers
@@ -378,7 +444,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const myGuildEvents = guildEvents.filter(event => myEventIds.includes(event.id));
 
             if (myGuildEvents.size === 0) {
-                 return interaction.reply({ content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.', ephemeral: true });
+                 return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.' });
             }
 
             let replyMessage = '**Your Upcoming Reminders for this Server:**\n\n';
@@ -421,11 +487,26 @@ client.on(Events.InteractionCreate, async interaction => {
                 actionRows.push(currentRow);
             }
 
-            const replyOptions = { content: replyMessage, ephemeral: true };
+            const replyOptions = { content: replyMessage };
             if (actionRows.length > 0) {
                 replyOptions.components = actionRows;
             }
-            await interaction.reply(replyOptions);
+            await interaction.editReply(replyOptions);
+        }
+
+        if (interaction.commandName === 'help') {
+            const embed = new EmbedBuilder()
+                .setTitle('🥚 Scotch Egg Bot Help')
+                .setDescription('I automatically announce server events and can send you DM reminders 24 hours and 1 hour before they start!')
+                .addFields(
+                    { name: 'How to get reminders', value: 'Whenever a new event is created, I will post an announcement. Click the **⏰ Remind Me!** button on that message to opt in.' },
+                    { name: '`/myreminders`', value: 'Lists all upcoming events you are currently receiving reminders for, and lets you opt out.' },
+                    { name: '`/settings view`', value: 'Displays the currently configured settings for this server.' },
+                    { name: 'Admin Commands', value: '`/settings channel` - Sets the announcement channel\n`/settings mode` - Toggles reminder format\n`/announceevent` - Manually posts an event announcement.' }
+                )
+                .setColor('#0099ff');
+            
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         }
         return;
     }
@@ -443,22 +524,25 @@ client.on(Events.InteractionCreate, async interaction => {
 
         // Auto-heal database if the event record was somehow lost
         if (!eventDb[eventId]) {
-            eventDb[eventId] = { messageId: interaction.message.id, users: [] };
+            eventDb[eventId] = { messageId: interaction.message.id, users: {} };
         }
         
-        const users = eventDb[eventId].users || [];
+        const users = eventDb[eventId].users || {};
         const userId = interaction.user.id;
         
-        if (users.includes(userId)) {
+        if (users[userId]) {
             // Remove user from reminders
-            eventDb[eventId].users = users.filter(id => id !== userId);
+            delete eventDb[eventId].users[userId];
             await saveDb();
             await interaction.reply({ content: 'You will no longer receive reminders for this event.', ephemeral: true });
         } else {
             // Add user to reminders
-            eventDb[eventId].users.push(userId);
+            eventDb[eventId].users[userId] = true;
             await saveDb();
-            await interaction.reply({ content: 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.', ephemeral: true });
+            
+            const mode = getAnnouncementMode(interaction.guildId);
+            const replyText = mode === 'public' ? 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.' : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+            await interaction.reply({ content: replyText, ephemeral: true });
         }
     }
 
@@ -466,11 +550,11 @@ client.on(Events.InteractionCreate, async interaction => {
         const eventId = interaction.customId.replace('cancel_remind_', '');
         
         if (eventDb[eventId]) {
-            const users = eventDb[eventId].users || [];
+            const users = eventDb[eventId].users || {};
             const userId = interaction.user.id;
             
-            if (users.includes(userId)) {
-                eventDb[eventId].users = users.filter(id => id !== userId);
+            if (users[userId]) {
+                delete eventDb[eventId].users[userId];
                 await saveDb();
                 // Replaces the button with text confirming the cancellation to avoid spam clicks
                 await interaction.update({ content: `${interaction.message.content}\n\n*(Reminders cancelled)*`, components: [] });
@@ -486,11 +570,11 @@ client.on(Events.InteractionCreate, async interaction => {
         const eventId = interaction.customId.replace('list_cancel_', '');
         
         if (eventDb[eventId]) {
-            const users = eventDb[eventId].users || [];
+            const users = eventDb[eventId].users || {};
             const userId = interaction.user.id;
             
-            if (users.includes(userId)) {
-                eventDb[eventId].users = users.filter(id => id !== userId);
+            if (users[userId]) {
+                delete eventDb[eventId].users[userId];
                 await saveDb();
                 
                 // Rebuilds the components to disable the clicked button and change its text
@@ -516,19 +600,50 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+async function archiveAnnouncementMessage(guild, eventId, statusText) {
+    if (!eventDb[eventId] || !eventDb[eventId].messageId) return;
+    try {
+        const channelId = getAnnouncementChannelId(guild.id);
+        const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
+        if (channel) {
+            const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+            if (msg && msg.embeds.length > 0) {
+                const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
+                originalEmbed.setTitle(`${originalEmbed.data.title} [${statusText}]`);
+                originalEmbed.setColor('#808080'); // Gray out the embed to indicate it's over
+                
+                const disabledRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`archived_${eventId}`)
+                        .setLabel(`Event ${statusText}`)
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true)
+                        .setEmoji(statusText === 'Completed' ? '✅' : '❌')
+                );
+                
+                await msg.edit({ embeds: [originalEmbed], components: [disabledRow] });
+            }
+        }
+    } catch (err) {
+        console.log(`Failed to archive announcement message for event ${eventId}:`, err);
+    }
+}
+
 client.on(Events.GuildScheduledEventDelete, async e => {
     cancelEventReminders(e.id);
     
     // Cleanup of the database
     if (eventDb[e.id]) {
+        await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
         delete eventDb[e.id];
         await saveDb();
     }
 });
 
 client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
-    if (o.scheduledStartTimestamp !== n.scheduledStartTimestamp) {
-        cancelEventReminders(n.id);
+    // Always reschedule reminders on update to ensure time, location, and description are fresh
+    cancelEventReminders(n.id);
+    if (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active) {
         scheduleRemindersForEvent(n);
     }
     
@@ -536,8 +651,45 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
     if (n.status === GuildScheduledEventStatus.Completed || n.status === GuildScheduledEventStatus.Canceled) {
         cancelEventReminders(n.id);
         if (eventDb[n.id]) {
+            const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
+            await archiveAnnouncementMessage(n.guild, n.id, statusText);
             delete eventDb[n.id];
             await saveDb();
+        }
+    } else {
+        // The event was updated (e.g., name, description, time changed), so we update the original announcement message
+        if (eventDb[n.id] && eventDb[n.id].messageId) {
+            try {
+                const channelId = getAnnouncementChannelId(n.guild.id);
+                const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                if (channel) {
+                    const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);
+                    if (msg && msg.embeds.length > 0) {
+                        const startTime = n.scheduledStartTimestamp;
+                        const location = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                        const description = n.description ? `\n\n${n.description}` : '';
+                        const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
+
+                        const mode = getAnnouncementMode(n.guild.id);
+                        const reminderText = mode === 'public' 
+                            ? '*Click the button below to be pinged via @mention 24 hours and 1 hour before the event begins!*'
+                            : '*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*';
+
+                        const updatedEmbed = new EmbedBuilder()
+                            .setTitle(`New Event: ${n.name}`)
+                            .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`)
+                            .setFooter({ text: `EventID:${n.id}` })
+                            .setColor('#0099ff');
+
+                        const coverImage = n.coverImageURL({ size: 512 });
+                        if (coverImage) updatedEmbed.setImage(coverImage);
+
+                        await msg.edit({ embeds: [updatedEmbed] });
+                    }
+                }
+            } catch (err) {
+                console.error(`Failed to update announcement message for event ${n.id}:`, err);
+            }
         }
     }
 });

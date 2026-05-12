@@ -1,4 +1,4 @@
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { REST, Routes, SlashCommandBuilder, ChannelType } = require('discord.js');
 const { PermissionFlagsBits } = require('discord-api-types/v10');
 require('dotenv').config();
 
@@ -9,19 +9,40 @@ if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {
 
 const commands = [
     new SlashCommandBuilder()
-        .setName('setchannel')
-        .setDescription('Sets the channel for event announcements and reminders.')
-        .addChannelOption(option =>
-            option.setName('channel')
-                .setDescription('The text channel to use for announcements')
-                .setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Only admins can use this
-    new SlashCommandBuilder()
-        .setName('checkchannel')
-        .setDescription('Checks the currently configured channel for event announcements.'),
+        .setName('settings')
+        .setDescription('Manage bot configuration for this server.')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('channel')
+                .setDescription('Sets the channel for event announcements and reminders.')
+                .addChannelOption(option =>
+                    option.setName('channel')
+                        .setDescription('The text channel to use for announcements')
+                        .setRequired(true)
+                        .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('mode')
+                .setDescription('Choose whether event reminders are posted publicly or privately via DM.')
+                .addStringOption(option =>
+                    option.setName('mode')
+                        .setDescription('The announcement mode')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'Public Channel Reminders', value: 'public' },
+                            { name: 'Private DM Reminders (Opt-in)', value: 'private' }
+                        )))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('view')
+                .setDescription('View the current bot settings for this server.')),
     new SlashCommandBuilder()
         .setName('myreminders')
         .setDescription('Lists all upcoming events you are currently receiving reminders for in this server.'),
+    new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Displays information on how to use the bot and a list of available commands.'),
     new SlashCommandBuilder()
         .setName('announceevent')
         .setDescription('Manually posts an announcement for an existing event.')

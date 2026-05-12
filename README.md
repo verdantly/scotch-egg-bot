@@ -16,7 +16,6 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 - A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).
 - Your bot's Client ID from the Developer Portal.
 - The bot must have the following **Privileged Intents** enabled in the Developer Portal:
-  - `Message Content Intent`
   - `Server Members Intent` (Optional, but recommended for potential future features).
 - Docker (Optional, if you wish to run via containers).
 
@@ -85,23 +84,32 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
 
+
 ## Commands Reference
 
-*   `/setchannel [channel]`
+*   `/settings channel [channel]`
     -   **Permission:** Administrator
-    -   **Action:** Sets the specific channel where the bot will post new event announcements and fallback reminders for the current server. This is the recommended way to configure the bot and overrides any settings in the `.env` file.
+    -   **Action:** Sets the specific channel where the bot will post new event announcements and reminders for the current server.
+
+*   `/settings mode [mode]`
+    -   **Permission:** Administrator
+    -   **Action:** Toggles whether the 24h and 1h event reminders are posted publicly in the configured channel (tagging opted-in users) or DMed privately.
+
+*   `/settings view`
+    -   **Permission:** Administrator
+    -   **Action:** Displays the currently configured channel and reminder mode for this server.
 
 *   `/announceevent [event_link_or_id]`
     -   **Permission:** Administrator
     -   **Action:** Manually posts an announcement for an existing event. This is useful if the bot was offline when the event was created.
 
-*   `/checkchannel`
-    -   **Permission:** Everyone
-    -   **Action:** Displays the currently configured channel for event announcements.
-
 *   `/myreminders`
     -   **Permission:** Everyone
     -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server.
+
+*   `/help`
+    -   **Permission:** Everyone
+    -   **Action:** Displays information on how to use the bot and a list of available commands.
 
 ## How It Works (Storage Architecture)
 To minimize disk wear on single-board computers (like the Raspberry Pi):
@@ -135,3 +143,20 @@ graph TD
 - [discord.js](https://discord.js.org/) - The primary library for interacting with the Discord API.
 - [node-schedule](https://github.com/node-schedule/node-schedule) - Used for scheduling the precise 24h and 1h alert triggers.
 - [dotenv](https://github.com/motdotla/dotenv) - For loading the bot token from the `.env` file.
+
+## FAQ
+
+**Q: Does the bot support multiple servers (Guilds)?**
+A: Yes! You can invite the bot to as many servers as you want. Just use `/settings channel` in each server to configure where announcements should be posted. The bot keeps all reminders and configurations perfectly separated.
+
+**Q: What happens if the bot goes offline while an event is created or deleted?**
+A: Don't worry! Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and deletes data for events that were canceled while it was down.
+
+**Q: Why do I need to create empty `events.json` and `config.json` files for Docker?**
+A: Docker Compose maps these files from your host to the container. If the files don't exist on your host machine *before* you run `docker compose up`, Docker assumes you are trying to map directories and will create folders named `events.json` and `config.json`. This will crash the bot.
+
+**Q: Why are the DM reminders plain text instead of Rich Embeds?**
+A: This is intentional. When an event URL is sent in a DM, Discord automatically generates a Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered "double-embed" in the user's DM.
+
+**Q: Can users opt out of reminders?**
+A: Yes! Users can either click the "Remind Me!" button on the announcement again, click the "Cancel Reminders" button at the bottom of a DM reminder, or use the `/myreminders` command to see a list of their events and opt out from there.
