@@ -1,5 +1,4 @@
-const { REST, Routes, SlashCommandBuilder, ChannelType } = require('discord.js');
-const { PermissionFlagsBits } = require('discord-api-types/v10');
+const { REST, Routes, SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 require('dotenv').config();
 
 if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {

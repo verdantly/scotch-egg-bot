@@ -571,7 +571,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     { name: 'How to get reminders', value: 'Whenever a new event is created, I will post an announcement. Click the **⏰ Remind Me!** button on that message to opt in.' },
                     { name: '`/myreminders`', value: 'Lists all upcoming events you are currently receiving reminders for, and lets you opt out.' },
                     { name: '`/settings view`', value: 'Displays the currently configured settings for this server.' },
-                    { name: 'Admin Commands', value: '`/settings channel` - Sets the announcement channel\n`/settings mode` - Toggles reminder format\n`/announceevent` - Manually posts an event announcement.' }
+                    { name: 'Admin Commands', value: '`/settings channel` - Sets the announcement channel\n`/settings mode` - Toggles reminder format\n`/announceevent` - Manually posts an event announcement.\n`/stats` - View opt-in statistics.' }
                 )
                 .setColor('#0099ff');
             
@@ -638,51 +638,62 @@ client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton()) return;
     
     if (interaction.customId.startsWith('remind_')) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const eventId = interaction.customId.replace('remind_', '');
         
         // Ensure the event still actively exists in Discord
         const event = await interaction.guild?.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
-            return interaction.reply({ content: 'This event is no longer active or has been deleted.', flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ content: 'This event is no longer active or has been deleted.' });
         }
 
         // Auto-heal database if the event record was somehow lost
         if (!eventDb[eventId]) {
             eventDb[eventId] = { messageId: interaction.message.id, users: {} };
         }
-        
+
         try {
-        const users = eventDb[eventId].users || {};
-        const userId = interaction.user.id;
-        
-        if (users[userId]) {
-            // Remove user from reminders
-            delete eventDb[eventId].users[userId];
-            await saveDb();
-            await interaction.reply({ content: 'You will no longer receive reminders for this event.', flags: MessageFlags.Ephemeral });
-        } else {
-            // Add user to reminders
-            eventDb[eventId].users[userId] = true;
-            await saveDb();
-            
-            const mode = getAnnouncementMode(interaction.guildId);
-            const timeUntilEvent = event.scheduledStartTimestamp - Date.now();
-            const isPast24h = timeUntilEvent <= 24 * 60 * 60 * 1000;
-            
-            let replyText = '';
-            if (mode === 'public') {
-                replyText = isPast24h 
-                    ? 'Reminder set! You will be pinged in the announcement channel 1 hour before the event begins.'
-                    : 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.';
+            const users = eventDb[eventId].users || {};
+            const userId = interaction.user.id;
+            let replyText;
+
+            if (users[userId]) {
+                // Remove user from reminders
+                delete eventDb[eventId].users[userId];
+                replyText = 'You will no longer receive reminders for this event.';
             } else {
-                replyText = isPast24h
-                    ? 'Reminder set! I will DM you 1 hour before the event begins.'
-                    : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+                // Add user to reminders
+                eventDb[eventId].users[userId] = true;
+                
+                const mode = getAnnouncementMode(interaction.guildId);
+                const timeUntilEvent = event.scheduledStartTimestamp - Date.now();
+                const isPast24h = timeUntilEvent <= 24 * 60 * 60 * 1000;
+                
+                if (mode === 'public') {
+                    replyText = isPast24h 
+                        ? 'Reminder set! You will be pinged in the announcement channel 1 hour before the event begins.'
+                        : 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.';
+                } else {
+                    replyText = isPast24h
+                        ? 'Reminder set! I will DM you 1 hour before the event begins.'
+                        : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+                }
             }
-            await interaction.reply({ content: replyText, flags: MessageFlags.Ephemeral });
-        }
+            await saveDb();
+
+            // Update the button on the original message to show the new count
+            const userCount = Object.keys(users).length;
+            const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
+            
+            const updatedRow = new ActionRowBuilder().addComponents(
+                ButtonBuilder.from(interaction.component).setLabel(newLabel)
+            );
+            
+            await interaction.message.edit({ components: [updatedRow] });
+            await interaction.editReply({ content: replyText });
         } catch (error) {
             console.error('Failed to handle remind interaction:', error);
+            await interaction.editReply({ content: 'An error occurred while processing your request.' }).catch(() => {});
         }
     }
 

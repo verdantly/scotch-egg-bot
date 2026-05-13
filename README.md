@@ -29,8 +29,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 - Node.js (v16.14.0 or higher recommended)
 - A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).
 - Your bot's Client ID from the Developer Portal.
-- The bot must have the following **Privileged Intents** enabled in the Developer Portal:
-  - `Server Members Intent` (Optional, but recommended for potential future features).
+- **No Privileged Intents required!** The bot relies entirely on modern slash commands and components.
 - Docker (Optional, if you wish to run via containers).
 
 ## Configuration
@@ -121,14 +120,18 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
     -   **Permission:** Everyone
     -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server.
 
+*   `/stats`
+    -   **Permission:** Administrator
+    -   **Action:** View opt-in statistics for upcoming events in this server.
+
 *   `/help`
     -   **Permission:** Everyone
     -   **Action:** Displays information on how to use the bot and a list of available commands.
 
 ## How It Works (Storage Architecture)
 To minimize disk wear on single-board computers (like the Raspberry Pi):
-- When an announcement is posted, it saves an entry to a local `events.json` file mapping the event ID to an array of opted-in users.
-- When a user clicks the "Remind Me!" button, their Discord User ID is safely added to (or removed from) this local list.
+- When an announcement is posted, it creates a record for that event in a local `events.json` file.
+- When a user clicks the "Remind Me!" button, their Discord User ID is added to (or removed from) an object of opted-in users associated with that event's record. This object-based storage is highly efficient for lookups.
 - When it is time to send a reminder, the bot reads the opted-in users directly from the database and either DMs them or pings them publicly in the channel, depending on the server's configured mode.
 - The database is automatically pruned when events are deleted, canceled, or completed to keep it lightweight.
 
