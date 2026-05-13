@@ -577,6 +577,37 @@ client.on(Events.InteractionCreate, async interaction => {
             
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
+
+        if (interaction.commandName === 'stats') {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+            const guildEvents = await interaction.guild.scheduledEvents.fetch();
+            if (guildEvents.size === 0) {
+                return interaction.editReply({ content: 'There are no active upcoming events in this server.' });
+            }
+
+            let totalOptIns = 0;
+            let description = '';
+
+            guildEvents.forEach(event => {
+                const eventData = eventDb[event.id];
+                const usersOptedIn = eventData && eventData.users ? Object.keys(eventData.users).length : 0;
+                totalOptIns += usersOptedIn;
+                
+                const nextLine = `• **${event.name}**: ${usersOptedIn} opt-in(s)\n`;
+                if (description.length + nextLine.length < 3900) { // Keep under Discord Embed limits
+                    description += nextLine;
+                }
+            });
+
+            const embed = new EmbedBuilder()
+                .setTitle('📊 Event Opt-in Statistics')
+                .setDescription(description || 'No data to display.')
+                .addFields({ name: 'Total Server Opt-ins', value: totalOptIns.toString(), inline: true })
+                .setColor('#0099ff');
+
+            await interaction.editReply({ embeds: [embed] });
+        }
         return;
     }
 
