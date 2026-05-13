@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
@@ -81,9 +81,17 @@ function getAnnouncementMode(guildId) {
 
 async function saveConfig() {
     try {
+        const data = JSON.stringify(serverConfig, null, 2);
         const tempPath = `${CONFIG_PATH}.tmp`;
-        await fs.promises.writeFile(tempPath, JSON.stringify(serverConfig, null, 2));
-        await fs.promises.rename(tempPath, CONFIG_PATH);
+        await fs.promises.writeFile(tempPath, data);
+        try {
+            await fs.promises.rename(tempPath, CONFIG_PATH);
+        } catch (renameErr) {
+            if (renameErr.code === 'EBUSY' || renameErr.code === 'EXDEV') {
+                await fs.promises.writeFile(CONFIG_PATH, data);
+                await fs.promises.unlink(tempPath).catch(() => {});
+            } else throw renameErr;
+        }
     } catch (err) {
         console.error('Failed to save config:', err);
     }
@@ -110,9 +118,17 @@ let saveTimeout = null;
 
 async function executeSave() {
     try {
+        const data = JSON.stringify(eventDb, null, 2);
         const tempPath = `${DB_PATH}.tmp`;
-        await fs.promises.writeFile(tempPath, JSON.stringify(eventDb, null, 2));
-        await fs.promises.rename(tempPath, DB_PATH);
+        await fs.promises.writeFile(tempPath, data);
+        try {
+            await fs.promises.rename(tempPath, DB_PATH);
+        } catch (renameErr) {
+            if (renameErr.code === 'EBUSY' || renameErr.code === 'EXDEV') {
+                await fs.promises.writeFile(DB_PATH, data);
+                await fs.promises.unlink(tempPath).catch(() => {});
+            } else throw renameErr;
+        }
     } catch (err) {
         console.error('Failed to save events database:', err);
         notifyAdmin('Failed to save events database (events.json)', err);
@@ -403,12 +419,12 @@ client.on(Events.InteractionCreate, async interaction => {
                 const channel = interaction.options.getChannel('channel');
 
                 if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
-                    return interaction.reply({ content: 'Please select a valid text channel within this server.', ephemeral: true });
+                    return interaction.reply({ content: 'Please select a valid text channel within this server.', flags: MessageFlags.Ephemeral });
                 }
 
                 const botPermissions = channel.permissionsFor(interaction.guild.members.me);
                 if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
-                    return interaction.reply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!`, ephemeral: true });
+                    return interaction.reply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!`, flags: MessageFlags.Ephemeral });
                 }
 
                 if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
@@ -418,7 +434,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await saveConfig();
 
-                await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, ephemeral: true });
+                await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'mode') {
@@ -434,7 +450,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 await saveConfig();
 
                 const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
-                await interaction.reply({ content: `Success! Event reminders will now be sent via: **${modeText}**.`, ephemeral: true });
+                await interaction.reply({ content: `Success! Event reminders will now be sent via: **${modeText}**.`, flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'view') {
@@ -446,13 +462,13 @@ client.on(Events.InteractionCreate, async interaction => {
                 replyMessage += `**Announcement Channel:** ${channelId ? `<#${channelId}>` : '*Not configured*'}\n`;
                 replyMessage += `**Reminder Mode:** ${modeText}`;
 
-                await interaction.reply({ content: replyMessage, ephemeral: true });
+                await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
             }
             return;
         }
 
         if (interaction.commandName === 'announceevent') {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             const eventIdentifier = interaction.options.getString('event_link_or_id');
             const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
@@ -486,7 +502,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
 
         if (interaction.commandName === 'myreminders') {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             const userId = interaction.user.id;
             const myEventIds = new Set();
@@ -559,7 +575,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 )
                 .setColor('#0099ff');
             
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
         return;
     }
@@ -596,7 +612,7 @@ client.on(Events.InteractionCreate, async interaction => {
         // Ensure the event still actively exists in Discord
         const event = await interaction.guild?.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
-            return interaction.reply({ content: 'This event is no longer active or has been deleted.', ephemeral: true });
+            return interaction.reply({ content: 'This event is no longer active or has been deleted.', flags: MessageFlags.Ephemeral });
         }
 
         // Auto-heal database if the event record was somehow lost
@@ -612,7 +628,7 @@ client.on(Events.InteractionCreate, async interaction => {
             // Remove user from reminders
             delete eventDb[eventId].users[userId];
             await saveDb();
-            await interaction.reply({ content: 'You will no longer receive reminders for this event.', ephemeral: true });
+            await interaction.reply({ content: 'You will no longer receive reminders for this event.', flags: MessageFlags.Ephemeral });
         } else {
             // Add user to reminders
             eventDb[eventId].users[userId] = true;
@@ -632,7 +648,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     ? 'Reminder set! I will DM you 1 hour before the event begins.'
                     : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
             }
-            await interaction.reply({ content: replyText, ephemeral: true });
+            await interaction.reply({ content: replyText, flags: MessageFlags.Ephemeral });
         }
         } catch (error) {
             console.error('Failed to handle remind interaction:', error);
