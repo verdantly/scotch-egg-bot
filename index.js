@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder } = require('discord.js');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
@@ -305,7 +305,11 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
 client.on(Events.ClientReady, async c => {
     console.log(`Bot logged in as ${c.user.tag}`);
     
-    c.user.setActivity('for upcoming events | /help', { type: ActivityType.Watching });
+    c.user.setActivity({
+        name: 'Custom Status',
+        type: ActivityType.Custom,
+        state: '⏰ Announcing events & sending reminders | /help'
+    });
     
     const activeEventIds = new Set();
     
@@ -507,9 +511,14 @@ client.on(Events.InteractionCreate, async interaction => {
             }
 
             let replyMessage = '**Your Upcoming Reminders for this Server:**\n\n';
-            const actionRows = [];
-            let currentRow = new ActionRowBuilder();
-            let buttonCount = 0;
+            
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('list_cancel_select')
+                .setPlaceholder('Select events to cancel reminders for...')
+                .setMinValues(1)
+                .setMaxValues(Math.min(myGuildEvents.size, 25));
+
+            let optionCount = 0;
 
             myGuildEvents.forEach(event => {
                 const timeString = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:f>`;
@@ -521,36 +530,21 @@ client.on(Events.InteractionCreate, async interaction => {
                     replyMessage += '...and more!\n';
                 }
 
-                // Discord has a hard limit of 5 Action Rows and 5 Buttons per Row (Max 25 buttons total)
-                if (buttonCount < 25) {
-                    let label = `Cancel Reminders for: ${event.name}`;
-                    if (label.length > 80) label = label.substring(0, 77) + '...';
+                if (optionCount < 25) {
+                    let label = event.name;
+                    if (label.length > 100) label = label.substring(0, 97) + '...';
                     
-                    currentRow.addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(`list_cancel_${event.id}`)
-                            .setLabel(label)
-                            .setStyle(ButtonStyle.Danger)
-                            .setEmoji('🔕')
-                    );
-                    buttonCount++;
-
-                    if (currentRow.components.length === 5) {
-                        actionRows.push(currentRow);
-                        currentRow = new ActionRowBuilder();
-                    }
+                    selectMenu.addOptions({
+                        label: label,
+                        value: event.id,
+                        emoji: '🔕'
+                    });
+                    optionCount++;
                 }
             });
 
-            if (currentRow.components.length > 0) {
-                actionRows.push(currentRow);
-            }
-
-            const replyOptions = { content: replyMessage };
-            if (actionRows.length > 0) {
-                replyOptions.components = actionRows;
-            }
-            await interaction.editReply(replyOptions);
+            const row = new ActionRowBuilder().addComponents(selectMenu);
+            await interaction.editReply({ content: replyMessage, components: [row] });
         }
 
         if (interaction.commandName === 'help') {
@@ -566,6 +560,30 @@ client.on(Events.InteractionCreate, async interaction => {
                 .setColor('#0099ff');
             
             await interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+        return;
+    }
+
+    if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === 'list_cancel_select') {
+            await interaction.deferUpdate();
+            
+            const eventIdsToCancel = interaction.values;
+            const userId = interaction.user.id;
+            let cancelledCount = 0;
+            
+            for (const eventId of eventIdsToCancel) {
+                if (eventDb[eventId] && eventDb[eventId].users && eventDb[eventId].users[userId]) {
+                    delete eventDb[eventId].users[userId];
+                    cancelledCount++;
+                }
+            }
+            
+            if (cancelledCount > 0) {
+                await saveDb();
+            }
+            
+            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully canceled reminders for **${cancelledCount}** event(s).`, components: [] });
         }
         return;
     }
@@ -654,43 +672,6 @@ client.on(Events.InteractionCreate, async interaction => {
                 newContent = `${interaction.message.content.substring(0, 1950)}...\n\n*(This event is no longer active)*`;
             }
             await interaction.update({ content: newContent, components: [] });
-        }
-    }
-
-    if (interaction.customId.startsWith('list_cancel_')) {
-        const eventId = interaction.customId.replace('list_cancel_', '');
-        
-        if (eventDb[eventId]) {
-            const users = eventDb[eventId].users || {};
-            const userId = interaction.user.id;
-            
-            try {
-            if (users[userId]) {
-                delete eventDb[eventId].users[userId];
-                await saveDb();
-                
-                // Rebuilds the components to disable the clicked button and change its text
-                const updatedComponents = interaction.message.components.map(row => {
-                    const updatedRow = new ActionRowBuilder();
-                    row.components.forEach(component => {
-                        const button = ButtonBuilder.from(component);
-                        if (component.customId === interaction.customId) {
-                            button.setDisabled(true).setLabel('Opted Out').setStyle(ButtonStyle.Secondary).setEmoji('✅');
-                        }
-                        updatedRow.addComponents(button);
-                    });
-                    return updatedRow;
-                });
-                
-                await interaction.update({ components: updatedComponents });
-            } else {
-                await interaction.reply({ content: 'You are already not receiving reminders for this event.', ephemeral: true });
-            }
-            } catch (error) {
-                console.error('Failed to handle list_cancel interaction:', error);
-            }
-        } else {
-            await interaction.reply({ content: 'This event is no longer active.', ephemeral: true });
         }
     }
 });
