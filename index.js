@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType } = require('discord.js');
 const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
@@ -171,6 +171,28 @@ async function sendDMsWithRateLimit(users, messagePayload) {
     return failedUserIds;
 }
 
+async function notifyUsersOfEventChange(event, messageText) {
+    const eventData = eventDb[event.id];
+    if (!eventData || !eventData.users) return;
+    
+    const userIds = Object.keys(eventData.users);
+    if (userIds.length === 0) return;
+
+    const users = [];
+    for (const userId of userIds) {
+        try {
+            const user = await client.users.fetch(userId);
+            if (user) users.push(user);
+        } catch (e) {
+            console.log(`Could not fetch user ${userId} for change notification`);
+        }
+    }
+
+    if (users.length > 0) {
+        await sendDMsWithRateLimit(users, { content: messageText });
+    }
+}
+
 async function syncEventReminders(guild) {
     const events = await guild.scheduledEvents.fetch();
     const now = Date.now();
@@ -216,7 +238,9 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             const payload = {};
                             if (publicMsg.length > 2000) {
-                                payload.content = `${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
+                                let safeMsg = `${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
+                                if (safeMsg.length > 2000) safeMsg = safeMsg.substring(0, 1995) + '...';
+                                payload.content = safeMsg;
                             } else {
                                 payload.content = publicMsg;
                             }
@@ -251,14 +275,18 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 const mentions = allFailedUserIds.map(id => `<@${id}>`).join(' ');
                                 const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
                                 if (fallbackMsg.length > 2000) {
-                                    await channel.send(`${alert.msg}\n\n*Could not DM ${allFailedUserIds.length} users (mentions hidden to save space).*`);
+                                    let safeFallback = `${alert.msg}\n\n*Could not DM ${allFailedUserIds.length} users (mentions hidden to save space).*`;
+                                    if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
+                                    await channel.send(safeFallback);
                                 } else {
                                     await channel.send(fallbackMsg);
                                 }
                             }
                         } else {
                             // Fallback if nobody opted in at all
-                            await channel.send(alert.msg);
+                            let noOptInMsg = alert.msg;
+                            if (noOptInMsg.length > 2000) noOptInMsg = noOptInMsg.substring(0, 1995) + '...';
+                            await channel.send(noOptInMsg);
                         }
 
                     } catch (err) {
@@ -276,6 +304,8 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
 
 client.on(Events.ClientReady, async c => {
     console.log(`Bot logged in as ${c.user.tag}`);
+    
+    c.user.setActivity('for upcoming events | /help', { type: ActivityType.Watching });
     
     const activeEventIds = new Set();
     
@@ -332,7 +362,6 @@ function buildAnnouncementEmbed(event) {
     const embed = new EmbedBuilder()
         .setTitle(`New Event: ${event.name}`)
         .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`)
-        .setFooter({ text: `EventID:${event.id}` })
         .setColor('#0099ff');
 
     const coverImage = event.coverImageURL({ size: 512 });
@@ -610,13 +639,21 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await interaction.update({ content: newContent, components: [] });
             } else {
-                await interaction.update({ content: `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`, components: [] });
+                    let newContent = `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`;
+                    if (newContent.length > 2000) {
+                        newContent = `${interaction.message.content.substring(0, 1930)}...\n\n*(You are not receiving reminders for this event)*`;
+                    }
+                    await interaction.update({ content: newContent, components: [] });
             }
             } catch (error) {
                 console.error('Failed to handle cancel_remind interaction:', error);
             }
         } else {
-            await interaction.update({ content: `${interaction.message.content}\n\n*(This event is no longer active)*`, components: [] });
+            let newContent = `${interaction.message.content}\n\n*(This event is no longer active)*`;
+            if (newContent.length > 2000) {
+                newContent = `${interaction.message.content.substring(0, 1950)}...\n\n*(This event is no longer active)*`;
+            }
+            await interaction.update({ content: newContent, components: [] });
         }
     }
 
@@ -692,6 +729,7 @@ client.on(Events.GuildScheduledEventDelete, async e => {
     
     // Cleanup of the database
     if (eventDb[e.id]) {
+        await notifyUsersOfEventChange(e, `⚠️ The event **${e.name}** has been deleted.`);
         await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
         delete eventDb[e.id];
         await saveDb();
@@ -710,11 +748,34 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         cancelEventReminders(n.id);
         if (eventDb[n.id]) {
             const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
+            if (n.status === GuildScheduledEventStatus.Canceled) {
+                await notifyUsersOfEventChange(n, `⚠️ The event **${n.name}** has been canceled.`);
+            }
             await archiveAnnouncementMessage(n.guild, n.id, statusText);
             delete eventDb[n.id];
             await saveDb();
         }
     } else {
+        // Check if critical details changed to notify users
+        if (o && eventDb[n.id]) {
+            const timeChanged = o.scheduledStartTimestamp !== n.scheduledStartTimestamp;
+            const oldLocation = o.entityMetadata?.location || o.channelId;
+            const newLocation = n.entityMetadata?.location || n.channelId;
+            const locationChanged = oldLocation !== newLocation;
+
+            if (timeChanged || locationChanged) {
+                let changeMsg = `🔔 The event **${n.name}** has been updated!\n`;
+                if (timeChanged) {
+                    changeMsg += `• **New Time:** <t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>\n`;
+                }
+                if (locationChanged) {
+                    const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                    changeMsg += `• **New Location:** ${locStr}\n`;
+                }
+                await notifyUsersOfEventChange(n, changeMsg);
+            }
+        }
+
         // The event was updated (e.g., name, description, time changed), so we update the original announcement message
         if (eventDb[n.id] && eventDb[n.id].messageId) {
             try {

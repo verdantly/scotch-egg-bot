@@ -115,17 +115,6 @@ Users who want to be notified simply click the **⏰ Remind Me!** button attache
 - Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel exactly 24 hours and 1 hour before the event starts.
 - If they click it again, they will be opted out.
 
-**Example 24-Hour Public Reminder:**
-> 📢 24h until **Weekly Community Meeting**!
-> 🗓️ Tuesday, October 24, 2023 8:00 PM
-> 📍 #general-voice
-> 
-> Let's get together and discuss the plans for next month!
-> 
-> @User1 @User2 @User3
-> 
-> `[ ⏰ Remind Me! ]` *(Interactive Button)*
-
 ### 4. Commands Reference
 - `/settings channel [channel]` - Sets or changes the server's announcement channel.
 - `/settings mode [mode]` - Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.
