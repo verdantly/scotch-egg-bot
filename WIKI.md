@@ -111,7 +111,7 @@ Simply use Discord's native **Create Event** button at the top of your channel l
 The moment you create an event, the bot will instantly post a rich-embed announcement in your configured channel.
 
 ### 3. Opting In (The "Remind Me!" Button)
-Users who want to be notified simply click the **⏰ Remind Me!** button attached to the bot's announcement message. 
+Users who want to be notified can click the **⏰ Remind Me!** button on the announcement. Next to it, they'll find a **📅 Add to Calendar** button to easily add the event to their Google Calendar.
 - Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel exactly 24 hours and 1 hour before the event starts.
 - If they click it again, they will be opted out.
 
@@ -120,6 +120,7 @@ Users who want to be notified simply click the **⏰ Remind Me!** button attache
 - `/settings mode [mode]` - Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.
 - `/settings view` - Admin command that shows current bot configurations.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
+- `/upcoming` - Public command to view upcoming events and quickly opt in to reminders.
 - `/myreminders` - Public command that lists all upcoming events you are currently receiving reminders for in this server.
 - `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 - `/help` - Displays information on how to use the bot and a list of available commands.

@@ -8,6 +8,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
   - **Private Mode (Default):** Sends personalized DM reminders to users.
   - **Public Mode:** Posts the reminder directly in the announcement channel, publicly @ mentioning the opted-in users.
 - **Automated Alerts:** Sends out reminders exactly 24 hours and 1 hour before an event's start time.
+- **Add to Calendar:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
 - **Graceful Fallback:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost.
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
@@ -23,7 +24,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 > 
 > @User1 @User2 @User3
 > 
-> `[ ⏰ Remind Me! ]` *(Interactive Button)*
+> `[ ⏰ Remind Me! ]` `[ 📅 Add to Calendar ]` *(Interactive Buttons)*
 
 ## Prerequisites
 - Node.js (v16.14.0 or higher recommended)
@@ -115,6 +116,10 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 *   `/announceevent [event_link_or_id]`
     -   **Permission:** Administrator
     -   **Action:** Manually posts an announcement for an existing event. This is useful if the bot was offline when the event was created.
+
+*   `/upcoming`
+    -   **Permission:** Everyone
+    -   **Action:** View a list of upcoming events in this server and easily opt-in to reminders for them.
 
 *   `/myreminders`
     -   **Permission:** Everyone

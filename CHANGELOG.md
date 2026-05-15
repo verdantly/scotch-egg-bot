@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-15
+
+### Added
+- **`/upcoming` Command:** New public command allowing users to view a list of upcoming events and easily opt in to multiple reminders at once via a dropdown menu.
+- **Add to Calendar Button:** Event announcements now include a link button to dynamically generate and add the event directly to Google Calendar.
+
 ## [1.0.0] - 2026-05-13
 
 This marks the first stable, production-ready release of the Scotch Egg Bot!

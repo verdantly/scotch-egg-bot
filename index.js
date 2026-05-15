@@ -262,7 +262,11 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             }
                             
                             if (alert.id.endsWith('-24h')) {
-                                payload.components = [new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'))];
+                                const calendarLink = generateGoogleCalendarLink(event);
+                                payload.components = [new ActionRowBuilder().addComponents(
+                                    new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'),
+                                    new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅')
+                                )];
                             }
                             
                             await channel.send(payload);
@@ -392,11 +396,32 @@ function buildAnnouncementEmbed(event) {
     return embed;
 }
 
+function generateGoogleCalendarLink(event) {
+    const text = encodeURIComponent(event.name || '');
+    const rawDescription = event.description ? event.description.substring(0, 900) : '';
+    const eventUrl = `https://discord.com/events/${event.guildId}/${event.id}`;
+    const details = encodeURIComponent(`${rawDescription}\n\nDiscord Event Link: ${eventUrl}`);
+    
+    const locationStr = event.entityMetadata?.location || 'Discord Server';
+    const location = encodeURIComponent(locationStr);
+
+    const formatToUTC = (timestamp) => {
+        const d = new Date(timestamp);
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    };
+
+    const startTime = formatToUTC(event.scheduledStartTimestamp);
+    const endTime = event.scheduledEndTimestamp ? formatToUTC(event.scheduledEndTimestamp) : formatToUTC(event.scheduledStartTimestamp + (60 * 60 * 1000)); 
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startTime}/${endTime}&details=${details}&location=${location}`;
+}
+
 async function postAnnouncement(event, channel) {
     const embed = buildAnnouncementEmbed(event);
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'),
+        new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅')
     );
 
     try {
@@ -501,6 +526,59 @@ client.on(Events.InteractionCreate, async interaction => {
             }
         }
 
+        if (interaction.commandName === 'upcoming') {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+            const userId = interaction.user.id;
+            const guildEvents = await interaction.guild.scheduledEvents.fetch();
+
+            const upcomingEvents = guildEvents.filter(event => {
+                // Only show events the user is NOT currently opted into
+                const users = eventDb[event.id]?.users || {};
+                return !users[userId];
+            });
+
+            if (upcomingEvents.size === 0) {
+                return interaction.editReply({ content: 'There are no new upcoming events for you to opt into!' });
+            }
+
+            let replyMessage = '**Upcoming Events (Select below to opt-in):**\n\n';
+            
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('list_optin_select')
+                .setPlaceholder('Select events to receive reminders for...')
+                .setMinValues(1)
+                .setMaxValues(Math.min(upcomingEvents.size, 25));
+
+            let optionCount = 0;
+
+            upcomingEvents.forEach(event => {
+                const timeString = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:f>`;
+                const nextLine = `• **${event.name}** - ${timeString}\n`;
+                
+                if (replyMessage.length + nextLine.length < 1900) {
+                    replyMessage += nextLine;
+                } else if (!replyMessage.endsWith('...and more!\n')) {
+                    replyMessage += '...and more!\n';
+                }
+
+                if (optionCount < 25) {
+                    let label = event.name;
+                    if (label.length > 100) label = label.substring(0, 97) + '...';
+                    
+                    selectMenu.addOptions({
+                        label: label,
+                        value: event.id,
+                        emoji: '⏰'
+                    });
+                    optionCount++;
+                }
+            });
+
+            const row = new ActionRowBuilder().addComponents(selectMenu);
+            await interaction.editReply({ content: replyMessage, components: [row] });
+        }
+
         if (interaction.commandName === 'myreminders') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -569,6 +647,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 .setDescription('I automatically announce server events and can send you DM reminders 24 hours and 1 hour before they start!')
                 .addFields(
                     { name: 'How to get reminders', value: 'Whenever a new event is created, I will post an announcement. Click the **⏰ Remind Me!** button on that message to opt in.' },
+                    { name: '`/upcoming`', value: 'See a list of upcoming events in the server and easily opt in to reminders.' },
                     { name: '`/myreminders`', value: 'Lists all upcoming events you are currently receiving reminders for, and lets you opt out.' },
                     { name: '`/settings view`', value: 'Displays the currently configured settings for this server.' },
                     { name: 'Admin Commands', value: '`/settings channel` - Sets the announcement channel\n`/settings mode` - Toggles reminder format\n`/announceevent` - Manually posts an event announcement.\n`/stats` - View opt-in statistics.' }
@@ -612,6 +691,52 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 
     if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === 'list_optin_select') {
+            await interaction.deferUpdate();
+            
+            const eventIdsToOptIn = interaction.values;
+            const userId = interaction.user.id;
+            let optedInCount = 0;
+            
+            for (const eventId of eventIdsToOptIn) {
+                if (!eventDb[eventId]) eventDb[eventId] = { users: {} };
+                if (!eventDb[eventId].users) eventDb[eventId].users = {};
+                
+                if (!eventDb[eventId].users[userId]) {
+                    eventDb[eventId].users[userId] = true;
+                    optedInCount++;
+
+                    // Try to silently update the live counter button on the original message!
+                    try {
+                        const messageId = eventDb[eventId].messageId;
+                        if (messageId) {
+                            const channelId = getAnnouncementChannelId(interaction.guildId);
+                            const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
+                            if (channel) {
+                                const msg = await channel.messages.fetch(messageId).catch(() => null);
+                                if (msg && msg.components && msg.components.length > 0) {
+                                    const userCount = Object.keys(eventDb[eventId].users).length;
+                                    const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
+                                    
+                                    const currentComponents = msg.components[0].components;
+                                    const updatedRow = new ActionRowBuilder().addComponents(ButtonBuilder.from(currentComponents[0]).setLabel(newLabel));
+                                    if (currentComponents.length > 1) updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
+                                    
+                                    await msg.edit({ components: [updatedRow] }).catch(() => {});
+                                }
+                            }
+                        }
+                    } catch (e) { /* Ignore background updates errors */ }
+                }
+            }
+            
+            if (optedInCount > 0) await saveDb();
+            
+            const mode = getAnnouncementMode(interaction.guildId);
+            const modeText = mode === 'public' ? 'You will be pinged in the announcement channel' : 'I will DM you';
+            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully opted in to **${optedInCount}** event(s)!\n*${modeText} 24 hours and 1 hour before they begin.*`, components: [] });
+        }
+
         if (interaction.customId === 'list_cancel_select') {
             await interaction.deferUpdate();
             
@@ -685,9 +810,14 @@ client.on(Events.InteractionCreate, async interaction => {
             const userCount = Object.keys(users).length;
             const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
             
+            const currentComponents = interaction.message.components[0].components;
             const updatedRow = new ActionRowBuilder().addComponents(
-                ButtonBuilder.from(interaction.component).setLabel(newLabel)
+                ButtonBuilder.from(currentComponents[0]).setLabel(newLabel)
             );
+            
+            if (currentComponents.length > 1) {
+                updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
+            }
             
             await interaction.message.edit({ components: [updatedRow] });
             await interaction.editReply({ content: replyText });
@@ -824,7 +954,18 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                     const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);
                     if (msg && msg.embeds.length > 0) {
                         const updatedEmbed = buildAnnouncementEmbed(n);
-                        await msg.edit({ embeds: [updatedEmbed] });
+                        let components = msg.components;
+                        if (components && components.length > 0) {
+                            const currentComponents = components[0].components;
+                            const remindButton = ButtonBuilder.from(currentComponents[0]);
+                            
+                            const calendarLink = generateGoogleCalendarLink(n);
+                            const calendarButton = new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅');
+                            
+                            const updatedRow = new ActionRowBuilder().addComponents(remindButton, calendarButton);
+                            components = [updatedRow];
+                        }
+                        await msg.edit({ embeds: [updatedEmbed], components: components });
                     }
                 }
             } catch (err) {

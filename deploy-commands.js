@@ -42,6 +42,10 @@ const commands = [
         .setDescription('Lists all upcoming events you are currently receiving reminders for in this server.')
         .setDMPermission(false),
     new SlashCommandBuilder()
+        .setName('upcoming')
+        .setDescription('View upcoming events and easily opt-in to receive reminders.')
+        .setDMPermission(false),
+    new SlashCommandBuilder()
         .setName('help')
         .setDescription('Displays information on how to use the bot and a list of available commands.')
         .setDMPermission(false),
