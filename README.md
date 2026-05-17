@@ -9,6 +9,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
   - **Private Mode (Default):** Sends personalized DM reminders to users.
   - **Public Mode:** Posts the reminder directly in the announcement channel, publicly @ mentioning the opted-in users.
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
+- **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude.
 - **Add to Calendar:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
 - **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
@@ -123,6 +124,10 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 *   `/settings threads [enabled]`
     -   **Permission:** Administrator
     -   **Action:** Toggles whether the bot automatically creates a dedicated discussion thread on new announcements.
+
+*   `/settings autodelete [enabled]`
+    -   **Permission:** Administrator
+    -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived.
 
 *   `/settings intervals [times]`
     -   **Permission:** Administrator

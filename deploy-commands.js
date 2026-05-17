@@ -61,6 +61,14 @@ const commands = [
                         .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('autodelete')
+                .setDescription('Toggle whether event announcements are completely deleted when the event ends.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable to delete, disable to gracefully archive')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('intervals')
                 .setDescription('Set custom reminder intervals (e.g., 24h, 1h, 15m).')
                 .addStringOption(option =>

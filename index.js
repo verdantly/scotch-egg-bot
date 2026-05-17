@@ -128,6 +128,17 @@ function getThreadsEnabled(guildId) {
 }
 
 /**
+ * Checks if the auto-delete feature is enabled for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {boolean} True if enabled, false otherwise (defaults to false).
+ */
+function getAutoDeleteEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.autoDeleteEnabled !== undefined) return config.autoDeleteEnabled;
+    return false; // Default to false (archive instead of delete)
+}
+
+/**
  * Sends a Direct Message to the configured administrator user with error details.
  * @param {string} contextMessage - A description of what the bot was doing when the error occurred.
  * @param {Error|string} error - The error object or string.
@@ -279,10 +290,12 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
     const timeString = getFormattedTimeString(startTime, 'F');
 
     const intervals = getReminderIntervals(event.guild.id);
+    const minMs = intervals.length > 0 ? Math.min(...intervals.map(i => i.ms)) : 0;
     
     const alerts = intervals.map(interval => ({
         id: `${event.id}-${interval.value}${interval.unit}`,
         time: startTime - interval.ms,
+        ms: interval.ms,
         msg: `📢 ${interval.value}${interval.unit} until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}`
     }));
 
@@ -315,13 +328,20 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 payload.content = publicMsg;
                             }
                             
-                            const row = new ActionRowBuilder().addComponents(
-                                new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
-                            );
-                            if (getCalendarEnabled(event.guild.id)) {
+                            const isLastReminder = alert.ms === minMs;
+                            const row = new ActionRowBuilder();
+                            
+                            if (!isLastReminder) {
+                                row.addComponents(
+                                    new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+                                );
+                            }
+                            if (getCalendarEnabled(event.guild.id) && alert.ms > 60 * 60 * 1000) {
                                 row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
                             }
-                            payload.components = [row];
+                            if (row.components.length > 0) {
+                                payload.components = [row];
+                            }
                             
                             await channel.send(payload);
                         } else if (userIds.length > 0) {
@@ -343,10 +363,14 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 else fetchFailedUserIds.push(result.id);
                             }
                             
-                            const dmRow = new ActionRowBuilder().addComponents(
-                                new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
-                            );
-                            const failedUserIds = await sendDMsWithRateLimit(users, { content: alert.msg, components: [dmRow] });
+                            const isLastReminder = alert.ms === minMs;
+                            const components = [];
+                            if (!isLastReminder) {
+                                components.push(new ActionRowBuilder().addComponents(
+                                    new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
+                                ));
+                            }
+                            const failedUserIds = await sendDMsWithRateLimit(users, { content: alert.msg, components });
 
                             // Fallback for users who couldn't be DMed
                             const allFailedUserIds = [...fetchFailedUserIds, ...failedUserIds];
@@ -709,6 +733,17 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.reply({ content: `Success! Auto-creating discussion threads is now **${enabled ? 'enabled' : 'disabled'}**.`, flags: MessageFlags.Ephemeral });
             }
 
+            if (subcommand === 'autodelete') {
+                const enabled = interaction.options.getBoolean('enabled');
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].autoDeleteEnabled = enabled;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private', autoDeleteEnabled: enabled };
+                }
+                await saveConfig();
+                await interaction.reply({ content: `Success! Auto-deleting concluded event announcements is now **${enabled ? 'enabled' : 'disabled'}** (Archiving is **${enabled ? 'disabled' : 'enabled'}**).`, flags: MessageFlags.Ephemeral });
+            }
+
             if (subcommand === 'intervals') {
                 const input = interaction.options.getString('times');
                 const parsed = parseIntervals(input);
@@ -772,7 +807,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 replyMessage += `**Reminder Mode:** ${modeText}\n`;
                 replyMessage += `**Reminder Intervals:** ${intervalsStr}\n`;
                 replyMessage += `**Calendar Button:** ${getCalendarEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}\n`;
-                replyMessage += `**Auto-Threads:** ${getThreadsEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}`;
+                replyMessage += `**Auto-Threads:** ${getThreadsEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}\n`;
+                replyMessage += `**Auto-Delete Concluded Events:** ${getAutoDeleteEnabled(interaction.guildId) ? 'Enabled ✅ (Deleted)' : 'Disabled ❌ (Archived)'}`;
 
                 await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
             }
@@ -1069,6 +1105,12 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
         const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
         if (channel) {
             const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+            
+            if (msg && getAutoDeleteEnabled(guild.id)) {
+                await msg.delete().catch(() => {});
+                return;
+            }
+            
             if (msg && msg.embeds.length > 0) {
                 const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
                 
@@ -1079,6 +1121,16 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                 }
                 originalEmbed.setTitle(newTitle);
                 originalEmbed.setColor('#808080'); // Gray out the embed to indicate it's over
+                originalEmbed.setImage(null); // Remove the cover image to make the archived message less prominent
+                
+                if (originalEmbed.data.description) {
+                    // Remove the obsolete "Click the button below" text to reduce clutter
+                    let newDesc = originalEmbed.data.description.replace(/\n\n\*Click the button below.*?\*/, '');
+                    // Prefix every line with a blockquote to dim and indent the text
+                    newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                    if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
+                    originalEmbed.setDescription(newDesc);
+                }
                 
                 const disabledRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()

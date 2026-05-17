@@ -126,6 +126,7 @@ Users who want to be notified can click the **⏰ Remind Me!** button on the ann
 - `/settings view` - Admin command that shows current bot configurations.
 - `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
 - `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
+- `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, instead of archiving.
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).

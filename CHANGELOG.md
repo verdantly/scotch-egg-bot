@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Reminder Intervals:** Server administrators can now fully customize the timing of event reminders using the new `/settings intervals` command (e.g., `24h, 1h, 15m`).
 - **Test Reminder Command:** Added `/settings testreminder` for admins to generate an ephemeral preview of what their configured reminders will look like.
 - **Pagination:** Both `/upcoming` and `/myreminders` commands now support paginated navigation for servers with more than 25 active events.
+- **Auto-Delete Concluded Events:** Server administrators can now use `/settings autodelete` to choose between permanently deleting or gracefully archiving event announcements when they conclude or are canceled.
 - **Auto-Create Discussion Threads:** The bot now can automatically create a dedicated discussion thread on every new event announcement.
 - **Relative Timestamps:** Dates in `/upcoming`, `/myreminders`, and announcements will now show a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) if the event is less than one week away.
 
@@ -20,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Toggleable Features:** The "Add to Calendar" button and "Auto-Create Discussion Threads" features can now be toggled on or off per-server using the new `/settings calendar` and `/settings threads` commands.
 - **Modular Architecture:** Abstracted database operations and pure utility functions into dedicated `storage.js` and `utils.js` files for a cleaner core codebase.
 - **Performance Optimizations:** The bot now utilizes concurrent API fetching (`Promise.all`) and memory caching to process large reminder distributions and server syncs significantly faster.
-- **Persistent Reminder Buttons:** "Remind Me!" and "Add to Calendar" buttons are now attached to *all* public reminder alerts, instead of only the earliest one.
+- **Dynamic Reminder Buttons:** Interactive buttons now intelligently hide when they are no longer useful (e.g., hiding "Remind Me!" on the final reminder, and hiding "Add to Calendar" if the event is ≤1 hour away).
 
 ### Fixed
 
