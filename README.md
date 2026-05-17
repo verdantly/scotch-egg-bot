@@ -3,15 +3,16 @@
 A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatically announces new Discord Server Events and sends automated 24-hour and 1-hour direct message (DM) reminders to users who opt-in.
 
 ## Features
+
 - **Event Announcements:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created.
 - **Flexible Opt-in Reminders:** Administrators can choose between two modes:
   - **Private Mode (Default):** Sends personalized DM reminders to users.
   - **Public Mode:** Posts the reminder directly in the announcement channel, publicly @ mentioning the opted-in users.
-- **Automated Alerts:** Sends out reminders exactly 24 hours and 1 hour before an event's start time.
+- **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Add to Calendar:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
 - **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
-- **Dynamic Relative Timestamps:** Event dates display a relative countdown (e.g., *in 3 days*) when the event is less than a week away.
+- **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
 - **Graceful Fallback:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost.
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
 - **Dynamic Updates:** Automatically resyncs reminders if an event's start time is updated, and cleans up scheduled jobs/data if an event is deleted.
@@ -29,6 +30,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 > `[ ⏰ Remind Me! ]` `[ 📅 Add to Calendar ]` *(Interactive Buttons)*
 
 ## Prerequisites
+
 - Node.js (v16.14.0 or higher recommended)
 - A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).
 - Your bot's Client ID from the Developer Portal.
@@ -100,7 +102,6 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
 
-
 ## Commands Reference
 
 *   `/settings channel [channel]`
@@ -115,9 +116,25 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
     -   **Permission:** Administrator
     -   **Action:** Displays the currently configured channel and reminder mode for this server.
 
+*   `/settings calendar [enabled]`
+    -   **Permission:** Administrator
+    -   **Action:** Toggles whether the bot includes an "Add to Calendar" button on event announcements.
+
+*   `/settings threads [enabled]`
+    -   **Permission:** Administrator
+    -   **Action:** Toggles whether the bot automatically creates a dedicated discussion thread on new announcements.
+
+*   `/settings intervals [times]`
+    -   **Permission:** Administrator
+    -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`). Up to 5 intervals can be set per server.
+
+*   `/settings testreminder`
+    -   **Permission:** Administrator
+    -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
+
 *   `/announceevent [event_link_or_id]`
     -   **Permission:** Administrator
-    -   **Action:** Manually posts an announcement for an existing event. This is useful if the bot was offline when the event was created.
+    -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.
 
 *   `/upcoming`
     -   **Permission:** Everyone
@@ -137,6 +154,7 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 
 ## How It Works (Storage Architecture)
 To minimize disk wear on single-board computers (like the Raspberry Pi):
+
 - When an announcement is posted, it creates a record for that event in a local `events.json` file.
 - When a user clicks the "Remind Me!" button, their Discord User ID is added to (or removed from) an object of opted-in users associated with that event's record. This object-based storage is highly efficient for lookups.
 - When it is time to send a reminder, the bot reads the opted-in users directly from the database and either DMs them or pings them publicly in the channel, depending on the server's configured mode.
@@ -164,6 +182,7 @@ graph TD
 ```
 
 ## Dependencies
+
 - [discord.js](https://discord.js.org/) - The primary library for interacting with the Discord API.
 - [node-schedule](https://github.com/node-schedule/node-schedule) - Used for scheduling the precise 24h and 1h alert triggers.
 - [dotenv](https://github.com/motdotla/dotenv) - For loading the bot token from the `.env` file.

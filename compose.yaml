@@ -1,0 +1,19 @@
+services:
+  scotch-egg-bot:
+    build: .
+    container_name: scotch-egg-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./events.json:/usr/src/app/events.json
+      - ./config.json:/usr/src/app/config.json
+    deploy:
+      resources:
+        limits:
+          memory: 128M # Prevents the bot from ever hogging Raspberry Pi RAM
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m" # Caps log file size to 10MB to protect the SD Card
+        max-file: "3"   # Keeps only the last 3 log files

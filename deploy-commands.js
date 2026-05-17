@@ -1,3 +1,9 @@
+/**
+ * Command Deployment Script
+ * Run this script locally or in your Docker container to register the bot's 
+ * Slash Commands with the Discord API. This only needs to be run once, or 
+ * whenever a command's structure or description is updated.
+ */
 const { REST, Routes, SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 require('dotenv').config();
 
@@ -36,7 +42,35 @@ const commands = [
         .addSubcommand(subcommand =>
             subcommand
                 .setName('view')
-                .setDescription('View the current bot settings for this server.')),
+                .setDescription('View the current bot settings for this server.'))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('calendar')
+                .setDescription('Toggle the "Add to Calendar" button on event announcements.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable the calendar button')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('threads')
+                .setDescription('Toggle whether the bot automatically creates a discussion thread for new events.')
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setDescription('Enable or disable auto-thread creation')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('intervals')
+                .setDescription('Set custom reminder intervals (e.g., 24h, 1h, 15m).')
+                .addStringOption(option =>
+                    option.setName('times')
+                        .setDescription('Comma-separated list of times (max 5). Examples: "24h, 1h", "7d, 24h, 30m"')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('testreminder')
+                .setDescription('Test what an event reminder will look like in your server.')),
     new SlashCommandBuilder()
         .setName('myreminders')
         .setDescription('Lists all upcoming events you are currently receiving reminders for in this server.')

@@ -3,6 +3,7 @@ const schedule = require('node-schedule');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink } = require('./utils.js');
 
 const client = new Client({ 
     intents: [
@@ -66,6 +67,12 @@ try {
     // Don't backup config, just start fresh. It's not as critical as user data.
 }
 
+/**
+ * Retrieves the configured announcement channel ID for a specific guild.
+ * Prioritizes the database config, then falls back to the .env variable.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {string|undefined} The channel ID or undefined if not configured.
+ */
 function getAnnouncementChannelId(guildId) {
     // Prioritize DB config, then fall back to .env
     const config = serverConfig[guildId];
@@ -73,30 +80,59 @@ function getAnnouncementChannelId(guildId) {
     return config || process.env.ANNOUNCEMENT_CHANNEL_ID;
 }
 
+/**
+ * Retrieves the reminder mode ('public' or 'private') for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {string} The configured mode (defaults to 'private').
+ */
 function getAnnouncementMode(guildId) {
     const config = serverConfig[guildId];
     if (typeof config === 'object' && config !== null) return config.mode || 'private';
     return 'private';
 }
 
-async function saveConfig() {
-    try {
-        const data = JSON.stringify(serverConfig, null, 2);
-        const tempPath = `${CONFIG_PATH}.tmp`;
-        await fs.promises.writeFile(tempPath, data);
-        try {
-            await fs.promises.rename(tempPath, CONFIG_PATH);
-        } catch (renameErr) {
-            if (renameErr.code === 'EBUSY' || renameErr.code === 'EXDEV') {
-                await fs.promises.writeFile(CONFIG_PATH, data);
-                await fs.promises.unlink(tempPath).catch(() => {});
-            } else throw renameErr;
-        }
-    } catch (err) {
-        console.error('Failed to save config:', err);
+/**
+ * Retrieves the configured reminder intervals for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {Array<{value: number, unit: string, ms: number}>} Array of interval objects.
+ */
+function getReminderIntervals(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && Array.isArray(config.intervals) && config.intervals.length > 0) {
+        return config.intervals;
     }
+    // Default fallback if not configured
+    return [{ value: 24, unit: 'h', ms: 24 * 60 * 60 * 1000 }, { value: 1, unit: 'h', ms: 1 * 60 * 60 * 1000 }];
 }
 
+/**
+ * Checks if the "Add to Calendar" button feature is enabled for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {boolean} True if enabled, false otherwise (defaults to true).
+ */
+function getCalendarEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.calendarEnabled !== undefined) return config.calendarEnabled;
+    return true; // Default to true
+}
+
+/**
+ * Checks if the auto-create discussion threads feature is enabled for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {boolean} True if enabled, false otherwise (defaults to true).
+ */
+function getThreadsEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.threadsEnabled !== undefined) return config.threadsEnabled;
+    return true; // Default to true
+}
+
+/**
+ * Sends a Direct Message to the configured administrator user with error details.
+ * @param {string} contextMessage - A description of what the bot was doing when the error occurred.
+ * @param {Error|string} error - The error object or string.
+ * @returns {Promise<void>}
+ */
 async function notifyAdmin(contextMessage, error) {
     const adminId = process.env.ADMIN_USER_ID;
     if (!adminId || !client.isReady()) return;
@@ -113,48 +149,46 @@ async function notifyAdmin(contextMessage, error) {
     }
 }
 
-let savePromise = Promise.resolve();
-let saveTimeout = null;
+setStorageErrorHandler(notifyAdmin);
 
-async function executeSave() {
+/**
+ * Synchronizes the "Remind Me!" live counter on the original announcement message.
+ * @param {string} eventId - The ID of the Discord Scheduled Event.
+ */
+async function updateLiveCounter(eventId) {
     try {
-        const data = JSON.stringify(eventDb, null, 2);
-        const tempPath = `${DB_PATH}.tmp`;
-        await fs.promises.writeFile(tempPath, data);
-        try {
-            await fs.promises.rename(tempPath, DB_PATH);
-        } catch (renameErr) {
-            if (renameErr.code === 'EBUSY' || renameErr.code === 'EXDEV') {
-                await fs.promises.writeFile(DB_PATH, data);
-                await fs.promises.unlink(tempPath).catch(() => {});
-            } else throw renameErr;
-        }
-    } catch (err) {
-        console.error('Failed to save events database:', err);
-        notifyAdmin('Failed to save events database (events.json)', err);
-    }
+        const eventData = eventDb[eventId];
+        if (!eventData || !eventData.messageId) return;
+
+        const guild = client.guilds.cache.find(g => g.scheduledEvents.cache.has(eventId));
+        if (!guild) return;
+
+        const channelId = getAnnouncementChannelId(guild.id);
+        if (!channelId) return;
+
+        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel) return;
+
+        const msg = await channel.messages.fetch(eventData.messageId).catch(() => null);
+        if (!msg || !msg.components || msg.components.length === 0) return;
+
+        const userCount = Object.keys(eventData.users || {}).length;
+        const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
+
+        const currentComponents = msg.components[0].components;
+        if (!currentComponents[0].customId || !currentComponents[0].customId.startsWith('remind_')) return;
+        if (currentComponents[0].label === newLabel) return; // Prevent redundant API calls
+
+        const updatedRow = new ActionRowBuilder().addComponents(ButtonBuilder.from(currentComponents[0]).setLabel(newLabel));
+        if (currentComponents.length > 1) updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
+        await msg.edit({ components: [updatedRow] }).catch(() => {});
+    } catch (err) {}
 }
 
-async function saveDb() {
-    if (saveTimeout) {
-        clearTimeout(saveTimeout);
-    }
-    // Wait 5 seconds after the last interaction to batch disk writes
-    saveTimeout = setTimeout(() => {
-        savePromise = savePromise.then(executeSave);
-        saveTimeout = null;
-    }, 5000);
-}
-
-async function forceSaveDb() {
-    if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-        savePromise = savePromise.then(executeSave);
-    }
-    return savePromise;
-}
-
+/**
+ * Cancels all pending node-schedule reminder jobs for a given event ID.
+ * @param {string} eventId - The ID of the Discord Scheduled Event.
+ */
 function cancelEventReminders(eventId) {
     Object.keys(schedule.scheduledJobs).forEach(jobName => {
         if (jobName.startsWith(`${eventId}-`)) {
@@ -187,6 +221,12 @@ async function sendDMsWithRateLimit(users, messagePayload) {
     return failedUserIds;
 }
 
+/**
+ * Sends an update notification DM to all users opted-in to a specific event.
+ * @param {GuildScheduledEvent} event - The Discord Scheduled Event object.
+ * @param {string} messageText - The notification text to send.
+ * @returns {Promise<void>}
+ */
 async function notifyUsersOfEventChange(event, messageText) {
     const eventData = eventDb[event.id];
     if (!eventData || !eventData.users) return;
@@ -194,21 +234,26 @@ async function notifyUsersOfEventChange(event, messageText) {
     const userIds = Object.keys(eventData.users);
     if (userIds.length === 0) return;
 
-    const users = [];
-    for (const userId of userIds) {
+    const fetchPromises = userIds.map(async userId => {
         try {
-            const user = await client.users.fetch(userId);
-            if (user) users.push(user);
+            return client.users.cache.get(userId) || await client.users.fetch(userId);
         } catch (e) {
             console.log(`Could not fetch user ${userId} for change notification`);
+            return null;
         }
-    }
+    });
+    const users = (await Promise.all(fetchPromises)).filter(user => user !== null);
 
     if (users.length > 0) {
         await sendDMsWithRateLimit(users, { content: messageText });
     }
 }
 
+/**
+ * Syncs and schedules all active event reminders for a given guild.
+ * @param {Guild} guild - The Discord Guild object.
+ * @returns {Promise<void>}
+ */
 async function syncEventReminders(guild) {
     const events = await guild.scheduledEvents.fetch();
     const now = Date.now();
@@ -217,16 +262,11 @@ async function syncEventReminders(guild) {
     });
 }
 
-function getFormattedTimeString(timestamp, format = 'F') {
-    const timeString = `<t:${Math.floor(timestamp / 1000)}:${format}>`;
-    const timeUntil = timestamp - Date.now();
-    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
-    if (timeUntil > 0 && timeUntil <= oneWeekMs) {
-        return `${timeString} (<t:${Math.floor(timestamp / 1000)}:R>)`;
-    }
-    return timeString;
-}
-
+/**
+ * Calculates and schedules the node-schedule jobs for an event's reminders.
+ * @param {GuildScheduledEvent} event - The Discord Scheduled Event object.
+ * @param {number} [now=Date.now()] - Current timestamp reference.
+ */
 function scheduleRemindersForEvent(event, now = Date.now()) {
     // Skip events that are already completed or canceled
     if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
@@ -237,11 +277,15 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
     const timeString = getFormattedTimeString(startTime, 'F');
+
+    const intervals = getReminderIntervals(event.guild.id);
     
-    const alerts = [
-        { id: `${event.id}-24h`, time: startTime - (24 * 60 * 60 * 1000), msg: `📢 24h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` },
-        { id: `${event.id}-1h`, time: startTime - (1 * 60 * 60 * 1000), msg: `📢 1h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` }
-    ];
+    const alerts = intervals.map(interval => ({
+        id: `${event.id}-${interval.value}${interval.unit}`,
+        time: startTime - interval.ms,
+        msg: `📢 ${interval.value}${interval.unit} until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}`
+    }));
+
     alerts.forEach(alert => {
         if (alert.time > now) {
             if (schedule.scheduledJobs[alert.id]) schedule.scheduledJobs[alert.id].cancel();
@@ -271,27 +315,32 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 payload.content = publicMsg;
                             }
                             
-                            if (alert.id.endsWith('-24h')) {
-                                const calendarLink = generateGoogleCalendarLink(event);
-                                payload.components = [new ActionRowBuilder().addComponents(
-                                    new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'),
-                                    new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅')
-                                )];
+                            const row = new ActionRowBuilder().addComponents(
+                                new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+                            );
+                            if (getCalendarEnabled(event.guild.id)) {
+                                row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
                             }
+                            payload.components = [row];
                             
                             await channel.send(payload);
                         } else if (userIds.length > 0) {
                             const users = [];
                             const fetchFailedUserIds = [];
-                            for (const userId of userIds) {
+                            const fetchPromises = userIds.map(async userId => {
                                 try {
-                                    const user = await client.users.fetch(userId);
-                                    if (user) users.push(user);
-                                    else fetchFailedUserIds.push(userId);
+                                    const user = client.users.cache.get(userId) || await client.users.fetch(userId);
+                                    if (user) return { success: true, user, id: userId };
                                 } catch (e) {
                                     console.log(`Could not fetch user ${userId}`);
-                                    fetchFailedUserIds.push(userId);
                                 }
+                                return { success: false, id: userId };
+                            });
+                            
+                            const fetchResults = await Promise.all(fetchPromises);
+                            for (const result of fetchResults) {
+                                if (result.success) users.push(result.user);
+                                else fetchFailedUserIds.push(result.id);
                             }
                             
                             const dmRow = new ActionRowBuilder().addComponents(
@@ -343,15 +392,16 @@ client.on(Events.ClientReady, async c => {
     
     const activeEventIds = new Set();
     
-    // Sync all events and collect active IDs
-    for (const guild of c.guilds.cache.values()) {
+    // Sync all events and collect active IDs concurrently across all guilds
+    const syncPromises = c.guilds.cache.map(async guild => {
         try {
             await syncEventReminders(guild);
             guild.scheduledEvents.cache.forEach(e => activeEventIds.add(e.id));
         } catch (err) {
             console.error(`Failed to sync events for guild ${guild.id}:`, err);
         }
-    }
+    });
+    await Promise.all(syncPromises);
 
     // Offline Garbage Collection: Remove events deleted while bot was offline
     let dbModified = false;
@@ -382,6 +432,11 @@ client.on(Events.GuildScheduledEventCreate, async e => {
     }
 });
 
+/**
+ * Constructs the rich embed payload for a new event announcement.
+ * @param {GuildScheduledEvent} event - The Discord Scheduled Event object.
+ * @returns {EmbedBuilder} The built announcement embed.
+ */
 function buildAnnouncementEmbed(event) {
     const startTime = event.scheduledStartTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
@@ -389,13 +444,26 @@ function buildAnnouncementEmbed(event) {
     const timeString = getFormattedTimeString(startTime, 'F');
 
     const mode = getAnnouncementMode(event.guild.id);
+    const intervals = getReminderIntervals(event.guild.id);
+    const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
     const reminderText = mode === 'public' 
-        ? '*Click the button below to be pinged via @mention 24 hours and 1 hour before the event begins!*'
-        : '*Click the button below to receive a DM reminder 24 hours and 1 hour before the event begins!*';
+        ? `*Click the button below to be pinged via @mention at: ${intervalsStr} before the event begins!*`
+        : `*Click the button below to receive a DM reminder at: ${intervalsStr} before the event begins!*`;
+
+    let title = `New Event: ${event.name}`;
+    if (title.length > 256) title = title.substring(0, 253) + '...';
+
+    let fullDescription = `🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`;
+    
+    // Defensive truncation for the 4096 embed description limit
+    if (fullDescription.length > 4096 && event.description) {
+        const overflow = fullDescription.length - 4096 + 3; // +3 for '...'
+        const truncatedDesc = event.description.substring(0, event.description.length - overflow) + '...';
+        fullDescription = `🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}\n\n${truncatedDesc}\n\n${reminderText}`;
+    }
 
     const embed = new EmbedBuilder()
-        .setTitle(`New Event: ${event.name}`)
-        .setDescription(`🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`)
+        .setDescription(fullDescription)
         .setColor('#0099ff');
 
     const coverImage = event.coverImageURL({ size: 512 });
@@ -406,43 +474,34 @@ function buildAnnouncementEmbed(event) {
     return embed;
 }
 
-function generateGoogleCalendarLink(event) {
-    const text = encodeURIComponent(event.name || '');
-    const rawDescription = event.description ? event.description.substring(0, 900) : '';
-    const eventUrl = `https://discord.com/events/${event.guildId}/${event.id}`;
-    const details = encodeURIComponent(`${rawDescription}\n\nDiscord Event Link: ${eventUrl}`);
-    
-    const locationStr = event.entityMetadata?.location || 'Discord Server';
-    const location = encodeURIComponent(locationStr);
-
-    const formatToUTC = (timestamp) => {
-        const d = new Date(timestamp);
-        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
-    };
-
-    const startTime = formatToUTC(event.scheduledStartTimestamp);
-    const endTime = event.scheduledEndTimestamp ? formatToUTC(event.scheduledEndTimestamp) : formatToUTC(event.scheduledStartTimestamp + (60 * 60 * 1000)); 
-
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startTime}/${endTime}&details=${details}&location=${location}`;
-}
-
+/**
+ * Posts an event announcement to the configured channel and handles optional thread creation.
+ * @param {GuildScheduledEvent} event - The Discord Scheduled Event object.
+ * @param {TextChannel|AnnouncementChannel} channel - The channel to post in.
+ * @returns {Promise<void>}
+ */
 async function postAnnouncement(event, channel) {
     const embed = buildAnnouncementEmbed(event);
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰'),
-        new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅')
+        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
     );
+
+    if (getCalendarEnabled(event.guild.id)) {
+        row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
+    }
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
         eventDb[event.id] = { messageId: message.id, users: {} };
         await saveDb();
 
-        try {
-            await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
-        } catch (threadErr) {
-            console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
+        if (getThreadsEnabled(event.guild.id)) {
+            try {
+                await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
+            } catch (threadErr) {
+                console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
+            }
         }
     } catch (err) {
         console.error(`Could not post announcement message for event ${event.id} in channel ${channel?.id}:`, err);
@@ -451,13 +510,19 @@ async function postAnnouncement(event, channel) {
     }
 }
 
+/**
+ * Generates the paginated response payload for the `/upcoming` command.
+ * @param {CommandInteraction} interaction - The Discord interaction object.
+ * @param {number} [page=0] - The zero-indexed page number to display.
+ * @returns {Promise<{content: string, components: Array<ActionRowBuilder>}>}
+ */
 async function generateUpcomingPage(interaction, page = 0) {
     const userId = interaction.user.id;
     const guildEvents = await interaction.guild.scheduledEvents.fetch();
     
     const upcomingEvents = Array.from(guildEvents.values()).filter(event => {
         const users = eventDb[event.id]?.users || {};
-        return !users[userId];
+        return !users[userId] && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active);
     }).sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
     if (upcomingEvents.length === 0) {
@@ -510,6 +575,12 @@ async function generateUpcomingPage(interaction, page = 0) {
     return { content: replyMessage, components: components };
 }
 
+/**
+ * Generates the paginated response payload for the `/myreminders` command.
+ * @param {CommandInteraction} interaction - The Discord interaction object.
+ * @param {number} [page=0] - The zero-indexed page number to display.
+ * @returns {Promise<{content: string, components: Array<ActionRowBuilder>}>}
+ */
 async function generateMyRemindersPage(interaction, page = 0) {
     const userId = interaction.user.id;
     const myEventIds = new Set();
@@ -528,7 +599,7 @@ async function generateMyRemindersPage(interaction, page = 0) {
     // Fetch the actual events from the current guild to filter out events from other servers
     const guildEvents = await interaction.guild.scheduledEvents.fetch();
     const myGuildEvents = Array.from(guildEvents.values())
-        .filter(event => myEventIds.has(event.id))
+        .filter(event => myEventIds.has(event.id) && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active))
         .sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
     if (myGuildEvents.length === 0) {
@@ -616,14 +687,92 @@ client.on(Events.InteractionCreate, async interaction => {
                 await interaction.reply({ content: `Success! Event reminders will now be sent via: **${modeText}**.`, flags: MessageFlags.Ephemeral });
             }
 
+            if (subcommand === 'calendar') {
+                const enabled = interaction.options.getBoolean('enabled');
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].calendarEnabled = enabled;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private', calendarEnabled: enabled };
+                }
+                await saveConfig();
+                await interaction.reply({ content: `Success! "Add to Calendar" button on announcements is now **${enabled ? 'enabled' : 'disabled'}**.`, flags: MessageFlags.Ephemeral });
+            }
+
+            if (subcommand === 'threads') {
+                const enabled = interaction.options.getBoolean('enabled');
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].threadsEnabled = enabled;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private', threadsEnabled: enabled };
+                }
+                await saveConfig();
+                await interaction.reply({ content: `Success! Auto-creating discussion threads is now **${enabled ? 'enabled' : 'disabled'}**.`, flags: MessageFlags.Ephemeral });
+            }
+
+            if (subcommand === 'intervals') {
+                const input = interaction.options.getString('times');
+                const parsed = parseIntervals(input);
+                
+                if (parsed.length === 0) {
+                    return interaction.reply({ content: 'Invalid format. Please use a comma-separated list of times like `24h, 1h, 15m` (using m, h, or d). Max 30 days.', flags: MessageFlags.Ephemeral });
+                }
+                
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].intervals = parsed;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private', intervals: parsed };
+                }
+                await saveConfig();
+                
+                // Reschedule for existing active events in this server
+                const guildEvents = await interaction.guild.scheduledEvents.fetch();
+                const now = Date.now();
+                guildEvents.forEach(event => { cancelEventReminders(event.id); scheduleRemindersForEvent(event, now); });
+                
+                const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
+                await interaction.reply({ content: `Success! Reminder intervals for this server are now set to: **${intervalsStr}**.\n*(Note: Existing announcements will still show the old text, but the internal timers have been instantly updated!)*`, flags: MessageFlags.Ephemeral });
+            }
+
+            if (subcommand === 'testreminder') {
+                const mode = getAnnouncementMode(interaction.guildId);
+                const intervals = getReminderIntervals(interaction.guildId);
+                const interval = intervals.length > 0 ? intervals[0] : { value: 24, unit: 'h', ms: 24 * 60 * 60 * 1000 };
+                const timeUntil = interval.ms || 24 * 60 * 60 * 1000;
+                const mockStartTime = Date.now() + timeUntil;
+                const timeString = getFormattedTimeString(mockStartTime, 'F');
+                
+                const msg = `📢 ${interval.value}${interval.unit} until **Test Event Name**!\n🗓️ ${timeString}\n📍 Test Location\n\nThis is a mock description for the test event.`;
+                
+                let replyContent = `**Test Reminder Preview (Mode: ${mode === 'public' ? 'Public' : 'Private'})**\n\n`;
+                const row = new ActionRowBuilder();
+                
+                if (mode === 'public') {
+                    replyContent += `${msg}\n\n<@${interaction.user.id}>`;
+                    row.addComponents(new ButtonBuilder().setCustomId('mock_remind').setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰').setDisabled(true));
+                    if (getCalendarEnabled(interaction.guildId)) {
+                        row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
+                    }
+                } else {
+                    replyContent += `${msg}`;
+                    row.addComponents(new ButtonBuilder().setCustomId('mock_cancel').setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕').setDisabled(true));
+                }
+
+                await interaction.reply({ content: replyContent, components: [row], flags: MessageFlags.Ephemeral });
+            }
+
             if (subcommand === 'view') {
                 const channelId = getAnnouncementChannelId(interaction.guildId);
                 const mode = getAnnouncementMode(interaction.guildId);
+                const intervals = getReminderIntervals(interaction.guildId);
+                const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
                 const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
 
                 let replyMessage = '**Current Server Settings:**\n';
                 replyMessage += `**Announcement Channel:** ${channelId ? `<#${channelId}>` : '*Not configured*'}\n`;
-                replyMessage += `**Reminder Mode:** ${modeText}`;
+                replyMessage += `**Reminder Mode:** ${modeText}\n`;
+                replyMessage += `**Reminder Intervals:** ${intervalsStr}\n`;
+                replyMessage += `**Calendar Button:** ${getCalendarEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}\n`;
+                replyMessage += `**Auto-Threads:** ${getThreadsEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}`;
 
                 await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
             }
@@ -654,6 +803,11 @@ client.on(Events.InteractionCreate, async interaction => {
             const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
             if (!channel) {
                 return interaction.editReply({ content: 'The announcement channel is not configured for this server. Please use `/settings channel` first.' });
+            }
+
+            const botPermissions = channel.permissionsFor(interaction.guild.members.me);
+            if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
+                return interaction.editReply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!` });
             }
 
             try {
@@ -696,14 +850,16 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             const guildEvents = await interaction.guild.scheduledEvents.fetch();
-            if (guildEvents.size === 0) {
+            const activeEvents = guildEvents.filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active);
+            
+            if (activeEvents.size === 0) {
                 return interaction.editReply({ content: 'There are no active upcoming events in this server.' });
             }
 
             let totalOptIns = 0;
             let description = '';
 
-            guildEvents.forEach(event => {
+            activeEvents.forEach(event => {
                 const eventData = eventDb[event.id];
                 const usersOptedIn = eventData && eventData.users ? Object.keys(eventData.users).length : 0;
                 totalOptIns += usersOptedIn;
@@ -740,36 +896,17 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (!eventDb[eventId].users[userId]) {
                     eventDb[eventId].users[userId] = true;
                     optedInCount++;
-
-                    // Try to silently update the live counter button on the original message!
-                    try {
-                        const messageId = eventDb[eventId].messageId;
-                        if (messageId) {
-                            const channelId = getAnnouncementChannelId(interaction.guildId);
-                            const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
-                            if (channel) {
-                                const msg = await channel.messages.fetch(messageId).catch(() => null);
-                                if (msg && msg.components && msg.components.length > 0) {
-                                    const userCount = Object.keys(eventDb[eventId].users).length;
-                                    const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
-                                    
-                                    const currentComponents = msg.components[0].components;
-                                    const updatedRow = new ActionRowBuilder().addComponents(ButtonBuilder.from(currentComponents[0]).setLabel(newLabel));
-                                    if (currentComponents.length > 1) updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
-                                    
-                                    await msg.edit({ components: [updatedRow] }).catch(() => {});
-                                }
-                            }
-                        }
-                    } catch (e) { /* Ignore background updates errors */ }
+                    updateLiveCounter(eventId); // Fire asynchronously
                 }
             }
             
             if (optedInCount > 0) await saveDb();
             
             const mode = getAnnouncementMode(interaction.guildId);
+            const intervals = getReminderIntervals(interaction.guildId);
+            const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
             const modeText = mode === 'public' ? 'You will be pinged in the announcement channel' : 'I will DM you';
-            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully opted in to **${optedInCount}** event(s)!\n*${modeText} 24 hours and 1 hour before they begin.*`, components: [] });
+            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully opted in to **${optedInCount}** event(s)!\n*${modeText} at: ${intervalsStr} before they begin.*`, components: [] });
         }
 
         if (interaction.customId === 'list_cancel_select') {
@@ -783,6 +920,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (eventDb[eventId] && eventDb[eventId].users && eventDb[eventId].users[userId]) {
                     delete eventDb[eventId].users[userId];
                     cancelledCount++;
+                    updateLiveCounter(eventId); // Fire asynchronously
                 }
             }
             
@@ -842,17 +980,13 @@ client.on(Events.InteractionCreate, async interaction => {
                 eventDb[eventId].users[userId] = true;
                 
                 const mode = getAnnouncementMode(interaction.guildId);
-                const timeUntilEvent = event.scheduledStartTimestamp - Date.now();
-                const isPast24h = timeUntilEvent <= 24 * 60 * 60 * 1000;
+                const intervals = getReminderIntervals(interaction.guildId);
+                const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
                 
                 if (mode === 'public') {
-                    replyText = isPast24h 
-                        ? 'Reminder set! You will be pinged in the announcement channel 1 hour before the event begins.'
-                        : 'Reminder set! You will be pinged in the announcement channel 24 hours and 1 hour before the event begins.';
+                    replyText = `Reminder set! You will be pinged in the announcement channel at: ${intervalsStr} before the event.`;
                 } else {
-                    replyText = isPast24h
-                        ? 'Reminder set! I will DM you 1 hour before the event begins.'
-                        : 'Reminder set! I will DM you 24 hours and 1 hour before the event begins.';
+                    replyText = `Reminder set! I will DM you at: ${intervalsStr} before the event.`;
                 }
             }
             await saveDb();
@@ -870,8 +1004,13 @@ client.on(Events.InteractionCreate, async interaction => {
                 updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
             }
             
-            await interaction.message.edit({ components: [updatedRow] });
+            await interaction.message.edit({ components: [updatedRow] }).catch(() => {});
             await interaction.editReply({ content: replyText });
+            
+            // Sync the original announcement message in the background if they clicked a reminder ping
+            if (eventDb[eventId].messageId !== interaction.message.id) {
+                updateLiveCounter(eventId);
+            }
         } catch (error) {
             console.error('Failed to handle remind interaction:', error);
             await interaction.editReply({ content: 'An error occurred while processing your request.' }).catch(() => {});
@@ -889,6 +1028,7 @@ client.on(Events.InteractionCreate, async interaction => {
             if (users[userId]) {
                 delete eventDb[eventId].users[userId];
                 await saveDb();
+                updateLiveCounter(eventId); // Fire asynchronously
                 // Replaces the button with text confirming the cancellation to avoid spam clicks
                 let newContent = `${interaction.message.content}\n\n*(Reminders cancelled)*`;
                 if (newContent.length > 2000) {
@@ -915,6 +1055,13 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+/**
+ * Archives an active event announcement by changing its embed color to gray 
+ * and disabling its interaction buttons to indicate it has concluded.
+ * @param {Guild} guild - The Discord Guild object.
+ * @param {string} eventId - The ID of the event to archive.
+ * @param {string} statusText - The status reason ('Completed' or 'Deleted' or 'Canceled').
+ */
 async function archiveAnnouncementMessage(guild, eventId, statusText) {
     if (!eventDb[eventId] || !eventDb[eventId].messageId) return;
     try {
@@ -924,7 +1071,13 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
             const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
             if (msg && msg.embeds.length > 0) {
                 const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
-                originalEmbed.setTitle(`${originalEmbed.data.title} [${statusText}]`);
+                
+                const suffix = ` [${statusText}]`;
+                let newTitle = `${originalEmbed.data.title || ''}${suffix}`;
+                if (newTitle.length > 256) {
+                    newTitle = `${(originalEmbed.data.title || '').substring(0, 256 - suffix.length - 3)}...${suffix}`;
+                }
+                originalEmbed.setTitle(newTitle);
                 originalEmbed.setColor('#808080'); // Gray out the embed to indicate it's over
                 
                 const disabledRow = new ActionRowBuilder().addComponents(
@@ -1010,10 +1163,13 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                             const currentComponents = components[0].components;
                             const remindButton = ButtonBuilder.from(currentComponents[0]);
                             
-                            const calendarLink = generateGoogleCalendarLink(n);
-                            const calendarButton = new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅');
+                            const updatedRow = new ActionRowBuilder().addComponents(remindButton);
                             
-                            const updatedRow = new ActionRowBuilder().addComponents(remindButton, calendarButton);
+                            if (getCalendarEnabled(n.guild.id)) {
+                                const calendarLink = generateGoogleCalendarLink(n);
+                                updatedRow.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
+                            }
+
                             components = [updatedRow];
                         }
                         await msg.edit({ embeds: [updatedEmbed], components: components });
@@ -1028,7 +1184,9 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
 
 client.login(process.env.DISCORD_TOKEN);
 
-// Graceful Shutdown handler for Docker / Ctrl+C
+/**
+ * Graceful Shutdown handler for catching Docker stop signals or Ctrl+C.
+ */
 async function shutdown() {
     console.log('\nReceived stop signal. Shutting down gracefully...');
     await forceSaveDb(); // Flush any pending batched saves to disk immediately
@@ -1048,5 +1206,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
-    notifyAdmin('Uncaught Exception', error);
+    notifyAdmin('Uncaught Exception (Bot restarting)', error).finally(() => {
+        process.exit(1);
+    });
 });

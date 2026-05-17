@@ -1,6 +1,6 @@
 # 🥚 Scotch Egg Bot: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly 24 hours and 1 hour before an event begins.
+Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly when you need them.
 
 This guide will walk you through the setup process step-by-step.
 
@@ -58,6 +58,7 @@ This is the best method, especially for devices like a Raspberry Pi, as it maps 
 
 ### Option B: Local Node.js
 If you prefer not to use Docker:
+
 1. Ensure Node.js (v16.14.0+) is installed.
 2. Install the required dependencies:
    ```bash
@@ -76,6 +77,7 @@ Because the bot uses modern Discord slash (`/`) commands, you need to register t
 
 ### Option A: Registering Locally (Outside Docker)
 If you have Node.js installed on your computer, you can register the commands directly:
+
 1. Open your terminal in the project directory.
 2. Ensure you have run `npm install` and your `.env` file is set up.
 3. Run the following command:
@@ -85,6 +87,7 @@ If you have Node.js installed on your computer, you can register the commands di
 
 ### Option B: Registering Inside Docker
 If you are running the bot purely through Docker and don't have Node.js installed locally, you can run the script inside the active container:
+
 1. Ensure your container is running by deploying with `docker compose up -d`.
 2. Run the following command in your host terminal:
    ```bash
@@ -112,16 +115,22 @@ The moment you create an event, the bot will instantly post a rich-embed announc
 
 ### 3. Opting In (The "Remind Me!" Button)
 Users who want to be notified can click the **⏰ Remind Me!** button on the announcement. Next to it, they'll find a **📅 Add to Calendar** button to easily add the event to their Google Calendar.
-- Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel exactly 24 hours and 1 hour before the event starts.
+
+- Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel at the configured intervals.
 - If they click it again, they will be opted out.
 
 ### 4. Commands Reference
+
 - `/settings channel [channel]` - Sets or changes the server's announcement channel.
 - `/settings mode [mode]` - Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.
 - `/settings view` - Admin command that shows current bot configurations.
+- `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
+- `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
+- `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
+- `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
-- `/upcoming` - Public command to view upcoming events and quickly opt in to reminders.
-- `/myreminders` - Public command that lists all upcoming events you are currently receiving reminders for in this server.
+- `/upcoming` - Public command to view a paginated list of upcoming events and quickly opt in to reminders.
+- `/myreminders` - Public command that lists a paginated view of all upcoming events you are currently receiving reminders for in this server.
 - `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 - `/help` - Displays information on how to use the bot and a list of available commands.
 
