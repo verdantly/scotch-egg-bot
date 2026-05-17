@@ -1,9 +1,8 @@
 const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const schedule = require('node-schedule');
-const fs = require('fs');
-const path = require('path');
 require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink } = require('./utils.js');
+const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
 
 const client = new Client({ 
     intents: [
@@ -12,60 +11,6 @@ const client = new Client({
         GatewayIntentBits.GuildScheduledEvents
     ] 
 });
-
-const DB_PATH = path.join(__dirname, 'events.json');
-const CONFIG_PATH = path.join(__dirname, 'config.json');
-
-// Database format: { eventId: { messageId: '...', users: ['userId1', ...] } }
-let eventDb = {};
-try {
-    if (fs.existsSync(DB_PATH)) {
-        const fileContent = fs.readFileSync(DB_PATH, 'utf8');
-        if (fileContent.trim() === '') {
-            console.warn('events.json is empty. Starting fresh.');
-        } else {
-            const rawDb = JSON.parse(fileContent);
-            // Migration from old format (eventId: messageId)
-            for (const [key, value] of Object.entries(rawDb)) {
-                if (typeof value === 'string') {
-                    eventDb[key] = { messageId: value, users: {} };
-                } else {
-                    let usersObj = {};
-                    if (Array.isArray(value.users)) {
-                        value.users.forEach(id => usersObj[id] = true);
-                    } else {
-                        usersObj = value.users || {};
-                    }
-                    eventDb[key] = { messageId: value.messageId, users: usersObj };
-                }
-            }
-        }
-    }
-} catch (err) {
-    console.error('Failed to load events database due to corruption or invalid JSON:', err);
-    const backupPath = `${DB_PATH}.corrupt.${Date.now()}.bak`;
-    try {
-        fs.renameSync(DB_PATH, backupPath);
-        console.warn(`Backed up corrupted database to: ${backupPath}`);
-    } catch (renameErr) {
-        console.error('Failed to back up the corrupted database:', renameErr);
-    }
-    console.warn('Initializing a fresh database so the bot can continue running.');
-}
-
-// Config format: { guildId: 'channelId' }
-let serverConfig = {};
-try {
-    if (fs.existsSync(CONFIG_PATH)) {
-        const fileContent = fs.readFileSync(CONFIG_PATH, 'utf8');
-        if (fileContent.trim() !== '') {
-            serverConfig = JSON.parse(fileContent);
-        }
-    }
-} catch (err) {
-    console.error('Failed to load config.json:', err);
-    // Don't backup config, just start fresh. It's not as critical as user data.
-}
 
 /**
  * Retrieves the configured announcement channel ID for a specific guild.
