@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-16
+
+### Added
+- **Pagination:** Both `/upcoming` and `/myreminders` commands now support paginated navigation for servers with more than 25 active events.
+- **Auto-Create Discussion Threads:** The bot now automatically creates a dedicated discussion thread on every new event announcement.
+- **Relative Timestamps:** Dates in `/upcoming`, `/myreminders`, and announcements will now show a relative countdown (e.g., *in 3 days*) if the event is less than one week away.
+
 ## [1.1.0] - 2026-05-15
 
 ### Added

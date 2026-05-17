@@ -10,6 +10,8 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 - **Automated Alerts:** Sends out reminders exactly 24 hours and 1 hour before an event's start time.
 - **Add to Calendar:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
+- **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
+- **Dynamic Relative Timestamps:** Event dates display a relative countdown (e.g., *in 3 days*) when the event is less than a week away.
 - **Graceful Fallback:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost.
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
 - **Dynamic Updates:** Automatically resyncs reminders if an event's start time is updated, and cleans up scheduled jobs/data if an event is deleted.
@@ -17,7 +19,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
 ## Example Reminder Message
 **Public Reminder (24-Hour Alert)**  
 > 📢 24h until **Weekly Community Meeting**!
-> 🗓️ Tuesday, October 24, 2023 8:00 PM
+> 🗓️ Tuesday, October 24, 2023 8:00 PM (in 3 days)
 > 📍 #general-voice
 > 
 > Let's get together and discuss the plans for next month!
@@ -119,7 +121,7 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 
 *   `/upcoming`
     -   **Permission:** Everyone
-    -   **Action:** View a list of upcoming events in this server and easily opt-in to reminders for them.
+    -   **Action:** View a paginated list of upcoming events in this server and easily opt-in to reminders for them.
 
 *   `/myreminders`
     -   **Permission:** Everyone

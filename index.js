@@ -217,6 +217,16 @@ async function syncEventReminders(guild) {
     });
 }
 
+function getFormattedTimeString(timestamp, format = 'F') {
+    const timeString = `<t:${Math.floor(timestamp / 1000)}:${format}>`;
+    const timeUntil = timestamp - Date.now();
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+    if (timeUntil > 0 && timeUntil <= oneWeekMs) {
+        return `${timeString} (<t:${Math.floor(timestamp / 1000)}:R>)`;
+    }
+    return timeString;
+}
+
 function scheduleRemindersForEvent(event, now = Date.now()) {
     // Skip events that are already completed or canceled
     if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
@@ -226,7 +236,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
     const startTime = event.scheduledStartTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
-    const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
+    const timeString = getFormattedTimeString(startTime, 'F');
     
     const alerts = [
         { id: `${event.id}-24h`, time: startTime - (24 * 60 * 60 * 1000), msg: `📢 24h until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}` },
@@ -376,7 +386,7 @@ function buildAnnouncementEmbed(event) {
     const startTime = event.scheduledStartTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
-    const timeString = `<t:${Math.floor(startTime / 1000)}:F>`;
+    const timeString = getFormattedTimeString(startTime, 'F');
 
     const mode = getAnnouncementMode(event.guild.id);
     const reminderText = mode === 'public' 
@@ -428,11 +438,139 @@ async function postAnnouncement(event, channel) {
         const message = await channel.send({ embeds: [embed], components: [row] });
         eventDb[event.id] = { messageId: message.id, users: {} };
         await saveDb();
+
+        try {
+            await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
+        } catch (threadErr) {
+            console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
+        }
     } catch (err) {
         console.error(`Could not post announcement message for event ${event.id} in channel ${channel?.id}:`, err);
         notifyAdmin(`Could not post announcement message for event ${event.id} in channel ${channel?.id}`, err);
         throw err;
     }
+}
+
+async function generateUpcomingPage(interaction, page = 0) {
+    const userId = interaction.user.id;
+    const guildEvents = await interaction.guild.scheduledEvents.fetch();
+    
+    const upcomingEvents = Array.from(guildEvents.values()).filter(event => {
+        const users = eventDb[event.id]?.users || {};
+        return !users[userId];
+    }).sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
+
+    if (upcomingEvents.length === 0) {
+        return { content: 'There are no new upcoming events for you to opt into!', components: [] };
+    }
+
+    const totalPages = Math.ceil(upcomingEvents.length / 25);
+    if (page >= totalPages) page = totalPages - 1;
+    if (page < 0) page = 0;
+
+    const startIndex = page * 25;
+    const pageEvents = upcomingEvents.slice(startIndex, startIndex + 25);
+
+    let replyMessage = `**Upcoming Events (Select below to opt-in)${totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : ''}:**\n\n`;
+    
+    const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('list_optin_select')
+        .setPlaceholder('Select events to receive reminders for...')
+        .setMinValues(1)
+        .setMaxValues(pageEvents.length);
+
+    pageEvents.forEach(event => {
+        const timeString = getFormattedTimeString(event.scheduledStartTimestamp, 'f');
+        const nextLine = `• **${event.name}** - ${timeString}\n`;
+        if (replyMessage.length + nextLine.length < 1900) {
+            replyMessage += nextLine;
+        }
+        let label = event.name;
+        if (label.length > 100) label = label.substring(0, 97) + '...';
+        selectMenu.addOptions({ label: label, value: event.id, emoji: '⏰' });
+    });
+
+    const components = [new ActionRowBuilder().addComponents(selectMenu)];
+
+    if (totalPages > 1) {
+        const navRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`upcoming_page_${page - 1}`)
+                .setLabel('⬅️ Previous')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page === 0),
+            new ButtonBuilder()
+                .setCustomId(`upcoming_page_${page + 1}`)
+                .setLabel('Next ➡️')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page === totalPages - 1)
+        );
+        components.push(navRow);
+    }
+    return { content: replyMessage, components: components };
+}
+
+async function generateMyRemindersPage(interaction, page = 0) {
+    const userId = interaction.user.id;
+    const myEventIds = new Set();
+
+    // Find all event IDs the user is opted into
+    for (const [eventId, data] of Object.entries(eventDb)) {
+        if (data.users && data.users[userId]) {
+            myEventIds.add(eventId);
+        }
+    }
+
+    if (myEventIds.size === 0) {
+        return { content: 'You are not currently opted-in to receive reminders for any events.', components: [] };
+    }
+
+    // Fetch the actual events from the current guild to filter out events from other servers
+    const guildEvents = await interaction.guild.scheduledEvents.fetch();
+    const myGuildEvents = Array.from(guildEvents.values())
+        .filter(event => myEventIds.has(event.id))
+        .sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
+
+    if (myGuildEvents.length === 0) {
+         return { content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.', components: [] };
+    }
+
+    const totalPages = Math.ceil(myGuildEvents.length / 25);
+    if (page >= totalPages) page = totalPages - 1;
+    if (page < 0) page = 0;
+
+    const startIndex = page * 25;
+    const pageEvents = myGuildEvents.slice(startIndex, startIndex + 25);
+
+    let replyMessage = `**Your Upcoming Reminders for this Server${totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : ''}:**\n\n`;
+    
+    const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('list_cancel_select')
+        .setPlaceholder('Select events to cancel reminders for...')
+        .setMinValues(1)
+        .setMaxValues(pageEvents.length);
+
+    pageEvents.forEach(event => {
+        const timeString = getFormattedTimeString(event.scheduledStartTimestamp, 'f');
+        const nextLine = `• **${event.name}** - ${timeString}\n`;
+        if (replyMessage.length + nextLine.length < 1900) {
+            replyMessage += nextLine;
+        }
+        let label = event.name;
+        if (label.length > 100) label = label.substring(0, 97) + '...';
+        selectMenu.addOptions({ label: label, value: event.id, emoji: '🔕' });
+    });
+
+    const components = [new ActionRowBuilder().addComponents(selectMenu)];
+
+    if (totalPages > 1) {
+        const navRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId(`myreminders_page_${page - 1}`).setLabel('⬅️ Previous').setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
+            new ButtonBuilder().setCustomId(`myreminders_page_${page + 1}`).setLabel('Next ➡️').setStyle(ButtonStyle.Secondary).setDisabled(page === totalPages - 1)
+        );
+        components.push(navRow);
+    }
+    return { content: replyMessage, components: components };
 }
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -528,117 +666,14 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'upcoming') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-            const userId = interaction.user.id;
-            const guildEvents = await interaction.guild.scheduledEvents.fetch();
-
-            const upcomingEvents = guildEvents.filter(event => {
-                // Only show events the user is NOT currently opted into
-                const users = eventDb[event.id]?.users || {};
-                return !users[userId];
-            });
-
-            if (upcomingEvents.size === 0) {
-                return interaction.editReply({ content: 'There are no new upcoming events for you to opt into!' });
-            }
-
-            let replyMessage = '**Upcoming Events (Select below to opt-in):**\n\n';
-            
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId('list_optin_select')
-                .setPlaceholder('Select events to receive reminders for...')
-                .setMinValues(1)
-                .setMaxValues(Math.min(upcomingEvents.size, 25));
-
-            let optionCount = 0;
-
-            upcomingEvents.forEach(event => {
-                const timeString = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:f>`;
-                const nextLine = `• **${event.name}** - ${timeString}\n`;
-                
-                if (replyMessage.length + nextLine.length < 1900) {
-                    replyMessage += nextLine;
-                } else if (!replyMessage.endsWith('...and more!\n')) {
-                    replyMessage += '...and more!\n';
-                }
-
-                if (optionCount < 25) {
-                    let label = event.name;
-                    if (label.length > 100) label = label.substring(0, 97) + '...';
-                    
-                    selectMenu.addOptions({
-                        label: label,
-                        value: event.id,
-                        emoji: '⏰'
-                    });
-                    optionCount++;
-                }
-            });
-
-            const row = new ActionRowBuilder().addComponents(selectMenu);
-            await interaction.editReply({ content: replyMessage, components: [row] });
+            const payload = await generateUpcomingPage(interaction, 0);
+            await interaction.editReply(payload);
         }
 
         if (interaction.commandName === 'myreminders') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-            const userId = interaction.user.id;
-            const myEventIds = new Set();
-
-            // Find all event IDs the user is opted into
-            for (const [eventId, data] of Object.entries(eventDb)) {
-                if (data.users && data.users[userId]) {
-                    myEventIds.add(eventId);
-                }
-            }
-
-            if (myEventIds.size === 0) {
-                return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any events.' });
-            }
-
-            // Fetch the actual events from the current guild to filter out events from other servers
-            const guildEvents = await interaction.guild.scheduledEvents.fetch();
-            const myGuildEvents = guildEvents.filter(event => myEventIds.has(event.id));
-
-            if (myGuildEvents.size === 0) {
-                 return interaction.editReply({ content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.' });
-            }
-
-            let replyMessage = '**Your Upcoming Reminders for this Server:**\n\n';
-            
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId('list_cancel_select')
-                .setPlaceholder('Select events to cancel reminders for...')
-                .setMinValues(1)
-                .setMaxValues(Math.min(myGuildEvents.size, 25));
-
-            let optionCount = 0;
-
-            myGuildEvents.forEach(event => {
-                const timeString = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:f>`;
-                const nextLine = `• **${event.name}** - ${timeString}\n`;
-                
-                if (replyMessage.length + nextLine.length < 1900) {
-                    replyMessage += nextLine;
-                } else if (!replyMessage.endsWith('...and more!\n')) {
-                    replyMessage += '...and more!\n';
-                }
-
-                if (optionCount < 25) {
-                    let label = event.name;
-                    if (label.length > 100) label = label.substring(0, 97) + '...';
-                    
-                    selectMenu.addOptions({
-                        label: label,
-                        value: event.id,
-                        emoji: '🔕'
-                    });
-                    optionCount++;
-                }
-            });
-
-            const row = new ActionRowBuilder().addComponents(selectMenu);
-            await interaction.editReply({ content: replyMessage, components: [row] });
+            const payload = await generateMyRemindersPage(interaction, 0);
+            await interaction.editReply(payload);
         }
 
         if (interaction.commandName === 'help') {
@@ -762,6 +797,22 @@ client.on(Events.InteractionCreate, async interaction => {
 
     if (!interaction.isButton()) return;
     
+    if (interaction.customId.startsWith('upcoming_page_')) {
+        await interaction.deferUpdate();
+        const page = parseInt(interaction.customId.replace('upcoming_page_', ''), 10);
+        const payload = await generateUpcomingPage(interaction, page);
+        await interaction.editReply(payload);
+        return;
+    }
+
+    if (interaction.customId.startsWith('myreminders_page_')) {
+        await interaction.deferUpdate();
+        const page = parseInt(interaction.customId.replace('myreminders_page_', ''), 10);
+        const payload = await generateMyRemindersPage(interaction, page);
+        await interaction.editReply(payload);
+        return;
+    }
+
     if (interaction.customId.startsWith('remind_')) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const eventId = interaction.customId.replace('remind_', '');
