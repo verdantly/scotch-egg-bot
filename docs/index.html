@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scotch Egg Bot | Discord Event Reminders</title>
+    <meta name="description" content="A lightweight, highly-efficient Discord bot that automatically announces server events and sends opt-in reminders.">
+    
+    <!-- Custom CSS & Fonts -->
+    <link rel="stylesheet" href="css/custom.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            DEFAULT: '#fff8f0', // Off-white/cream background
+                            dark: '#f0e9e1'
+                        },
+                        eggyolk: {
+                            DEFAULT: '#fcba03', // Golden orange yolk
+                            hover: '#e3a702',
+                            light: '#ffe9ad'
+                        },
+                        breadcrumb: {
+                            DEFAULT: '#c47c43', // Crispy brown
+                            dark: '#a36534'
+                        },
+                        charcoal: '#333333', // Deep dark for text
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+        <div class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark">
+            <span>🥚</span>
+            <span>Scotch Egg Bot</span>
+        </div>
+        <div class="hidden md:flex space-x-6">
+            <a href="#features" class="hover:text-eggyolk transition-colors font-medium">Features</a>
+            <a href="#setup" class="hover:text-eggyolk transition-colors font-medium">Setup</a>
+            <a href="#commands" class="hover:text-eggyolk transition-colors font-medium">Commands</a>
+        </div>
+        <a href="https://github.com/daniel-your-username/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm">
+            GitHub Repo
+        </a>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="w-full max-w-5xl mx-auto px-6 py-20 text-center flex flex-col items-center">
+        <h1 class="text-5xl md:text-7xl font-serif font-black text-charcoal leading-tight mb-6">
+            Punctual Events. <br>
+            <span class="text-eggyolk">Perfectly Cooked.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-700 max-w-2xl mb-10 leading-relaxed">
+            A lightweight, Dockerized Discord bot that automatically announces server events and sends automated 24-hour & 1-hour reminders to users who opt-in.
+        </p>
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <a href="#setup" class="bg-eggyolk text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-eggyolk-hover transition-colors shadow-md flex items-center justify-center">
+                Get Started
+            </a>
+            <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" class="bg-white text-breadcrumb border-2 border-breadcrumb text-lg font-bold px-8 py-3 rounded-full hover:bg-cream-dark transition-colors shadow-sm flex items-center justify-center">
+                Discord Dev Portal
+            </a>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="bg-white py-20 border-y-2 border-cream-dark">
+        <div class="w-full max-w-6xl mx-auto px-6">
+            <h2 class="text-4xl font-serif font-bold text-center text-breadcrumb-dark mb-16">Key Features</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">🔔</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">Flexible Opt-in Reminders</h3>
+                    <p class="text-gray-600">Choose between Private Mode (personalized DM reminders) or Public Mode (public @ mentions in the channel) for users who opt-in.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">📅</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">Add to Calendar</h3>
+                    <p class="text-gray-600">Event announcements include a convenient button to instantly add the event directly to your Google Calendar.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">💬</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">Auto-Threads</h3>
+                    <p class="text-gray-600">Automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">🛡️</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">No Privileged Intents</h3>
+                    <p class="text-gray-600">Modern and secure. The bot relies entirely on modern slash commands and Discord interactions.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">⏱️</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">Automated Alerts</h3>
+                    <p class="text-gray-600">Sends out dynamic reminders at customizable intervals (defaults to 24h & 1h) before an event's start time.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-cream p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-4">🍓</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-charcoal">Pi & SD-Card Friendly</h3>
+                    <p class="text-gray-600">Optimized for single-board computers. Uses a lightweight JSON database with minimal disk writes to protect SD cards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Setup / Quick Start -->
+    <section id="setup" class="w-full max-w-4xl mx-auto px-6 py-20">
+        <h2 class="text-4xl font-serif font-bold text-center text-breadcrumb-dark mb-6">Quick Start Deployment</h2>
+        <p class="text-center text-gray-700 mb-12 text-lg">The recommended way to deploy Scotch Egg Bot is using Docker Compose.</p>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream-dark">
+            <h3 class="text-2xl font-serif font-bold mb-4">1. Environment Setup</h3>
+            <p class="text-gray-600 mb-4">Create a <code>.env</code> file in your project directory with your Discord credentials:</p>
+            <div class="relative bg-gray-900 rounded-lg p-4 mb-8">
+                <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="env-code">Copy</button>
+                <pre id="env-code" class="text-gray-300 font-mono text-sm overflow-x-auto">DISCORD_TOKEN=your_actual_token_here
+CLIENT_ID=your_bot_client_id_here
+ADMIN_USER_ID=your_discord_user_id_here</pre>
+            </div>
+
+            <h3 class="text-2xl font-serif font-bold mb-4">2. Initialize Database Files</h3>
+            <p class="text-gray-600 mb-4">Before starting Docker, create empty files so Docker maps them correctly instead of creating folders:</p>
+            <div class="relative bg-gray-900 rounded-lg p-4 mb-8">
+                <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="init-code">Copy</button>
+                <pre id="init-code" class="text-gray-300 font-mono text-sm overflow-x-auto">echo "{}" > events.json
+echo "{}" > config.json</pre>
+            </div>
+
+            <h3 class="text-2xl font-serif font-bold mb-4">3. Start the Bot</h3>
+            <p class="text-gray-600 mb-4">Use Docker Compose to build and run the bot in the background:</p>
+            <div class="relative bg-gray-900 rounded-lg p-4 mb-8">
+                <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="run-code">Copy</button>
+                <pre id="run-code" class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
+            </div>
+            
+            <div class="bg-eggyolk-light border-l-4 border-eggyolk p-4 rounded-r-lg mt-8 text-sm text-gray-800">
+                <strong class="font-bold">Note:</strong> Don't forget to register your slash commands once! 
+                <code class="bg-white px-1 py-0.5 rounded ml-1">docker exec -it scotch-egg-bot node deploy-commands.js</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands Snapshot -->
+    <section id="commands" class="bg-breadcrumb-dark text-white py-20">
+        <div class="w-full max-w-4xl mx-auto px-6">
+            <h2 class="text-4xl font-serif font-bold text-center text-eggyolk mb-12">Essential Commands</h2>
+            
+            <ul class="space-y-4">
+                <li class="bg-black/20 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center">
+                    <code class="text-eggyolk font-bold text-lg mb-2 sm:mb-0 sm:w-1/3">/settings channel</code>
+                    <span class="sm:w-2/3 text-gray-200">Sets the announcement channel.</span>
+                </li>
+                <li class="bg-black/20 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center">
+                    <code class="text-eggyolk font-bold text-lg mb-2 sm:mb-0 sm:w-1/3">/settings mode</code>
+                    <span class="sm:w-2/3 text-gray-200">Toggles between Public and Private DM reminder modes.</span>
+                </li>
+                <li class="bg-black/20 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center">
+                    <code class="text-eggyolk font-bold text-lg mb-2 sm:mb-0 sm:w-1/3">/upcoming</code>
+                    <span class="sm:w-2/3 text-gray-200">Public list of upcoming events to easily opt-in.</span>
+                </li>
+                <li class="bg-black/20 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center">
+                    <code class="text-eggyolk font-bold text-lg mb-2 sm:mb-0 sm:w-1/3">/myreminders</code>
+                    <span class="sm:w-2/3 text-gray-200">View and manage the events you are currently receiving reminders for.</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-cream py-10 border-t border-cream-dark mt-auto">
+        <div class="w-full max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark mb-4 md:mb-0">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </div>
+            <div class="text-gray-500 text-sm text-center md:text-right">
+                <p>Open Source under the MIT License.</p>
+                <p class="mt-1">
+                    <a href="https://github.com/daniel-your-username/scotch-egg-bot" class="hover:text-breadcrumb transition-colors">GitHub</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>

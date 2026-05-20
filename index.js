@@ -814,15 +814,29 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.commandName === 'help') {
             const embed = new EmbedBuilder()
                 .setTitle('🥚 Scotch Egg Bot Help')
-                .setDescription('I automatically announce server events and can send you DM reminders 24 hours and 1 hour before they start!')
+                .setDescription('I automatically announce server events and send reminders at **customizable intervals**!')
                 .addFields(
-                    { name: 'How to get reminders', value: 'Whenever a new event is created, I will post an announcement. Click the **⏰ Remind Me!** button on that message to opt in.' },
-                    { name: '`/upcoming`', value: 'See a list of upcoming events in the server and easily opt in to reminders.' },
-                    { name: '`/myreminders`', value: 'Lists all upcoming events you are currently receiving reminders for, and lets you opt out.' },
-                    { name: '`/settings view`', value: 'Displays the currently configured settings for this server.' },
-                    { name: 'Admin Commands', value: '`/settings channel` - Sets the announcement channel\n`/settings mode` - Toggles reminder format\n`/announceevent` - Manually posts an event announcement.\n`/stats` - View opt-in statistics.' }
+                    { 
+                        name: 'For Everyone', 
+                        value: '**`/upcoming`** - See a list of upcoming events and opt-in to reminders.\n' +
+                               '**`/myreminders`** - View and cancel reminders you are currently opted-in for.\n' +
+                               '**`⏰ Remind Me!`** - Click this button on any announcement to get reminders!'
+                    },
+                    {
+                        name: 'For Administrators',
+                        value: '**`/settings channel`** - Set the channel for event announcements.\n' +
+                               '**`/settings mode`** - Choose between Private (DM) or Public (@mention) reminders.\n' +
+                               '**`/settings intervals`** - Customize reminder times (e.g., `24h, 1h, 15m`).\n' +
+                               '**`/settings autodelete`** - Choose to delete or archive events when they end.\n' +
+                               '**`/settings calendar`** - Toggle the "Add to Calendar" button.\n' +
+                               '**`/settings threads`** - Toggle automatic discussion threads.\n' +
+                               '**`/settings view`** - See all current settings.\n' +
+                               '**`/announceevent`** - Manually post an announcement for an existing event.\n' +
+                               '**`/stats`** - View opt-in statistics for active events.'
+                    }
                 )
-                .setColor('#0099ff');
+                .setColor('#0099ff')
+                .setFooter({ text: 'Use /settings testreminder to preview your reminder messages!' });
             
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
