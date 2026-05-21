@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +60,7 @@
                 <span class="dark:hidden text-xl">🌙</span>
                 <span class="hidden dark:inline text-xl">☀️</span>
             </button>
-            <a href="https://github.com/daniel-your-username/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+            <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
                 GitHub Repo
             </a>
         </div>
@@ -87,8 +87,22 @@
         <!-- Documentation Content -->
         <main class="flex-1 px-6 md:px-12 py-10 space-y-16 bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
             
+            <!-- Prerequisites -->
+            <section id="prerequisites" class="scroll-mt-28">
+                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Prerequisites</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">Before deploying the bot, make sure you have the following ready:</p>
+                <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
+                    <li>A <strong>Bot Token</strong> and <strong>Client ID</strong> from the <a href="https://discord.com/developers/applications" class="text-breadcrumb hover:underline" target="_blank" rel="noopener noreferrer">Discord Developer Portal</a>.</li>
+                    <li><strong>No Privileged Intents</strong> are required! The bot relies entirely on modern slash commands.</li>
+                    <li>If running locally: <strong>Node.js (v16.14.0 or higher)</strong></li>
+                    <li>If running via containers: <strong>Docker</strong> and <strong>Docker Compose</strong> (Recommended)</li>
+                </ul>
+            </section>
+
+            <hr class="border-cream-dark dark:border-gray-800">
+
             <!-- Setup / Quick Start -->
-            <section id="setup">
+            <section id="setup" class="scroll-mt-28">
                 <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Quick Start Deployment</h2>
                 <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">The recommended way to deploy Scotch Egg Bot is using Docker Compose.</p>
 
@@ -133,7 +147,7 @@ echo "{}" > config.json</pre>
             <hr class="border-cream-dark dark:border-gray-800">
 
             <!-- Using the Bot -->
-            <section id="usage">
+            <section id="usage" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Using the Bot</h2>
                 <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
                     <div>
@@ -155,7 +169,7 @@ echo "{}" > config.json</pre>
             <hr class="border-cream-dark dark:border-gray-800">
 
             <!-- Updating the Bot -->
-            <section id="updating">
+            <section id="updating" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Updating the Bot</h2>
                 <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">If you ever edit the code or download an updated version of the bot, applying the changes is simple and won't delete your data.</p>
                 <ol class="list-decimal pl-6 space-y-4 text-gray-700 dark:text-gray-300 text-lg">
@@ -167,7 +181,7 @@ echo "{}" > config.json</pre>
             <hr class="border-cream-dark dark:border-gray-800">
 
             <!-- Example Reminder -->
-            <section id="example">
+            <section id="example" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Reminder Message</h2>
                 <div class="bg-cream-dark dark:bg-[#313338] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                     <p class="font-bold text-charcoal dark:text-white mb-2">Public Reminder (24-Hour Alert)</p>
@@ -188,7 +202,7 @@ echo "{}" > config.json</pre>
             <hr class="border-cream-dark dark:border-gray-800">
 
             <!-- How It Works (Architecture) -->
-            <section id="architecture">
+            <section id="architecture" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">How It Works (Storage Architecture)</h2>
                 <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">To minimize disk wear on single-board computers (like the Raspberry Pi):</p>
                 <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
@@ -201,33 +215,8 @@ echo "{}" > config.json</pre>
 
             <hr class="border-cream-dark dark:border-gray-800">
 
-            <!-- FAQ -->
-            <section id="faq">
-                <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Frequently Asked Questions</h2>
-                <div class="space-y-8">
-                    <div>
-                        <h4 class="font-bold text-xl text-charcoal dark:text-white">Does the bot support multiple servers (Guilds)?</h4>
-                        <p class="text-gray-700 dark:text-gray-300 mt-2 text-lg">Yes! You can invite the bot to as many servers as you want. Just use <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">/settings channel</code> in each server to configure where announcements should be posted.</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xl text-charcoal dark:text-white">What happens if the bot goes offline?</h4>
-                        <p class="text-gray-700 dark:text-gray-300 mt-2 text-lg">Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and deletes data for events that were canceled while it was down.</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xl text-charcoal dark:text-white">Why are the DM reminders plain text instead of Rich Embeds?</h4>
-                        <p class="text-gray-700 dark:text-gray-300 mt-2 text-lg">This is intentional. When an event URL is sent in a DM, Discord automatically generates a Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered "double-embed" in the user's DM.</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-xl text-charcoal dark:text-white">Can users opt out of reminders?</h4>
-                        <p class="text-gray-700 dark:text-gray-300 mt-2 text-lg">Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM, or use the <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">/myreminders</code> command to opt out.</p>
-                    </div>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
             <!-- Commands Snapshot -->
-            <section id="commands">
+            <section id="commands" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
                 
                 <ul class="space-y-4">
@@ -282,6 +271,39 @@ echo "{}" > config.json</pre>
                 </ul>
             </section>
 
+            <hr class="border-cream-dark dark:border-gray-800">
+
+            <!-- FAQ -->
+            <section id="faq" class="scroll-mt-28">
+                <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Frequently Asked Questions</h2>
+                <div class="space-y-4">
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">Does the bot support multiple servers (Guilds)?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>Yes! You can invite the bot to as many servers as you want. Just use <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings channel</code> in each server to configure where announcements should be posted.</p>
+                        </div>
+                    </details>
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">What happens if the bot goes offline?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and deletes data for events that were canceled while it was down.</p>
+                        </div>
+                    </details>
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">Why are the DM reminders plain text instead of Rich Embeds?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>This is intentional. When an event URL is sent in a DM, Discord automatically generates a Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered "double-embed" in the user's DM.</p>
+                        </div>
+                    </details>
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">Can users opt out of reminders?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM, or use the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/myreminders</code> command to opt out.</p>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -295,7 +317,7 @@ echo "{}" > config.json</pre>
             <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
                 <p>Open Source under the MIT License.</p>
                 <p class="mt-1">
-                    <a href="https://github.com/daniel-your-username/scotch-egg-bot" class="hover:text-breadcrumb transition-colors">GitHub</a>
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors">GitHub</a>
                 </p>
             </div>
         </div>
