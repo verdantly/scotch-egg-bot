@@ -8,8 +8,8 @@ const path = require('path');
 const DB_PATH = path.join(__dirname, 'events.json');
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 
-const eventDb = {};
-const serverConfig = {};
+const eventDb = Object.create(null);
+const serverConfig = Object.create(null);
 
 let errorHandler = (context, err) => {
     console.error(`${context}:`, err);
@@ -34,13 +34,13 @@ try {
             // Migration from old format (eventId: messageId)
             for (const [key, value] of Object.entries(rawDb)) {
                 if (typeof value === 'string') {
-                    eventDb[key] = { messageId: value, users: {} };
+                    eventDb[key] = { messageId: value, users: Object.create(null) };
                 } else {
-                    let usersObj = {};
+                    let usersObj = Object.create(null);
                     if (Array.isArray(value.users)) {
                         value.users.forEach(id => usersObj[id] = true);
                     } else {
-                        usersObj = value.users || {};
+                        Object.assign(usersObj, value.users || {});
                     }
                     eventDb[key] = { messageId: value.messageId, users: usersObj };
                 }
@@ -80,7 +80,7 @@ try {
  */
 async function saveConfig() {
     try {
-        const data = JSON.stringify(serverConfig, null, 2);
+        const data = JSON.stringify(serverConfig);
         const tempPath = `${CONFIG_PATH}.tmp`;
         await fs.promises.writeFile(tempPath, data);
         try {
@@ -105,7 +105,7 @@ let saveTimeout = null;
  */
 async function executeSave() {
     try {
-        const data = JSON.stringify(eventDb, null, 2);
+        const data = JSON.stringify(eventDb);
         const tempPath = `${DB_PATH}.tmp`;
         await fs.promises.writeFile(tempPath, data);
         try {

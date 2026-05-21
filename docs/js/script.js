@@ -21,6 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
 
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when clicking a link
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        });
+    }
+
     // Copy to clipboard functionality for code blocks
     const copyButtons = document.querySelectorAll('.copy-btn');
 
@@ -43,4 +58,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Stats counting animation on scroll
+    const statNumbers = document.querySelectorAll('.stat-number');
+    let hasAnimatedStats = false;
+
+    const animateStats = () => {
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'), 10);
+            const duration = 2000; // Animation duration in ms
+            const step = target / (duration / 16); // Frame rate step size
+            let current = 0;
+
+            const updateStat = () => {
+                current += step;
+                if (current < target) {
+                    stat.innerText = Math.ceil(current).toLocaleString();
+                    requestAnimationFrame(updateStat);
+                } else {
+                    stat.innerText = target.toLocaleString();
+                }
+            };
+            updateStat();
+        });
+    };
+
+    const statsSection = document.getElementById('stats-section');
+    if (statsSection) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !hasAnimatedStats) {
+                hasAnimatedStats = true;
+                animateStats();
+                observer.disconnect(); // Only animate once
+            }
+        }, { threshold: 0.5 });
+        observer.observe(statsSection);
+    }
 });

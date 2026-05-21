@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags, Collection } = require('discord.js');
 const schedule = require('node-schedule');
 require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink } = require('./utils.js');
@@ -146,12 +146,12 @@ async function updateLiveCounter(eventId) {
  * @param {string} eventId - The ID of the Discord Scheduled Event.
  */
 function cancelEventReminders(eventId) {
-    Object.keys(schedule.scheduledJobs).forEach(jobName => {
-        if (jobName.startsWith(`${eventId}-`)) {
+    const prefix = `${eventId}-`;
+    for (const jobName in schedule.scheduledJobs) {
+        if (jobName.startsWith(prefix)) {
             schedule.scheduledJobs[jobName].cancel();
-            console.log(`Cancelled: ${jobName}`);
         }
-    });
+    }
 }
 
 /**
@@ -160,32 +160,34 @@ function cancelEventReminders(eventId) {
  * @param {Object|String} messagePayload Message payload to send
  * @returns {Promise<Boolean>} True if at least one message was sent successfully
  */
-async function sendDMsWithRateLimit(users, messagePayload) {
 async function sendDMsWithRateLimit(userIds, messagePayload) {
     const failedUserIds = [];
-    for (const user of users) {
-        if (!user.bot) {
+    const BATCH_SIZE = 5;
+    const BATCH_DELAY = 1000; // 1 second delay between batches
+
+    for (let i = 0; i < userIds.length; i += BATCH_SIZE) {
+        const batch = userIds.slice(i, i + BATCH_SIZE);
+        
+        const promises = batch.map(async userId => {
             try {
-    for (const userId of userIds) {
-        try {
-            const user = client.users.cache.get(userId) || await client.users.fetch(userId);
-            if (user && !user.bot) {
-                await user.send(messagePayload);
+                const user = client.users.cache.get(userId) || await client.users.fetch(userId);
+                if (user && !user.bot) {
+                    await user.send(messagePayload);
+                } else {
+                    failedUserIds.push(userId);
+                }
             } catch (err) {
-                console.log(`Could not send DM to ${user.tag}`);
-                failedUserIds.push(user.id);
-            } else {
+                console.log(`Could not fetch or send DM to ${userId}`);
                 failedUserIds.push(userId);
-                continue; // Skip the delay if it's a bot or invalid user
             }
-            // 500ms delay between DMs to avoid hitting rate limits
-            await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (err) {
-            console.log(`Could not fetch or send DM to ${userId}`);
-            failedUserIds.push(userId);
+        });
+
+        await Promise.all(promises);
+
+        // Delay between batches to prevent spamming the Discord API
+        if (i + BATCH_SIZE < userIds.length) {
+            await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
         }
-        // 500ms delay between DMs to avoid hitting rate limits
-        await new Promise(resolve => setTimeout(resolve, 500));
     }
     return failedUserIds;
 }
@@ -203,19 +205,6 @@ async function notifyUsersOfEventChange(event, messageText) {
     const userIds = Object.keys(eventData.users);
     if (userIds.length === 0) return;
 
-    const fetchPromises = userIds.map(async userId => {
-        try {
-            return client.users.cache.get(userId) || await client.users.fetch(userId);
-        } catch (e) {
-            console.log(`Could not fetch user ${userId} for change notification`);
-            return null;
-        }
-    });
-    const users = (await Promise.all(fetchPromises)).filter(user => user !== null);
-
-    if (users.length > 0) {
-        await sendDMsWithRateLimit(users, { content: messageText });
-    }
     await sendDMsWithRateLimit(userIds, { content: messageText });
 }
 
@@ -304,24 +293,6 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             await channel.send(payload);
                         } else if (userIds.length > 0) {
-                            const users = [];
-                            const fetchFailedUserIds = [];
-                            const fetchPromises = userIds.map(async userId => {
-                                try {
-                                    const user = client.users.cache.get(userId) || await client.users.fetch(userId);
-                                    if (user) return { success: true, user, id: userId };
-                                } catch (e) {
-                                    console.log(`Could not fetch user ${userId}`);
-                                }
-                                return { success: false, id: userId };
-                            });
-                            
-                            const fetchResults = await Promise.all(fetchPromises);
-                            for (const result of fetchResults) {
-                                if (result.success) users.push(result.user);
-                                else fetchFailedUserIds.push(result.id);
-                            }
-                            
                             const isLastReminder = alert.ms === minMs;
                             const components = [];
                             if (!isLastReminder) {
@@ -329,18 +300,13 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                     new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
                                 ));
                             }
-                            const failedUserIds = await sendDMsWithRateLimit(users, { content: alert.msg, components });
 
                             // Fallback for users who couldn't be DMed
-                            const allFailedUserIds = [...fetchFailedUserIds, ...failedUserIds];
-                            if (allFailedUserIds.length > 0) {
-                                const mentions = allFailedUserIds.map(id => `<@${id}>`).join(' ');
                         const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alert.msg, components });
                         if (failedUserIds.length > 0) {
                             const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
                                 const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
                                 if (fallbackMsg.length > 2000) {
-                                    let safeFallback = `${alert.msg}\n\n*Could not DM ${allFailedUserIds.length} users (mentions hidden to save space).*`;
                                 let safeFallback = `${alert.msg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
                                     if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
                                     await channel.send(safeFallback);
@@ -480,7 +446,7 @@ async function postAnnouncement(event, channel) {
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
-        eventDb[event.id] = { messageId: message.id, users: {} };
+        eventDb[event.id] = { messageId: message.id, users: Object.create(null) };
         await saveDb();
 
         if (getThreadsEnabled(event.guild.id)) {
@@ -631,8 +597,39 @@ async function generateMyRemindersPage(interaction, page = 0) {
     return { content: replyMessage, components: components };
 }
 
+const commandCooldowns = new Collection();
+const buttonCooldowns = new Collection();
+
 client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
+        
+        // Command Cooldown System
+        if (!commandCooldowns.has(interaction.commandName)) {
+            commandCooldowns.set(interaction.commandName, new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = commandCooldowns.get(interaction.commandName);
+        
+        // 10-second cooldown for list commands to prevent API spam, 3-second default for others
+        const specificCooldowns = { upcoming: 10, myreminders: 10 };
+        const cooldownAmount = (specificCooldowns[interaction.commandName] || 3) * 1000;
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                return interaction.reply({ 
+                    content: `Please wait! You are on a cooldown for \`/${interaction.commandName}\`. You can use it again <t:${expiredTimestamp}:R>.`, 
+                    flags: MessageFlags.Ephemeral 
+                });
+            }
+        }
+
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
         if (interaction.commandName === 'settings') {
             const subcommand = interaction.options.getSubcommand();
 
@@ -895,6 +892,28 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 
     if (interaction.isStringSelectMenu()) {
+        // Select Menu Cooldown System (5 seconds) to prevent updateLiveCounter spam
+        if (!buttonCooldowns.has('select_menu')) {
+            buttonCooldowns.set('select_menu', new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = buttonCooldowns.get('select_menu');
+        const cooldownAmount = 5000; 
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                return interaction.reply({ 
+                    content: `Please wait! You are interacting too fast. You can use this menu again <t:${expiredTimestamp}:R>.`, 
+                    flags: MessageFlags.Ephemeral 
+                });
+            }
+        }
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
         if (interaction.customId === 'list_optin_select') {
             await interaction.deferUpdate();
             
@@ -903,8 +922,8 @@ client.on(Events.InteractionCreate, async interaction => {
             let optedInCount = 0;
             
             for (const eventId of eventIdsToOptIn) {
-                if (!eventDb[eventId]) eventDb[eventId] = { users: {} };
-                if (!eventDb[eventId].users) eventDb[eventId].users = {};
+                if (!eventDb[eventId]) eventDb[eventId] = { users: Object.create(null) };
+                if (!eventDb[eventId].users) eventDb[eventId].users = Object.create(null);
                 
                 if (!eventDb[eventId].users[userId]) {
                     eventDb[eventId].users[userId] = true;
@@ -948,6 +967,54 @@ client.on(Events.InteractionCreate, async interaction => {
 
     if (!interaction.isButton()) return;
     
+    // Button Cooldown System to prevent database save spam
+    if (interaction.customId.startsWith('remind_') || interaction.customId.startsWith('cancel_remind_')) {
+        if (!buttonCooldowns.has('remind_btn')) {
+            buttonCooldowns.set('remind_btn', new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = buttonCooldowns.get('remind_btn');
+        const cooldownAmount = 3000; // 3 seconds cooldown
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                return interaction.reply({ 
+                    content: `Please wait! You are clicking too fast. You can use this button again <t:${expiredTimestamp}:R>.`, 
+                    flags: MessageFlags.Ephemeral 
+                });
+            }
+        }
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+    }
+
+    // Pagination Cooldown System (2 seconds) to prevent scheduledEvents.fetch() spam
+    if (interaction.customId.startsWith('upcoming_page_') || interaction.customId.startsWith('myreminders_page_')) {
+        if (!buttonCooldowns.has('pagination')) {
+            buttonCooldowns.set('pagination', new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = buttonCooldowns.get('pagination');
+        const cooldownAmount = 2000;
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                return interaction.reply({ 
+                    content: `Please wait! You are turning pages too fast. Try again <t:${expiredTimestamp}:R>.`, 
+                    flags: MessageFlags.Ephemeral 
+                });
+            }
+        }
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+    }
+
     if (interaction.customId.startsWith('upcoming_page_')) {
         await interaction.deferUpdate();
         const page = parseInt(interaction.customId.replace('upcoming_page_', ''), 10);
@@ -976,7 +1043,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         // Auto-heal database if the event record was somehow lost
         if (!eventDb[eventId]) {
-            eventDb[eventId] = { messageId: interaction.message.id, users: {} };
+            eventDb[eventId] = { messageId: interaction.message.id, users: Object.create(null) };
         }
 
         try {
@@ -1131,83 +1198,91 @@ client.on(Events.GuildScheduledEventDelete, async e => {
     
     // Cleanup of the database
     if (eventDb[e.id]) {
-        await notifyUsersOfEventChange(e, `⚠️ The event **${e.name}** has been deleted.`);
-        await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
-        delete eventDb[e.id];
-        await saveDb();
+        try {
+            await notifyUsersOfEventChange(e, `⚠️ The event **${e.name}** has been deleted.`);
+            await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
+            delete eventDb[e.id];
+            await saveDb();
+        } catch (err) {
+            console.error(`Error processing deletion for event ${e.id}:`, err);
+        }
     }
 });
 
 client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
-    // Always reschedule reminders on update to ensure time, location, and description are fresh
-    cancelEventReminders(n.id);
-    if (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active) {
-        scheduleRemindersForEvent(n);
-    }
-    
-    // Clean up if the event was completed or canceled
-    if (n.status === GuildScheduledEventStatus.Completed || n.status === GuildScheduledEventStatus.Canceled) {
+    try {
+        // Always reschedule reminders on update to ensure time, location, and description are fresh
         cancelEventReminders(n.id);
-        if (eventDb[n.id]) {
-            const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
-            if (n.status === GuildScheduledEventStatus.Canceled) {
-                await notifyUsersOfEventChange(n, `⚠️ The event **${n.name}** has been canceled.`);
-            }
-            await archiveAnnouncementMessage(n.guild, n.id, statusText);
-            delete eventDb[n.id];
-            await saveDb();
+        if (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active) {
+            scheduleRemindersForEvent(n);
         }
-    } else {
-        // Check if critical details changed to notify users
-        if (o && eventDb[n.id]) {
-            const timeChanged = o.scheduledStartTimestamp !== n.scheduledStartTimestamp;
-            const oldLocation = o.entityMetadata?.location || o.channelId;
-            const newLocation = n.entityMetadata?.location || n.channelId;
-            const locationChanged = oldLocation !== newLocation;
-
-            if (timeChanged || locationChanged) {
-                let changeMsg = `🔔 The event **${n.name}** has been updated!\n`;
-                if (timeChanged) {
-                    changeMsg += `• **New Time:** <t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>\n`;
+        
+        // Clean up if the event was completed or canceled
+        if (n.status === GuildScheduledEventStatus.Completed || n.status === GuildScheduledEventStatus.Canceled) {
+            cancelEventReminders(n.id);
+            if (eventDb[n.id]) {
+                const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
+                if (n.status === GuildScheduledEventStatus.Canceled) {
+                    await notifyUsersOfEventChange(n, `⚠️ The event **${n.name}** has been canceled.`);
                 }
-                if (locationChanged) {
-                    const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
-                    changeMsg += `• **New Location:** ${locStr}\n`;
-                }
-                await notifyUsersOfEventChange(n, changeMsg);
+                await archiveAnnouncementMessage(n.guild, n.id, statusText);
+                delete eventDb[n.id];
+                await saveDb();
             }
-        }
+        } else {
+            // Check if critical details changed to notify users
+            if (o && eventDb[n.id]) {
+                const timeChanged = o.scheduledStartTimestamp !== n.scheduledStartTimestamp;
+                const oldLocation = o.entityMetadata?.location || o.channelId;
+                const newLocation = n.entityMetadata?.location || n.channelId;
+                const locationChanged = oldLocation !== newLocation;
 
-        // The event was updated (e.g., name, description, time changed), so we update the original announcement message
-        if (eventDb[n.id] && eventDb[n.id].messageId) {
-            try {
-                const channelId = getAnnouncementChannelId(n.guild.id);
-                const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
-                if (channel) {
-                    const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);
-                    if (msg && msg.embeds.length > 0) {
-                        const updatedEmbed = buildAnnouncementEmbed(n);
-                        let components = msg.components;
-                        if (components && components.length > 0) {
-                            const currentComponents = components[0].components;
-                            const remindButton = ButtonBuilder.from(currentComponents[0]);
-                            
-                            const updatedRow = new ActionRowBuilder().addComponents(remindButton);
-                            
-                            if (getCalendarEnabled(n.guild.id)) {
-                                const calendarLink = generateGoogleCalendarLink(n);
-                                updatedRow.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
-                            }
-
-                            components = [updatedRow];
-                        }
-                        await msg.edit({ embeds: [updatedEmbed], components: components });
+                if (timeChanged || locationChanged) {
+                    let changeMsg = `🔔 The event **${n.name}** has been updated!\n`;
+                    if (timeChanged) {
+                        changeMsg += `• **New Time:** <t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>\n`;
                     }
+                    if (locationChanged) {
+                        const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                        changeMsg += `• **New Location:** ${locStr}\n`;
+                    }
+                    await notifyUsersOfEventChange(n, changeMsg);
                 }
-            } catch (err) {
-                console.error(`Failed to update announcement message for event ${n.id}:`, err);
+            }
+
+            // The event was updated (e.g., name, description, time changed), so we update the original announcement message
+            if (eventDb[n.id] && eventDb[n.id].messageId) {
+                try {
+                    const channelId = getAnnouncementChannelId(n.guild.id);
+                    const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                    if (channel) {
+                        const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);
+                        if (msg && msg.embeds.length > 0) {
+                            const updatedEmbed = buildAnnouncementEmbed(n);
+                            let components = msg.components;
+                            if (components && components.length > 0) {
+                                const currentComponents = components[0].components;
+                                const remindButton = ButtonBuilder.from(currentComponents[0]);
+                                
+                                const updatedRow = new ActionRowBuilder().addComponents(remindButton);
+                                
+                                if (getCalendarEnabled(n.guild.id)) {
+                                    const calendarLink = generateGoogleCalendarLink(n);
+                                    updatedRow.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
+                                }
+
+                                components = [updatedRow];
+                            }
+                            await msg.edit({ embeds: [updatedEmbed], components: components });
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Failed to update announcement message for event ${n.id}:`, err);
+                }
             }
         }
+    } catch (error) {
+        console.error(`Unhandled error in GuildScheduledEventUpdate for event ${n?.id}:`, error);
     }
 });
 
@@ -1217,12 +1292,17 @@ client.login(process.env.DISCORD_TOKEN);
  * Graceful Shutdown handler for catching Docker stop signals or Ctrl+C.
  */
 async function shutdown() {
-    console.log('\nReceived stop signal. Shutting down gracefully...');
-    await forceSaveDb(); // Flush any pending batched saves to disk immediately
-    await schedule.gracefulShutdown(); // Cancel all pending reminder jobs
-    client.destroy(); // Disconnect bot from Discord safely
-    console.log('Shutdown complete. Safe to exit.');
-    process.exit(0);
+    try {
+        console.log('\nReceived stop signal. Shutting down gracefully...');
+        await forceSaveDb(); // Flush any pending batched saves to disk immediately
+        await schedule.gracefulShutdown(); // Cancel all pending reminder jobs
+        client.destroy(); // Disconnect bot from Discord safely
+        console.log('Shutdown complete. Safe to exit.');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error occurred during graceful shutdown:', error);
+        process.exit(1);
+    }
 }
 
 process.on('SIGINT', shutdown);

@@ -36,7 +36,7 @@
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Merriweather', 'serif'],
+                        serif: ['Merriweather', 'serif']
                     }
                 }
             }
@@ -45,47 +45,63 @@
 </head>
 <body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Navigation -->
-    <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
-        <div class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk">
-            <span>🥚</span>
-            <span>Scotch Egg Bot</span>
+    <!-- Header & Navigation -->
+    <header class="relative z-50">
+        <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
         </div>
-        <div class="hidden md:flex space-x-6">
-            <a href="#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
-            <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
-                <span class="dark:hidden text-xl">🌙</span>
-                <span class="hidden dark:inline text-xl">☀️</span>
-            </button>
-            <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
-                GitHub Repo
-            </a>
-        </div>
-    </nav>
+    </header>
 
     <!-- Hero Section -->
     <header class="w-full max-w-5xl mx-auto px-6 py-20 text-center flex flex-col items-center">
         <h1 class="text-5xl md:text-7xl font-serif font-black text-charcoal dark:text-white leading-tight mb-6">
             Punctual Events. <br>
-            <span class="text-eggyolk">Perfectly Cooked.</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-eggyolk to-breadcrumb">Perfectly Cooked.</span>
         </h1>
         <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mb-10 leading-relaxed">
             A lightweight, Dockerized Discord bot that automatically announces server events and sends automated 24-hour & 1-hour reminders to users who opt-in.
         </p>
         <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <a href="documentation.html" class="bg-eggyolk text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-eggyolk-hover transition-colors shadow-md flex items-center justify-center">
-                Read the Docs
+            <a href="documentation.html#setup" class="bg-eggyolk text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-eggyolk-hover hover:scale-105 transform transition-all shadow-md hover:shadow-lg flex items-center justify-center">
+                Deploy with Docker
             </a>
-            <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" class="bg-white dark:bg-gray-800 text-breadcrumb border-2 border-breadcrumb text-lg font-bold px-8 py-3 rounded-full hover:bg-cream-dark dark:hover:bg-gray-700 transition-colors shadow-sm flex items-center justify-center">
-                Add to Discord
+            <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-white dark:bg-gray-800 text-breadcrumb border-2 border-breadcrumb text-lg font-bold px-8 py-3 rounded-full hover:bg-cream-dark dark:hover:bg-gray-700 hover:scale-105 transform transition-all shadow-sm hover:shadow-lg flex items-center justify-center">
+                View Source Code
             </a>
         </div>
 
         <!-- Discord Message Mockup (Visual Preview) -->
-        <div class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-lg text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22]">
+        <div class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-2xl text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22]">
             <div class="flex items-start space-x-4">
                 <div class="w-10 h-10 rounded-full bg-eggyolk flex items-center justify-center text-xl shrink-0 shadow-inner">🥚</div>
                 <div>
@@ -96,12 +112,12 @@
                     </div>
                     <div class="mt-1 bg-[#2b2d31] rounded-md p-3 sm:p-4 border-l-4 border-[#0099ff]">
                         <h4 class="font-bold text-white mb-2 text-base sm:text-lg">New Event: Weekly Community Meeting</h4>
-                        <p class="text-sm mb-2 text-gray-200">🗓️ **Time:** Tuesday, October 24, 2023 8:00 PM<br>📍 **Location:** #general-voice</p>
-                        <p class="text-sm italic text-gray-400">*Click the button below to receive a DM reminder at: 24h, 1h before the event begins!*</p>
+                        <p class="text-sm mb-2 text-gray-200">🗓️ <strong>Time:</strong> Tuesday, October 24, 2023 8:00 PM<br>📍 <strong>Location:</strong> #general-voice</p>
+                        <p class="text-sm italic text-gray-400">Click the button below to receive a DM reminder at: 24h, 1h before the event begins!</p>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-2">
-                        <button class="bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-medium px-4 py-1.5 rounded transition-colors flex items-center space-x-2 mt-2"><span>⏰</span><span>Remind Me! (3)</span></button>
-                        <button class="bg-[#4e5058] hover:bg-[#6d6f78] text-white text-sm font-medium px-4 py-1.5 rounded transition-colors flex items-center space-x-2 mt-2"><span>📅</span><span>Add to Calendar</span></button>
+                        <button class="bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>⏰</span><span>Remind Me! (3)</span></button>
+                        <button class="bg-[#4e5058] hover:bg-[#6d6f78] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>📅</span><span>Add to Calendar</span></button>
                     </div>
                 </div>
             </div>
@@ -115,56 +131,120 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">🔔</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">Flexible Opt-in Reminders</h3>
                     <p class="text-gray-600 dark:text-gray-300">Choose between Private Mode (personalized DM reminders) or Public Mode (public @ mentions in the channel) for users who opt-in.</p>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">📅</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">Add to Calendar</h3>
                     <p class="text-gray-600 dark:text-gray-300">Event announcements include a convenient button to instantly add the event directly to your Google Calendar.</p>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">💬</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">Auto-Threads</h3>
                     <p class="text-gray-600 dark:text-gray-300">Automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.</p>
                 </div>
 
                 <!-- Feature 4 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">🛡️</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">No Privileged Intents</h3>
                     <p class="text-gray-600 dark:text-gray-300">Modern and secure. The bot relies entirely on modern slash commands and Discord interactions.</p>
                 </div>
 
                 <!-- Feature 5 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-eggyolk shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">⏱️</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">Automated Alerts</h3>
                     <p class="text-gray-600 dark:text-gray-300">Sends out dynamic reminders at customizable intervals (defaults to 24h & 1h) before an event's start time.</p>
                 </div>
 
                 <!-- Feature 6 -->
-                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-md transition-shadow">
+                <div class="bg-cream dark:bg-gray-700 p-8 rounded-2xl border-l-4 border-breadcrumb shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default">
                     <div class="text-3xl mb-4">🍓</div>
                     <h3 class="text-xl font-serif font-bold mb-3 text-charcoal dark:text-white">Pi & SD-Card Friendly</h3>
                     <p class="text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses a lightweight JSON database with minimal disk writes to protect SD cards.</p>
                 </div>
             </div>
+
+            <!-- Social Proof / Stats Banner -->
+            <div class="mt-24 flex flex-wrap justify-center items-center gap-8 sm:gap-16 border-t border-cream-dark dark:border-gray-700 pt-16 w-full max-w-4xl mx-auto opacity-90" id="stats-section">
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="500">0</span>+</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Active Servers</span>
+                </div>
+                <div class="hidden sm:block h-12 w-px bg-cream-dark dark:bg-gray-700"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="20000">0</span>+</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Users Reminded</span>
+                </div>
+                <div class="hidden sm:block h-12 w-px bg-cream-dark dark:bg-gray-700"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="100">0</span>%</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Free & Open Source</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison" class="bg-cream dark:bg-gray-900 py-20 transition-colors duration-300">
+        <div class="w-full max-w-5xl mx-auto px-6">
+            <h2 class="text-4xl font-serif font-bold text-center text-charcoal dark:text-white mb-16">How does it compare?</h2>
+            
+            <div class="overflow-x-auto rounded-2xl shadow-xl border border-cream-dark dark:border-gray-700">
+                <table class="w-full text-left border-collapse md:min-w-[600px]">
+                    <thead>
+                        <tr class="bg-breadcrumb text-white dark:bg-gray-800 dark:text-gray-200 border-b border-cream-dark dark:border-gray-700">
+                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg">Feature</th>
+                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center bg-breadcrumb-dark dark:bg-gray-900/50">🥚 Scotch Egg Bot</th>
+                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center">Other Event Bots</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="p-3 md:p-5 font-medium text-sm md:text-base">Integration</td>
+                            <td class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Native Discord Events</td>
+                            <td class="p-3 md:p-5 text-center text-gray-500 text-sm md:text-base">Custom web UIs & dashboards</td>
+                        </tr>
+                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="p-3 md:p-5 font-medium text-sm md:text-base">Pricing</td>
+                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">100% Free & Open Source</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Paywalled "Premium" Tiers</td>
+                        </tr>
+                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="p-3 md:p-5 font-medium text-sm md:text-base">Reminder Limits</td>
+                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Unlimited</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Capped on free plans</td>
+                        </tr>
+                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="p-3 md:p-5 font-medium text-sm md:text-base">Privacy</td>
+                            <td class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Self-Hosted (You own the data)</td>
+                            <td class="p-3 md:p-5 text-center text-gray-500 text-sm md:text-base">Cloud-Hosted</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="p-3 md:p-5 font-medium text-sm md:text-base">Discord API Requirements</td>
+                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">No Privileged Intents</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Server Members Intent Required</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
     <!-- Final CTA -->
-    <section class="bg-cream dark:bg-gray-900 py-20 transition-colors duration-300">
+    <section class="bg-white dark:bg-gray-800 py-20 border-t-2 border-cream-dark dark:border-gray-700 transition-colors duration-300">
         <div class="w-full max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-4xl font-serif font-bold text-charcoal dark:text-white mb-6">Ready to get started?</h2>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Deploying Scotch Egg Bot takes just a few minutes using Docker.</p>
-            <a href="documentation.html" class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark transition-colors shadow-md inline-block">
+            <a href="documentation.html#setup" class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark hover:scale-105 hover:shadow-lg transform transition-all shadow-md inline-block">
                 View the Setup Guide
             </a>
         </div>

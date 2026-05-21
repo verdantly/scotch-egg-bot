@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download | Scotch Egg Bot</title>
+    <meta name="description" content="Download the open-source Scotch Egg Bot for Discord.">
+    
+    <!-- Custom CSS & Fonts -->
+    <link rel="stylesheet" href="css/custom.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            DEFAULT: '#fff8f0', // Off-white/cream background
+                            dark: '#f0e9e1'
+                        },
+                        eggyolk: {
+                            DEFAULT: '#fcba03', // Golden orange yolk
+                            hover: '#e3a702',
+                            light: '#ffe9ad'
+                        },
+                        breadcrumb: {
+                            DEFAULT: '#c47c43', // Crispy brown
+                            dark: '#a36534'
+                        },
+                        charcoal: '#333333', // Deep dark for text
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-16 flex flex-col items-center justify-center">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold text-center text-charcoal dark:text-white mb-6">Download Scotch Egg Bot</h1>
+        <p class="text-lg text-gray-700 dark:text-gray-300 text-center max-w-2xl mb-12">The bot is completely free and open-source. Choose how you would like to download the files below to get started.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+            <!-- Basic Download Card -->
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl border-2 border-eggyolk shadow-lg hover:shadow-xl transition-shadow flex flex-col items-center text-center">
+                <div class="text-5xl mb-6">📦</div>
+                <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">Download ZIP</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 flex-1">Recommended for most users. Simply download the source code as a ZIP file, extract it to a folder on your computer, and you're ready to proceed to the setup guide.</p>
+                <a href="https://github.com/verdantly/scotch-egg-bot/archive/refs/heads/main.zip" class="w-full bg-eggyolk text-white text-lg font-bold px-8 py-4 rounded-xl hover:bg-eggyolk-hover hover:-translate-y-1 transform transition-all shadow-md flex items-center justify-center space-x-2">
+                    <span>Download Latest Version</span>
+                </a>
+            </div>
+
+            <!-- Advanced Download Card -->
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-cream-dark dark:border-gray-700 shadow-md hover:shadow-lg transition-shadow flex flex-col items-center text-center">
+                <div class="text-5xl mb-6">💻</div>
+                <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">Git Clone</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">For advanced users and developers. Clone the repository directly to your machine or VPS using Git to easily pull future updates.</p>
+                <div class="w-full relative bg-gray-900 rounded-xl p-4 shadow-inner text-left mt-auto">
+                    <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="git-code">Copy</button>
+                    <code id="git-code" class="text-green-400 font-mono text-sm break-all">git clone https://github.com/verdantly/scotch-egg-bot.git</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="mt-16 bg-cream-dark dark:bg-gray-800/50 rounded-2xl p-8 max-w-3xl w-full text-center border border-cream-dark dark:border-gray-700">
+            <h3 class="text-2xl font-bold text-charcoal dark:text-white mb-4">Got the files?</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-6">Once you have the bot's files on your computer, you're ready to add your credentials and turn it on!</p>
+            <a href="documentation.html#setup" class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark transition-colors shadow-md inline-block">
+                Continue to the Setup Guide ➡️
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cream dark:bg-gray-900 py-8 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="w-full max-w-7xl mx-auto px-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>Open Source under the MIT License. <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a></p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>

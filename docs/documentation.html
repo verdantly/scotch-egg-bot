@@ -45,26 +45,42 @@
 </head>
 <body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Navigation -->
-    <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
-        <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
-            <span>🥚</span>
-            <span>Scotch Egg Bot</span>
-        </a>
-        <div class="hidden md:flex space-x-6">
-            <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
-            <a href="documentation.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Docs</a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
-                <span class="dark:hidden text-xl">🌙</span>
-                <span class="hidden dark:inline text-xl">☀️</span>
-            </button>
-            <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
-                GitHub Repo
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
             </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
         </div>
-    </nav>
+    </header>
 
     <!-- Main Content Layout -->
     <div class="w-full max-w-7xl mx-auto flex flex-col md:flex-row flex-1">
@@ -81,6 +97,7 @@
                 <li><a href="#architecture" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">How It Works</a></li>
                 <li><a href="#commands" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">All Commands</a></li>
                 <li><a href="#faq" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">FAQ</a></li>
+                <li><a href="#troubleshooting" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Troubleshooting</a></li>
             </ul>
         </aside>
 
@@ -103,24 +120,30 @@
 
             <!-- Setup / Quick Start -->
             <section id="setup" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Quick Start Deployment</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">The recommended way to deploy Scotch Egg Bot is using Docker Compose.</p>
+                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation & Setup Guide</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">Follow these basic steps to get your bot up and running. The easiest and recommended way to deploy Scotch Egg Bot is using Docker Desktop or Docker Compose.</p>
 
                 <div class="space-y-8">
                     <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Environment Setup</h3>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Download the Bot</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">First, <a href="download.html" class="text-breadcrumb hover:text-breadcrumb-dark dark:text-eggyolk dark:hover:text-eggyolk-hover font-bold transition-colors">download the bot's files</a> and extract the ZIP file into a folder on your computer.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Environment Setup</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-4">Create a <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">.env</code> file in your project directory with your Discord credentials:</p>
                         <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
                             <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="env-code">Copy</button>
                             <pre id="env-code" class="text-gray-300 font-mono text-sm overflow-x-auto">DISCORD_TOKEN=your_actual_token_here
 CLIENT_ID=your_bot_client_id_here
-ADMIN_USER_ID=your_discord_user_id_here</pre>
+ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
+ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here</pre>
                         </div>
                     </div>
 
                     <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Initialize Database Files</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Before starting Docker, create empty files so Docker maps them correctly instead of creating folders:</p>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Initialize Database Files</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Before starting Docker, create two new text files named <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">events.json</code> and <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">config.json</code> in your bot's folder. Add simply <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">{}</code> inside each file and save them. Or use the terminal:</p>
                         <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
                             <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="init-code">Copy</button>
                             <pre id="init-code" class="text-gray-300 font-mono text-sm overflow-x-auto">echo "{}" > events.json
@@ -129,12 +152,13 @@ echo "{}" > config.json</pre>
                     </div>
 
                     <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Start the Bot</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Use Docker Compose to build and run the bot in the background:</p>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Start the Bot</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Make sure <strong>Docker Desktop</strong> is open and running on your computer. Then, open your terminal (Command Prompt, PowerShell, or Terminal), navigate to the bot's folder, and run:</p>
                         <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
                             <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="run-code">Copy</button>
                             <pre id="run-code" class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
                         </div>
+                        <p class="text-gray-600 dark:text-gray-400 mt-4">You can now see the bot running smoothly inside the Docker Desktop app!</p>
                     </div>
                 </div>
                 
@@ -241,6 +265,10 @@ echo "{}" > config.json</pre>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the automatic creation of discussion threads.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                        <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings autodelete</code>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived.</span>
+                    </li>
+                    <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings intervals</code>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets custom reminder intervals using a comma-separated list.</span>
                     </li>
@@ -301,6 +329,27 @@ echo "{}" > config.json</pre>
                             <p>Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM, or use the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/myreminders</code> command to opt out.</p>
                         </div>
                     </details>
+                </div>
+            </section>
+            
+            <hr class="border-cream-dark dark:border-gray-800">
+
+            <!-- Troubleshooting -->
+            <section id="troubleshooting" class="scroll-mt-28">
+                <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Troubleshooting</h2>
+                <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
+                    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-lg">
+                        <h4 class="font-bold text-xl text-red-700 dark:text-red-400 mb-2">Bot shows as online, but slash commands don't work / don't appear</h4>
+                        <p>You likely forgot to run the command registration script! Make sure your bot is running, then execute <code class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-base">docker exec -it scotch-egg-bot node deploy-commands.js</code> in your terminal. You might need to restart your Discord client afterwards to see the commands.</p>
+                    </div>
+                    <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream dark:border-gray-700">
+                        <h4 class="font-bold text-xl text-charcoal dark:text-white mb-2">Docker created folders named "events.json" and "config.json"</h4>
+                        <p>If you don't manually create the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">events.json</code> and <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">config.json</code> files on your computer <em>before</em> running <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">docker compose up</code>, Docker assumes you meant to map folders. Delete those folders, create the text files with <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">{}</code> inside, and restart the container.</p>
+                    </div>
+                    <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream dark:border-gray-700">
+                        <h4 class="font-bold text-xl text-charcoal dark:text-white mb-2">I see "Interaction Failed" when clicking buttons</h4>
+                        <p>This usually means the bot is offline or has crashed. Check your Docker Desktop logs to see what happened. If you are not using Docker, check the terminal window where you started the bot.</p>
+                    </div>
                 </div>
             </section>
 
