@@ -155,24 +155,37 @@ function cancelEventReminders(eventId) {
 }
 
 /**
- * Sends DMs to an array of users with a delay between each message to respect Discord's rate limits.
- * @param {Array} users Array of User objects
+ * Fetches users and sends DMs with a delay between each message to respect Discord's rate limits.
+ * @param {Array<string>} userIds Array of Discord User IDs
  * @param {Object|String} messagePayload Message payload to send
  * @returns {Promise<Boolean>} True if at least one message was sent successfully
  */
 async function sendDMsWithRateLimit(users, messagePayload) {
+async function sendDMsWithRateLimit(userIds, messagePayload) {
     const failedUserIds = [];
     for (const user of users) {
         if (!user.bot) {
             try {
+    for (const userId of userIds) {
+        try {
+            const user = client.users.cache.get(userId) || await client.users.fetch(userId);
+            if (user && !user.bot) {
                 await user.send(messagePayload);
             } catch (err) {
                 console.log(`Could not send DM to ${user.tag}`);
                 failedUserIds.push(user.id);
+            } else {
+                failedUserIds.push(userId);
+                continue; // Skip the delay if it's a bot or invalid user
             }
             // 500ms delay between DMs to avoid hitting rate limits
             await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (err) {
+            console.log(`Could not fetch or send DM to ${userId}`);
+            failedUserIds.push(userId);
         }
+        // 500ms delay between DMs to avoid hitting rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     return failedUserIds;
 }
@@ -203,6 +216,7 @@ async function notifyUsersOfEventChange(event, messageText) {
     if (users.length > 0) {
         await sendDMsWithRateLimit(users, { content: messageText });
     }
+    await sendDMsWithRateLimit(userIds, { content: messageText });
 }
 
 /**
@@ -321,9 +335,13 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             const allFailedUserIds = [...fetchFailedUserIds, ...failedUserIds];
                             if (allFailedUserIds.length > 0) {
                                 const mentions = allFailedUserIds.map(id => `<@${id}>`).join(' ');
+                        const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alert.msg, components });
+                        if (failedUserIds.length > 0) {
+                            const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
                                 const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
                                 if (fallbackMsg.length > 2000) {
                                     let safeFallback = `${alert.msg}\n\n*Could not DM ${allFailedUserIds.length} users (mentions hidden to save space).*`;
+                                let safeFallback = `${alert.msg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
                                     if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
                                     await channel.send(safeFallback);
                                 } else {
