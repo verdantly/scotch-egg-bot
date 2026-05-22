@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog | Scotch Egg Bot</title>
+    <meta name="description" content="View the latest updates, features, and fixes for the Scotch Egg Discord Bot.">
+    
+    <!-- Custom CSS & Fonts -->
+    <link rel="stylesheet" href="css/custom.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            DEFAULT: '#fff8f0',
+                            dark: '#f0e9e1'
+                        },
+                        eggyolk: {
+                            DEFAULT: '#fcba03',
+                            hover: '#e3a702',
+                            light: '#ffe9ad'
+                        },
+                        breadcrumb: {
+                            DEFAULT: '#c47c43',
+                            dark: '#a36534'
+                        },
+                        charcoal: '#333333',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="changelog.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Changelog</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="changelog.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Changelog</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-serif font-bold text-charcoal dark:text-white mb-4">Changelog</h1>
+            <p class="text-lg text-gray-700 dark:text-gray-300">Keep track of all new features, fixes, and improvements to Scotch Egg Bot.</p>
+        </div>
+
+        <div class="space-y-12">
+            
+            <!-- Release: v1.3.0 -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.3.0</h2>
+                        <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 20, 2026</span>
+                    </div>
+                    <a href="download.html" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> Features
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Rate Limiting & Cooldowns:</strong> Added a comprehensive cooldown system for slash commands, interactive buttons ("Remind Me!"), pagination, and select menus to protect against API spam and rate limits.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Changed</span> Improvements
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Archived Event UI:</strong> When an event concludes, the archived announcement now grays out the entire description text (using blockquotes) and strips out obsolete relative timestamps for a cleaner, dimmed look.</li>
+                            <li><strong>Counter Lookup Efficiency:</strong> The live "Remind Me! (X)" counter now uses an O(1) instant database lookup to find the event's server, significantly reducing CPU overhead.</li>
+                            <li><strong>Batched Reminder DMs:</strong> Refactored the DM reminder system to process users in concurrent batches of 5 (with a 1-second delay), drastically speeding up large reminder blasts while safely respecting Discord's limits.</li>
+                            <li><strong>Memory Optimization:</strong> Configured Discord.js sweepers to automatically clear cached messages and users every hour, preventing RAM bloat on low-memory devices like Raspberry Pis.</li>
+                            <li><strong>Database Lookup Speed:</strong> Replaced standard objects with null-prototype objects (<code>Object.create(null)</code>) for the event database, increasing lookup efficiency and eliminating prototype pollution vulnerabilities.</li>
+                            <li><strong>Minified Disk Writes:</strong> Database and configuration saves are now minified (whitespace removed), reducing file size and write times to further protect SD card lifespans.</li>
+                            <li><strong>Job Cancellation Efficiency:</strong> Optimized the node-schedule job cancellation loop to use a raw <code>for...in</code> loop to save event loop cycles when evaluating large sets of scheduled events.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Silent Errors:</strong> Fixed an issue where the live counter update function was silently swallowing errors without logging them.</li>
+                            <li><strong>Unhandled Rejection Crashes:</strong> Wrapped critical event listeners (<code>InteractionCreate</code>, <code>GuildScheduledEventUpdate</code>, and the shutdown sequence) in robust <code>try...catch</code> blocks to gracefully catch and handle unexpected network or API errors without crashing the bot container.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Release: v1.2.0 -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.2.0</h2>
+                        <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 17, 2026</span>
+                    </div>
+                    <a href="download.html" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> Features
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Configurable Reminder Intervals:</strong> Server administrators can now fully customize the timing of event reminders using the new <code>/settings intervals</code> command (e.g., <code>24h, 1h, 15m</code>).</li>
+                            <li><strong>Test Reminder Command:</strong> Added <code>/settings testreminder</code> for admins to generate an ephemeral preview of what their configured reminders will look like.</li>
+                            <li><strong>Pagination:</strong> Both <code>/upcoming</code> and <code>/myreminders</code> commands now support paginated navigation for servers with more than 25 active events.</li>
+                            <li><strong>Auto-Delete Concluded Events:</strong> Server administrators can now use <code>/settings autodelete</code> to choose between permanently deleting or gracefully archiving event announcements when they conclude or are canceled.</li>
+                            <li><strong>Auto-Create Discussion Threads:</strong> The bot now can automatically create a dedicated discussion thread on every new event announcement.</li>
+                            <li><strong>Relative Timestamps:</strong> Dates in <code>/upcoming</code>, <code>/myreminders</code>, and announcements will now show a relative countdown alongside the date and time (e.g., <em>in 3 days</em>) if the event is less than one week away.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Changed</span> Improvements
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Toggleable Features:</strong> The "Add to Calendar" button and "Auto-Create Discussion Threads" features can now be toggled on or off per-server.</li>
+                            <li><strong>Modular Architecture:</strong> Abstracted database operations and pure utility functions into dedicated <code>storage.js</code> and <code>utils.js</code> files for a cleaner core codebase.</li>
+                            <li><strong>Performance Optimizations:</strong> The bot now utilizes concurrent API fetching (<code>Promise.all</code>) and memory caching to process large reminder distributions and server syncs significantly faster.</li>
+                            <li><strong>Dynamic Reminder Buttons:</strong> Interactive buttons now intelligently hide when they are no longer useful.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Docker Permissions:</strong> Fixed a critical bug in the <code>Dockerfile</code> where the non-root node user lacked write permissions for the app directory.</li>
+                            <li><strong>Uncaught Exception Handling:</strong> The bot now correctly exits after logging an <code>uncaughtException</code> instead of resuming with a potentially corrupted memory state.</li>
+                            <li><strong>Button URL Limit Crashes:</strong> Implemented dynamic truncation for Google Calendar links to guarantee they never exceed Discord's strict 512-character limit.</li>
+                            <li><strong>Embed Limit Crashes:</strong> Added defensive truncation for event announcements and archival messages to prevent API errors.</li>
+                            <li><strong>Live Counter Desynchronization:</strong> The live "Remind Me! (X)" counter on announcements now accurately updates in the background.</li>
+                            <li><strong>Proactive Permission Checks:</strong> The <code>/announceevent</code> command now gracefully verifies channel permissions before attempting to post.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Release: v1.1.0 -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.1.0</h2>
+                        <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 15, 2026</span>
+                    </div>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> Features
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong><code>/upcoming</code> Command:</strong> New public command allowing users to view a list of upcoming events and easily opt in to multiple reminders at once via a dropdown menu.</li>
+                            <li><strong>Add to Calendar Button:</strong> Event announcements now include a link button to dynamically generate and add the event directly to Google Calendar.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Release: v1.0.0 -->
+            <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.0.0</h2>
+                        <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 13, 2026</span>
+                    </div>
+                    <span class="mt-4 md:mt-0 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-4 py-2 rounded-full font-medium text-sm">Initial Release</span>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> Features
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li>Event Announcements via Rich Embeds.</li>
+                            <li>Opt-in Reminders with Dual Reminder Modes (Private DM or Public Pings).</li>
+                            <li>Automated Alerts precisely 24 hours and 1 hour before an event.</li>
+                            <li>Graceful Shutdown preventing data corruption.</li>
+                            <li>Admin Error Notifications.</li>
+                            <li><code>/myreminders</code> and <code>/stats</code> commands.</li>
+                            <li>Live "Remind Me!" Button Counter.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                            <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Removed</span> Changes
+                        </h3>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Privileged Intent Requirement:</strong> The bot is now built entirely on modern slash commands and interactions, completely removing the need for the Server Members Intent.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cream dark:bg-gray-900 py-8 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="w-full max-w-7xl mx-auto px-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>Open Source under the MIT License. <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a></p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>

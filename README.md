@@ -1,16 +1,14 @@
 # Scotch Egg Bot - Discord Event Reminder Bot
 
-A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatically announces new Discord Server Events and sends automated 24-hour and 1-hour direct message (DM) reminders to users who opt-in.
+A completely free, Dockerized Discord bot built on an opt-in philosophy. End `@everyone` spam and send automated event reminders only to the users who actually want them. Optimized for Raspberry Pi.
 
 ## Features
 
 - **Event Announcements:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created.
-- **Flexible Opt-in Reminders:** Administrators can choose between two modes:
-  - **Private Mode (Default):** Sends personalized DM reminders to users.
-  - **Public Mode:** Posts the reminder directly in the announcement channel, publicly @ mentioning the opted-in users.
+- **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about. Keep your community in the loop exactly how you prefer via Private DMs or Public Mentions.
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude.
-- **Add to Calendar:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
+- **Add to Calendar Button:** Event announcements include a convenient link button to add the event directly to the user's Google Calendar.
   - Alerts use a clean, text-based format (including event name, description, location, and dynamic Discord timestamps) to avoid cluttered double-embeds.
 - **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
 - **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
@@ -46,7 +44,7 @@ A lightweight, Dockerized Discord bot optimized for Raspberry Pi. It automatical
    DISCORD_TOKEN=your_actual_token_here
    CLIENT_ID=your_bot_client_id_here
    ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
-   ANNOUNCEMENT_CHANNEL_ID=your_announcement_channel_id_here # Optional fallback
+   ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
    ```
 
 ## Slash Command Setup

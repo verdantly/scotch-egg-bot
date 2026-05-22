@@ -54,6 +54,7 @@
             </a>
             <div class="hidden md:flex space-x-6">
                 <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="changelog.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Changelog</a>
                 <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
                 <a href="documentation.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Docs</a>
             </div>
@@ -75,6 +76,7 @@
         <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
             <div class="flex flex-col space-y-4">
                 <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="changelog.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Changelog</a>
                 <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
                 <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
                 <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
@@ -250,7 +252,7 @@ echo "{}" > config.json</pre>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings mode</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event reminders are posted publicly in the channel or DMed privately.</span>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings view</code>
@@ -274,15 +276,15 @@ echo "{}" > config.json</pre>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings testreminder</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays a mock preview of what a reminder message will look like.</span>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays a mock preview of what a reminder message will look like with the server's current settings.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/announceevent</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an announcement for an existing event.</span>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/upcoming</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Public list of upcoming events to easily opt-in.</span>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Public command to view a paginated list of upcoming events and quickly opt in to reminders.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/myreminders</code>

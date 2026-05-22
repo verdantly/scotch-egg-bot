@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-05-20
+
+### Added
+
+- **Rate Limiting & Cooldowns:** Added a comprehensive cooldown system for slash commands, interactive buttons ("Remind Me!"), pagination, and select menus to protect against API spam and rate limits.
+
+### Changed
+
+- **Archived Event UI:** When an event concludes, the archived announcement now grays out the entire description text (using blockquotes) and strips out obsolete relative timestamps for a cleaner, dimmed look.
+- **Counter Lookup Efficiency:** The live "Remind Me! (X)" counter now uses an O(1) instant database lookup to find the event's server, significantly reducing CPU overhead.
+- **Batched Reminder DMs:** Refactored the DM reminder system to process users in concurrent batches of 5 (with a 1-second delay), drastically speeding up large reminder blasts while safely respecting Discord's limits.
+- **Memory Optimization:** Configured Discord.js sweepers to automatically clear cached messages and users every hour, preventing RAM bloat on low-memory devices like Raspberry Pis.
+- **Database Lookup Speed:** Replaced standard objects with null-prototype objects (`Object.create(null)`) for the event database, increasing lookup efficiency and eliminating prototype pollution vulnerabilities.
+- **Minified Disk Writes:** Database and configuration saves are now minified (whitespace removed), reducing file size and write times to further protect SD card lifespans.
+- **Job Cancellation Efficiency:** Optimized the node-schedule job cancellation loop to use a raw `for...in` loop to save event loop cycles when evaluating large sets of scheduled events.
+
+### Fixed
+
+- **Silent Errors:** Fixed an issue where the live counter update function was silently swallowing errors without logging them.
+- **Unhandled Rejection Crashes:** Wrapped critical event listeners (`InteractionCreate`, `GuildScheduledEventUpdate`, and the shutdown sequence) in robust `try...catch` blocks to gracefully catch and handle unexpected network or API errors without crashing the bot container.
+
 ## [1.2.0] - 2026-05-17
 
 ### Added
