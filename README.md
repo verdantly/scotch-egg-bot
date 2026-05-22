@@ -1,10 +1,10 @@
 # Scotch Egg Bot - Discord Event Reminder Bot
 
-A completely free, Dockerized Discord bot built on an opt-in philosophy. End `@everyone` spam and send automated event reminders only to the users who actually want them. Optimized for Raspberry Pi.
+A completely free Discord bot that hooks seamlessly into native Discord events. No clunky special event commands. End `@everyone` spam and send automated event reminders only to the users who actually want them. Optimized for Raspberry Pi.
 
 ## Features
 
-- **Event Announcements:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created.
+- **Native Discord Events:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created. No need to learn complicated `!create` commands.
 - **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about. Keep your community in the loop exactly how you prefer via Private DMs or Public Mentions.
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude.

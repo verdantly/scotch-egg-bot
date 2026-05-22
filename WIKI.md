@@ -1,6 +1,6 @@
 # 🥚 Scotch Egg Bot: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly when you need them.
+Welcome to the official setup guide for the **Scotch Egg Bot**! This completely free Discord bot hooks into native Discord events instead of relying on clunky special event commands. End `@everyone` spam and send automated reminders only to users who want them.
 
 This guide will walk you through the setup process step-by-step.
 

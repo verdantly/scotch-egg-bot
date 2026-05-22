@@ -123,7 +123,7 @@
             <!-- Setup / Quick Start -->
             <section id="setup" class="scroll-mt-28">
                 <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation & Setup Guide</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">Follow these basic steps to get your bot up and running. The easiest and recommended way to deploy Scotch Egg Bot is using Docker Desktop or Docker Compose.</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">Follow these basic steps to get your bot up and running. The easiest and recommended way to deploy Scotch Egg Bot is using Docker or Docker Compose.</p>
 
                 <div class="space-y-8">
                     <div>
@@ -155,18 +155,22 @@ echo "{}" > config.json</pre>
 
                     <div>
                         <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Start the Bot</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Make sure <strong>Docker Desktop</strong> is open and running on your computer. Then, open your terminal (Command Prompt, PowerShell, or Terminal), navigate to the bot's folder, and run:</p>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Make sure <strong>Docker</strong> is open and running on your computer. Then, open your terminal (Command Prompt, PowerShell, or Terminal), navigate to the bot's folder, and run:</p>
                         <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
                             <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="run-code">Copy</button>
                             <pre id="run-code" class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
                         </div>
-                        <p class="text-gray-600 dark:text-gray-400 mt-4">You can now see the bot running smoothly inside the Docker Desktop app!</p>
+                        <p class="text-gray-600 dark:text-gray-400 mt-4">You can now see the bot running smoothly inside Docker!</p>
                     </div>
-                </div>
-                
-                <div class="bg-eggyolk-light dark:bg-[#4a3600] border-l-4 border-eggyolk p-4 rounded-r-lg mt-8 text-sm text-gray-800 dark:text-gray-200">
-                    <strong class="font-bold dark:text-eggyolk">Note:</strong> Don't forget to register your slash commands once! 
-                    <code class="bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded ml-1">docker exec -it scotch-egg-bot node deploy-commands.js</code>
+
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">5. Register Slash Commands (Once)</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">After the bot is running, you must register its commands with Discord. You only need to do this once. Run the following command in your terminal:</p>
+                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                            <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="register-code">Copy</button>
+                            <pre id="register-code" class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg-bot node deploy-commands.js</pre>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -342,7 +346,7 @@ echo "{}" > config.json</pre>
                 <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
                     <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-lg">
                         <h4 class="font-bold text-xl text-red-700 dark:text-red-400 mb-2">Bot shows as online, but slash commands don't work / don't appear</h4>
-                        <p>You likely forgot to run the command registration script! Make sure your bot is running, then execute <code class="bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-base">docker exec -it scotch-egg-bot node deploy-commands.js</code> in your terminal. You might need to restart your Discord client afterwards to see the commands.</p>
+                        <p>You likely forgot to run the command registration script! Make sure your bot is running, then execute the command from Step 5 of the setup guide. You might need to restart your Discord client afterwards to see the commands.</p>
                     </div>
                     <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream dark:border-gray-700">
                         <h4 class="font-bold text-xl text-charcoal dark:text-white mb-2">Docker created folders named "events.json" and "config.json"</h4>
@@ -350,7 +354,7 @@ echo "{}" > config.json</pre>
                     </div>
                     <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream dark:border-gray-700">
                         <h4 class="font-bold text-xl text-charcoal dark:text-white mb-2">I see "Interaction Failed" when clicking buttons</h4>
-                        <p>This usually means the bot is offline or has crashed. Check your Docker Desktop logs to see what happened. If you are not using Docker, check the terminal window where you started the bot.</p>
+                        <p>This usually means the bot is offline or has crashed. Check your Docker logs to see what happened. If you are not using Docker, check the terminal window where you started the bot.</p>
                     </div>
                 </div>
             </section>
