@@ -28,13 +28,15 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 > 
 > `[ ⏰ Remind Me! ]` `[ 📅 Add to Calendar ]` *(Interactive Buttons)*
 
-## Prerequisites
+## Prerequisites & Discord Setup
 
-- Node.js (v16.14.0 or higher recommended)
-- A Bot Token from the [Discord Developer Portal](https://discord.com/developers/applications).
-- Your bot's Client ID from the Developer Portal.
-- **No Privileged Intents required!** The bot relies entirely on modern slash commands and components.
-- Docker (Optional, if you wish to run via containers).
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**.
+2. On the "General Information" page, copy your **Application ID** (this will be your `CLIENT_ID`).
+3. Navigate to the "Bot" tab on the left, click **Reset Token**, and copy the new token (this will be your `DISCORD_TOKEN`).
+4. Go to "OAuth2" > "OAuth2 URL Generator". Check the `bot` and `applications.commands` scopes. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.
+5. Ensure you have **Node.js (v16.14.0 or higher)** installed, OR **Docker** if you prefer containerized deployment.
+
+*Note: **No Privileged Intents are required!** The bot relies entirely on modern slash commands.*
 
 ## Configuration
 
@@ -103,56 +105,47 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 
 ## Commands Reference
 
+### Administrator Commands
+
 *   `/settings channel [channel]`
-    -   **Permission:** Administrator
     -   **Action:** Sets the specific channel where the bot will post new event announcements and reminders for the current server.
 
 *   `/settings mode [mode]`
-    -   **Permission:** Administrator
     -   **Action:** Toggles whether the 24h and 1h event reminders are posted publicly in the configured channel (tagging opted-in users) or DMed privately.
 
 *   `/settings view`
-    -   **Permission:** Administrator
     -   **Action:** Displays the currently configured channel and reminder mode for this server.
 
 *   `/settings calendar [enabled]`
-    -   **Permission:** Administrator
     -   **Action:** Toggles whether the bot includes an "Add to Calendar" button on event announcements.
 
 *   `/settings threads [enabled]`
-    -   **Permission:** Administrator
     -   **Action:** Toggles whether the bot automatically creates a dedicated discussion thread on new announcements.
 
 *   `/settings autodelete [enabled]`
-    -   **Permission:** Administrator
     -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived.
 
 *   `/settings intervals [times]`
-    -   **Permission:** Administrator
     -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`). Up to 5 intervals can be set per server.
 
 *   `/settings testreminder`
-    -   **Permission:** Administrator
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
 
 *   `/announceevent [event_link_or_id]`
-    -   **Permission:** Administrator
     -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.
 
+*   `/stats`
+    -   **Action:** View opt-in statistics for upcoming events in this server.
+
+### Public Commands
+
 *   `/upcoming`
-    -   **Permission:** Everyone
     -   **Action:** View a paginated list of upcoming events in this server and easily opt-in to reminders for them.
 
 *   `/myreminders`
-    -   **Permission:** Everyone
     -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server.
 
-*   `/stats`
-    -   **Permission:** Administrator
-    -   **Action:** View opt-in statistics for upcoming events in this server.
-
 *   `/help`
-    -   **Permission:** Everyone
     -   **Action:** Displays information on how to use the bot and a list of available commands.
 
 ## How It Works (Storage Architecture)

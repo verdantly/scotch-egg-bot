@@ -35,7 +35,7 @@
                         charcoal: '#333333', // Deep dark for text
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['"Merriweather Sans"', 'sans-serif'],
                         serif: ['Merriweather', 'serif'],
                     }
                 }
@@ -54,7 +54,6 @@
             </a>
             <div class="hidden md:flex space-x-6">
                 <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
-                <a href="changelog.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Changelog</a>
                 <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
                 <a href="documentation.html" class="text-eggyolk font-bold border-b-2 border-eggyolk pb-1">Docs</a>
             </div>
@@ -76,7 +75,6 @@
         <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
             <div class="flex flex-col space-y-4">
                 <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
-                <a href="changelog.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Changelog</a>
                 <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
                 <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
                 <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
@@ -132,8 +130,15 @@
                     </div>
 
                     <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Environment Setup</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Create a <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">.env</code> file in your project directory with your Discord credentials:</p>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Discord Credentials & Environment Setup</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Before configuring the bot, you need to grab a few credentials from Discord:</p>
+                        <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400 mb-6">
+                            <li>Go to the <a href="https://discord.com/developers/applications" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold" target="_blank" rel="noopener noreferrer">Discord Developer Portal</a> and click <strong>New Application</strong>.</li>
+                            <li>On the "General Information" page, copy your <strong>Application ID</strong> (this will be your <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">CLIENT_ID</code>).</li>
+                            <li>Navigate to the "Bot" tab on the left, click <strong>Reset Token</strong>, and copy the new password token (this will be your <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DISCORD_TOKEN</code>).</li>
+                            <li>Go to "OAuth2" &gt; "OAuth2 URL Generator". Check the <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">bot</code> and <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">applications.commands</code> scopes. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.</li>
+                        </ol>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Now, create a new text file named <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">.env</code> inside your bot's folder and paste those credentials in like so:</p>
                         <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
                             <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="env-code">Copy</button>
                             <pre id="env-code" class="text-gray-300 font-mono text-sm overflow-x-auto">DISCORD_TOKEN=your_actual_token_here
@@ -249,7 +254,8 @@ echo "{}" > config.json</pre>
             <section id="commands" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
                 
-                <ul class="space-y-4">
+                <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white mt-8">Administrator Commands</h3>
+                <ul class="space-y-4 mb-10">
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings channel</code>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets or changes the server's announcement channel.</span>
@@ -287,16 +293,20 @@ echo "{}" > config.json</pre>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                        <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/stats</code>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command to view opt-in statistics for upcoming events in this server.</span>
+                    </li>
+                </ul>
+
+                <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white">Public Commands</h3>
+                <ul class="space-y-4">
+                    <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/upcoming</code>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Public command to view a paginated list of upcoming events and quickly opt in to reminders.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/myreminders</code>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Lists a paginated view of all upcoming events you are currently receiving reminders for.</span>
-                    </li>
-                    <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/stats</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command to view opt-in statistics for upcoming events in this server.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/help</code>
@@ -370,9 +380,7 @@ echo "{}" > config.json</pre>
                 <span>Scotch Egg Bot</span>
             </div>
             <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
-                <p>Open Source under the MIT License.</p>
-                <p class="mt-1">
-                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors">GitHub</a>
+                <p>Open Source under the GPLv3 License. <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a></p>
                 </p>
             </div>
         </div>

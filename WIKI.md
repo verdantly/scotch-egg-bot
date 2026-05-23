@@ -1,6 +1,6 @@
 # 🥚 Scotch Egg Bot: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This completely free Discord bot hooks into native Discord events instead of relying on clunky special event commands. End `@everyone` spam and send automated reminders only to users who want them.
+Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly when you need them.
 
 This guide will walk you through the setup process step-by-step.
 
@@ -121,6 +121,7 @@ Users who want to be notified can click the **⏰ Remind Me!** button on the ann
 
 ### 4. Commands Reference
 
+**Administrator Commands**
 - `/settings channel [channel]` - Sets or changes the server's announcement channel.
 - `/settings mode [mode]` - Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.
 - `/settings view` - Admin command that shows current bot configurations.
@@ -130,9 +131,11 @@ Users who want to be notified can click the **⏰ Remind Me!** button on the ann
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
+- `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
+
+**Public Commands**
 - `/upcoming` - Public command to view a paginated list of upcoming events and quickly opt in to reminders.
 - `/myreminders` - Public command that lists a paginated view of all upcoming events you are currently receiving reminders for in this server.
-- `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 - `/help` - Displays information on how to use the bot and a list of available commands.
 
 ---
