@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.4.0] - 2026-05-26
+
+### Added
+
+- **Rich Event Announcements:** Announcements now display start-to-end time ranges, dynamic human-readable durations (e.g., `1 hour 30 minutes`), and a dedicated `👤 Host` field linking to the organizer's Discord profile.
+- **Smart Voice Channel Calendar Locations:** The "Add to Calendar" link button now dynamically resolves and lists the actual voice or stage channel name (e.g. `General (Discord Voice/Stage)`) in Google Calendar instead of a generic "Discord Server" location.
+
+### Fixed
+
+- **Dynamic Relative Reminders:** Shifted reminder message generation inside the scheduled node-schedule job callback, resolving an issue where the relative countdown (e.g., `(in 1 hour)`) was missing for events scheduled more than one week in advance.
+- **DM Reminder Safe Truncation:** Implemented dynamic 2,000-character safety truncation for event descriptions in DM reminders, preventing message delivery failures and bot crashes for events with very long descriptions.
 
 ## [1.3.1] - 2026-05-26
 
