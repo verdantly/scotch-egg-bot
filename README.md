@@ -22,7 +22,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 > 🗓️ Sunday, May 31, 2026 11:00 AM (in 1 day)
 > 📍 Eggcellent Café
 > 
-> Let's get together and enjoy the finest egg dishes, pancakes, and bottomless mimosas at the fictional Eggcellent Café! Don't miss out on their famous Antigravity soufflé pancake.
+> It's been far too long since we've had eggs benedict, french toast, and bottomless mimosas together.  Also, we need our yearly consumption of Scotch eggs as well!
 > 
 > @User1 @User2 @User3
 > 
