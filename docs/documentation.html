@@ -225,22 +225,131 @@ echo "{}" > config.json</pre>
 
             <hr class="border-cream-dark dark:border-gray-800">
 
-            <!-- Example Reminder -->
+            <!-- Example Reminder & Announcement Gallery -->
             <section id="example" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Reminder Message</h2>
-                <div class="bg-cream-dark dark:bg-[#313338] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <p class="font-bold text-charcoal dark:text-white mb-2">Public Reminder (24-Hour Alert)</p>
-                    <blockquote class="border-l-4 border-breadcrumb pl-4 text-gray-700 dark:text-gray-300 italic">
-                        <p>📢 24h until <strong>Weekly Community Meeting</strong>!</p>
-                        <p>🗓️ Tuesday, October 24, 2023 8:00 PM (in 3 days)</p>
-                        <p>📍 #general-voice</p>
-                        <p class="mt-2">Let's get together and discuss the plans for next month!</p>
-                        <p class="mt-2 text-eggyolk-hover font-medium">@User1 @User2 @User3</p>
-                        <div class="mt-4 flex space-x-2">
-                            <span class="bg-gray-200 dark:bg-[#4e5058] px-3 py-1 rounded text-sm not-italic font-medium text-gray-700 dark:text-gray-200 shadow-sm">⏰ Remind Me!</span>
-                            <span class="bg-gray-200 dark:bg-[#4e5058] px-3 py-1 rounded text-sm not-italic font-medium text-gray-700 dark:text-gray-200 shadow-sm">📅 Add to Calendar</span>
+                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Announcements & Reminders</h2>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">See high-fidelity mockups of how the bot's dynamic event announcements and opt-in reminders render inside Discord, including the automated changes when an event concludes.</p>
+                
+                <div class="space-y-12">
+                    <!-- SECTION A: ACTIVE EVENTS -->
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🟢 Active / Upcoming Event Formatting</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            
+                            <!-- Active Embed Announcement -->
+                            <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Server Announcement (Rich Embed)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Posted in the configured #events channel the moment a Discord Scheduled Event is created. Displays duration, time range, and a clickable Host user pill without sending unwanted push pings.</p>
+                                
+                                <div class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
+                                    <div class="border-l-4 border-[#0099ff] pl-4">
+                                        <p class="font-serif font-bold text-charcoal dark:text-white text-lg">New Event: Weekly Guild Meeting</p>
+                                        <div class="mt-2 text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                                            <p>🗓️ <strong>Time:</strong> Tuesday, May 26, 2026 12:00 PM to 1:30 PM (in 2 hours)</p>
+                                            <p>📍 <strong>Location:</strong> <span class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">#lounge-voice</span></p>
+                                            <p class="mt-3 italic">Welcome back to our weekly check-in! We will review the latest developments, discuss feature requests, and plan out our roadmap for the coming week.</p>
+                                            <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs italic">*Click the button below to receive a DM reminder at: 24h, 1h before the event begins!*</p>
+                                        </div>
+                                        
+                                        <!-- Side-by-side Embed Fields -->
+                                        <div class="grid grid-cols-2 gap-4 mt-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
+                                            <div>
+                                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">👤 Host</span>
+                                                <span class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">⏱️ Duration</span>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">1 hour 30 minutes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 flex space-x-2">
+                                        <span class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>⏰</span><span>Remind Me!</span></span>
+                                        <span class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>📅</span><span>Add to Calendar</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Active Reminders (Public & Private) -->
+                            <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public Ping & Private DM)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for high-priority mobile push notifications. Public reminders mention opted-in users in the channel. Contains clickable native event links.</p>
+                                
+                                <div class="space-y-6 mt-auto">
+                                    <!-- Public Reminder Alert -->
+                                    <div class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
+                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (with mentions)</p>
+                                        <p>📢 1h until <strong>Weekly Guild Meeting</strong>!</p>
+                                        <p>🗓️ Tuesday, May 26, 2026 12:00 PM (in 1 hour)</p>
+                                        <p>📍 <span class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded">#lounge-voice</span></p>
+                                        <p class="mt-2 text-gray-600 dark:text-gray-400 font-medium">🔗 <strong>Discord Event:</strong> <span class="text-[#5865F2] hover:underline cursor-pointer">https://discord.com/events/...</span></p>
+                                        <p class="mt-3 text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">@Daniel</p> <p class="text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">@Admin</p>
+                                    </div>
+                                    
+                                    <!-- Private DM Alert -->
+                                    <div class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
+                                        <p class="text-xs font-bold text-gray-500 mb-2">Private DM Reminder (Plain Text)</p>
+                                        <p>📢 1h until <strong>Weekly Guild Meeting</strong>!</p>
+                                        <p>🗓️ Tuesday, May 26, 2026 12:00 PM (in 1 hour)</p>
+                                        <p>📍 <span class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">lounge-voice</span></p>
+                                        <p class="mt-2 text-gray-600 dark:text-gray-400 font-medium">🔗 <strong>Discord Event:</strong> <span class="text-[#5865F2] hover:underline cursor-pointer">https://discord.com/events/...</span></p>
+                                        <div class="mt-4">
+                                            <span class="bg-[#DA373C] hover:bg-[#A92B2F] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔕</span><span>Cancel Reminders</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
-                    </blockquote>
+                    </div>
+                    
+                    <!-- SECTION B: CONCLUDED EVENTS -->
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🔴 Concluded / Concluded Event Archiving</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            
+                            <!-- Archived Embed Announcement -->
+                            <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Concluded Announcement (Archived Embed)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically updated when the event completes. Strikes through the title and metadata, blockquotes descriptions, removes obsolete text/images, and replaces actions with a single disabled Completed button.</p>
+                                
+                                <div class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
+                                    <div class="border-l-4 border-gray-500 pl-4">
+                                        <p class="font-serif font-bold text-gray-500 dark:text-gray-400 text-lg">~~New Event: Weekly Guild Meeting~~ [Completed]</p>
+                                        
+                                        <p class="mt-2 text-sm font-bold text-gray-700 dark:text-gray-300">⏹️ This event has concluded.</p>
+                                        
+                                        <div class="mt-3 text-sm space-y-1 text-gray-500 dark:text-gray-400 pl-3 border-l-2 border-gray-300 dark:border-gray-700">
+                                            <p class="italic">~~🗓️ Time: Tuesday, May 26, 2026 12:00 PM to 1:30 PM~~</p>
+                                            <p class="italic">~~📍 Location: #lounge-voice~~</p>
+                                            <p class="mt-2 italic">Welcome back to our weekly check-in! We will review the latest developments, discuss feature requests, and plan out our roadmap for the coming week.</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6">
+                                        <span class="bg-[#4e5058] text-gray-300 px-4 py-2 rounded text-sm font-medium shadow opacity-60 flex items-center space-x-1 w-max border border-gray-600 cursor-not-allowed"><span>✅</span><span>Event Completed</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Archived Public Reminder -->
+                            <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Archived Public Reminder Message</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically edited upon event completion. Strips out all user mentions to clear chat highlights, strikes-through text, applies blockquotes, and adds a concluded banner.</p>
+                                
+                                <div class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans mt-auto">
+                                    <p class="text-xs font-bold text-gray-500 mb-2">Archived Public Channel Reminder</p>
+                                    <p class="font-bold text-gray-700 dark:text-gray-300 mb-3">⏹️ This reminder has concluded.</p>
+                                    <div class="pl-3 border-l-2 border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 space-y-1">
+                                        <p class="italic">~~📢 1h until Weekly Guild Meeting!~~</p>
+                                        <p class="italic">~~🗓️ Tuesday, May 26, 2026 12:00 PM~~</p>
+                                        <p class="italic">~~📍 #lounge-voice~~</p>
+                                        <p class="italic">~~🔗 Discord Event: https://discord.com/events/...~~</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
                 </div>
             </section>
 
