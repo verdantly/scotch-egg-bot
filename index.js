@@ -154,12 +154,13 @@ async function updateLiveCounter(eventId) {
  * @param {string} eventId - The ID of the Discord Scheduled Event.
  */
 function cancelEventReminders(eventId) {
-    Object.keys(schedule.scheduledJobs).forEach(jobName => {
-        if (jobName.startsWith(`${eventId}-`)) {
+    const prefix = `${eventId}-`;
+    for (const jobName in schedule.scheduledJobs) {
+        if (jobName.startsWith(prefix)) {
             schedule.scheduledJobs[jobName].cancel();
             console.log(`Cancelled: ${jobName}`);
         }
-    });
+    }
 }
 
 /**
@@ -442,6 +443,7 @@ function buildAnnouncementEmbed(event) {
     }
 
     const embed = new EmbedBuilder()
+            .setTitle(title)
         .setDescription(fullDescription)
         .setColor('#0099ff');
 

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-05-26
+
+### Fixed
+
+- **Memory Sweepers:** Actually applied the Discord.js sweeper configuration to the client to properly clear cached messages and users, resolving an omission in the v1.3.0 release.
+- **Job Cancellation Efficiency:** Updated the node-schedule cancellation loop to use the optimized `for...in` approach as originally intended in v1.3.0.
+- **Missing Event Title:** Fixed an issue where the "New Event: [Name]" title was missing from announcement embeds.
+
 ## [1.3.0] - 2026-05-22
 
 ### Added
