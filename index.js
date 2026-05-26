@@ -324,7 +324,14 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 payload.components = [row];
                             }
                             
-                            await channel.send(payload);
+                            const sentMsg = await channel.send(payload).catch(() => null);
+                            if (sentMsg && eventDb[event.id]) {
+                                if (!eventDb[event.id].reminderMessageIds) {
+                                    eventDb[event.id].reminderMessageIds = [];
+                                }
+                                eventDb[event.id].reminderMessageIds.push(sentMsg.id);
+                                await saveDb();
+                            }
                         } else if (userIds.length > 0) {
                             const users = [];
                             const fetchFailedUserIds = [];
@@ -357,19 +364,34 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             if (failedUserIds.length > 0) {
                                 const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
                                 const fallbackMsg = `${alertMsg}\n\nCould not DM: ${mentions}`;
+                                let sentMsg;
                                 if (fallbackMsg.length > 2000) {
                                     let safeFallback = `${alertMsg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
                                     if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
-                                    await channel.send(safeFallback);
+                                    sentMsg = await channel.send(safeFallback).catch(() => null);
                                 } else {
-                                    await channel.send(fallbackMsg);
+                                    sentMsg = await channel.send(fallbackMsg).catch(() => null);
+                                }
+                                if (sentMsg && eventDb[event.id]) {
+                                    if (!eventDb[event.id].reminderMessageIds) {
+                                        eventDb[event.id].reminderMessageIds = [];
+                                    }
+                                    eventDb[event.id].reminderMessageIds.push(sentMsg.id);
+                                    await saveDb();
                                 }
                             }
                         } else {
                             // Fallback if nobody opted in at all
                             let noOptInMsg = alertMsg;
                             if (noOptInMsg.length > 2000) noOptInMsg = noOptInMsg.substring(0, 1995) + '...';
-                            await channel.send(noOptInMsg);
+                            const sentMsg = await channel.send(noOptInMsg).catch(() => null);
+                            if (sentMsg && eventDb[event.id]) {
+                                if (!eventDb[event.id].reminderMessageIds) {
+                                    eventDb[event.id].reminderMessageIds = [];
+                                }
+                                eventDb[event.id].reminderMessageIds.push(sentMsg.id);
+                                await saveDb();
+                            }
                         }
 
                     } catch (err) {
@@ -1228,31 +1250,41 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
         const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
         if (channel) {
             const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+            const autoDelete = getAutoDeleteEnabled(guild.id);
             
-            if (msg && getAutoDeleteEnabled(guild.id)) {
+            if (msg && autoDelete) {
                 await msg.delete().catch(() => {});
-                return;
-            }
-            
-            if (msg && msg.embeds.length > 0) {
+            } else if (msg && msg.embeds.length > 0) {
                 const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
                 
-                const suffix = ` [${statusText}]`;
-                let newTitle = `${originalEmbed.data.title || ''}${suffix}`;
+                // Format the title with a premium strike-through and modern status tag
+                const cleanTitle = (originalEmbed.data.title || '').replace(/^~~|~~$/g, '').replace(/ \[(Completed|Deleted|Canceled)\]$/g, '');
+                let newTitle = `~~${cleanTitle}~~ [${statusText}]`;
                 if (newTitle.length > 256) {
-                    newTitle = `${(originalEmbed.data.title || '').substring(0, 256 - suffix.length - 3)}...${suffix}`;
+                    newTitle = `~~${cleanTitle.substring(0, 256 - statusText.length - 7)}...~~ [${statusText}]`;
                 }
                 originalEmbed.setTitle(newTitle);
-                originalEmbed.setColor('#808080'); // Gray out the embed to indicate it's over
-                originalEmbed.setImage(null); // Remove the cover image to make the archived message less prominent
+                originalEmbed.setColor('#808080'); // Gray out the sidebar
+                originalEmbed.setImage(null); // Remove cover image to shrink visibility
+                
+                const bannerEmoji = statusText === 'Completed' ? '⏹️' : '⚠️';
+                const statusBanner = `**${bannerEmoji} This event has ${statusText.toLowerCase()}.**\n\n`;
                 
                 if (originalEmbed.data.description) {
-                    // Remove obsolete text and relative timestamps for a clean, archived look.
                     let newDesc = originalEmbed.data.description
-                        .replace(/\n\n\*Click the button below.*?\*/, '') // Remove opt-in text.
-                        .replace(/\s\(<t:\d+:R>\)/, ''); // Remove relative timestamp, e.g., " (in 2 days)".
-                    // Prefix every line with a blockquote to dim and indent the text, making it appear gray.
+                        .replace(/\n\n\*Click the button below.*?\*/, '') // Remove opt-in text
+                        .replace(/\s\(<t:\d+:R>\)/, ''); // Remove relative countdowns
+                        
+                    // Let's add strike-throughs to Time and Location
+                    newDesc = newDesc.replace(/(🗓️ \*\*Time:\*\* .*?)(\n|$)/g, '~~$1~~$2')
+                                     .replace(/(📍 \*\*Location:\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                     
+                    // Prefix every line with a blockquote to dim and indent the text
                     newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                    
+                    // Prepend the bold status banner to the description
+                    newDesc = `${statusBanner}${newDesc}`;
+                    
                     if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
                     originalEmbed.setDescription(newDesc);
                 }
@@ -1268,9 +1300,47 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                 
                 await msg.edit({ embeds: [originalEmbed], components: [disabledRow] });
             }
+
+            // 2. ARCHIVE OR DELETE ALL PUBLIC REMINDER PINGS AND FALLBACKS
+            const reminderMessageIds = eventDb[eventId].reminderMessageIds || [];
+            for (const rMsgId of reminderMessageIds) {
+                const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
+                if (rMsg) {
+                    if (autoDelete) {
+                        await rMsg.delete().catch(() => {});
+                    } else {
+                        // Remove components (buttons) and edit the text to strike-through and add status banner
+                        let rText = rMsg.content;
+                        
+                        // Strip out mentions if any (e.g. \n\n<@123> <@456> etc.) to clean up highlighted pings
+                        rText = rText.replace(/\n\n<@\d+>( <@\d+>)*/g, '');
+                        // Strip out the safety mentions text if any
+                        rText = rText.replace(/\n\n\*\(.*mentions hidden.*\)\*/g, '');
+                        
+                        // Add strike-through to the header line: 📢 X until **Event**!
+                        rText = rText.replace(/(📢 .*? until \*\*.*?\*\*!)/g, '~~$1~~');
+                        // Add strike-through to Time, Location, and Link lines
+                        rText = rText.replace(/(🗓️ .*?)(\n|$)/g, '~~$1~~$2')
+                                     .replace(/(📍 .*?)(\n|$)/g, '~~$1~~$2')
+                                     .replace(/(🔗 \*\*Discord Event:\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                     
+                        // Blockquote the reminder details for a clean, dimmed look
+                        rText = rText.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                        
+                        // Prepend the bold status banner
+                        const bannerEmoji = statusText === 'Completed' ? '⏹️' : '⚠️';
+                        const statusBanner = `**${bannerEmoji} This reminder has concluded.**\n\n`;
+                        rText = `${statusBanner}${rText}`;
+                        
+                        if (rText.length > 2000) rText = rText.substring(0, 1995) + '...';
+                        
+                        await rMsg.edit({ content: rText, components: [] }).catch(() => {});
+                    }
+                }
+            }
         }
     } catch (err) {
-        console.log(`Failed to archive announcement message for event ${eventId}:`, err);
+        console.log(`Failed to archive announcement and reminders for event ${eventId}:`, err);
     }
 }
 
