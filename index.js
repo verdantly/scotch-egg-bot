@@ -1,7 +1,7 @@
 const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags, Collection } = require('discord.js');
 const schedule = require('node-schedule');
 require('dotenv').config();
-const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink } = require('./utils.js');
+const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
 const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
 
 const client = new Client({ 
@@ -419,9 +419,10 @@ client.on(Events.GuildScheduledEventCreate, async e => {
  */
 function buildAnnouncementEmbed(event) {
     const startTime = event.scheduledStartTimestamp;
+    const endTime = event.scheduledEndTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
-    const timeString = getFormattedTimeString(startTime, 'F');
+    const timeString = getFormattedTimeString(startTime, endTime, 'F');
 
     const mode = getAnnouncementMode(event.guild.id);
     const intervals = getReminderIntervals(event.guild.id);
@@ -443,9 +444,21 @@ function buildAnnouncementEmbed(event) {
     }
 
     const embed = new EmbedBuilder()
-            .setTitle(title)
+        .setTitle(title)
         .setDescription(fullDescription)
         .setColor('#0099ff');
+
+    const duration = formatDuration(startTime, endTime);
+    if (event.creatorId || duration) {
+        const fields = [];
+        if (event.creatorId) {
+            fields.push({ name: '👤 Host', value: `<@${event.creatorId}>`, inline: true });
+        }
+        if (duration) {
+            fields.push({ name: '⏱️ Duration', value: duration, inline: true });
+        }
+        embed.addFields(fields);
+    }
 
     const coverImage = event.coverImageURL({ size: 512 });
     if (coverImage) {

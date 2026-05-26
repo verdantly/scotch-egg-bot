@@ -31,19 +31,65 @@ function parseIntervals(input) {
 }
 
 /**
- * Generates a standard or relative Discord timestamp string based on time remaining.
- * @param {number} timestamp - The epoch timestamp in milliseconds.
+ * Generates a standard or relative Discord timestamp string based on time remaining or a range.
+ * Supports legacy signature getFormattedTimeString(timestamp, format) automatically.
+ * @param {number} startTimestamp - The start epoch timestamp in milliseconds.
+ * @param {number|string|null} [endTimestamp=null] - The end epoch timestamp, or format string for legacy signature.
  * @param {string} [format='F'] - The Discord timestamp format (e.g., 'F', 'f', 'R').
  * @returns {string} The formatted timestamp string.
  */
-function getFormattedTimeString(timestamp, format = 'F') {
-    const timeString = `<t:${Math.floor(timestamp / 1000)}:${format}>`;
-    const timeUntil = timestamp - Date.now();
+function getFormattedTimeString(startTimestamp, endTimestamp = null, format = 'F') {
+    // Handle legacy signature: getFormattedTimeString(timestamp, format)
+    if (typeof endTimestamp === 'string') {
+        format = endTimestamp;
+        endTimestamp = null;
+    }
+
+    const startStr = `<t:${Math.floor(startTimestamp / 1000)}:${format}>`;
+    let timeString = startStr;
+
+    if (endTimestamp) {
+        const startDate = new Date(startTimestamp);
+        const endDate = new Date(endTimestamp);
+        const isSameDay = startDate.toDateString() === endDate.toDateString();
+        
+        // If it's on the same day, only show the time portion for the end time.
+        // Otherwise, show full date and time for the end time.
+        const endFormat = isSameDay ? 't' : format; 
+        timeString = `${startStr} to <t:${Math.floor(endTimestamp / 1000)}:${endFormat}>`;
+    }
+
+    const timeUntil = startTimestamp - Date.now();
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
     if (timeUntil > 0 && timeUntil <= oneWeekMs) {
-        return `${timeString} (<t:${Math.floor(timestamp / 1000)}:R>)`;
+        return `${timeString} (<t:${Math.floor(startTimestamp / 1000)}:R>)`;
     }
     return timeString;
+}
+
+/**
+ * Formats a duration between start and end timestamps into a human-readable string.
+ * @param {number} startMs - The start epoch timestamp in milliseconds.
+ * @param {number} endMs - The end epoch timestamp in milliseconds.
+ * @returns {string|null} The formatted duration or null.
+ */
+function formatDuration(startMs, endMs) {
+    if (!endMs) return null;
+    const diffMs = endMs - startMs;
+    if (diffMs <= 0) return null;
+    
+    const totalMinutes = Math.floor(diffMs / (60 * 1000));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    const parts = [];
+    if (hours > 0) {
+        parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+    }
+    return parts.join(' ') || null;
 }
 
 /**
@@ -96,5 +142,6 @@ function generateGoogleCalendarLink(event) {
 module.exports = {
     parseIntervals,
     getFormattedTimeString,
-    generateGoogleCalendarLink
+    generateGoogleCalendarLink,
+    formatDuration
 };
