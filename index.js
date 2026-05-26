@@ -1329,7 +1329,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                         
                         // Prepend the bold status banner
                         const bannerEmoji = statusText === 'Completed' ? '⏹️' : '⚠️';
-                        const statusBanner = `**${bannerEmoji} This reminder has concluded.**\n\n`;
+                        const statusBanner = `**${bannerEmoji} This event has ${statusText.toLowerCase()}.**\n\n`;
                         rText = `${statusBanner}${rText}`;
                         
                         if (rText.length > 2000) rText = rText.substring(0, 1995) + '...';
