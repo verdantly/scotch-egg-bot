@@ -18,11 +18,11 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 
 ## Example Reminder Message
 **Public Reminder (24-Hour Alert)**  
-> 📢 24h until **Weekly Community Meeting**!
-> 🗓️ Tuesday, October 24, 2023 8:00 PM (in 3 days)
-> 📍 #general-voice
+> 📢 24h until **Sunday Brunch at Eggcellent Café**!
+> 🗓️ Sunday, May 31, 2026 11:00 AM (in 1 day)
+> 📍 Eggcellent Café
 > 
-> Let's get together and discuss the plans for next month!
+> Let's get together and enjoy the finest egg dishes, pancakes, and bottomless mimosas at the fictional Eggcellent Café! Don't miss out on their famous Antigravity soufflé pancake.
 > 
 > @User1 @User2 @User3
 > 
