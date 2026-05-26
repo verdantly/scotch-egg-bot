@@ -146,6 +146,8 @@
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Rich Event Announcements:</strong> Event announcements now include start-to-end time ranges, dynamic human-readable durations (e.g. <code>1 hour 30 minutes</code>), and a dedicated <code>👤 Host</code> field linking to the organizer's Discord profile.</li>
                                 <li><strong>Smart Voice Channel Calendar Locations:</strong> The "Add to Calendar" link button now dynamically resolves and lists the actual voice or stage channel name (e.g. <code>General (Discord Voice/Stage)</code>) in Google Calendar instead of a generic "Discord Server" location.</li>
+                                <li><strong>High-Contrast Past Event Visuals:</strong> Announcements now dynamically wrap titles in strike-throughs on conclusion (e.g., <code>~~New Event: Meeting~~ [Completed]</code>), strike-through key time/location metadata, dim descriptions using blockquotes, and prepend a bold status banner (e.g., <code>⏹️ <strong>This event has concluded.</strong></code>).</li>
+                                <li><strong>Past Reminder Message Archiving:</strong> Added tracking for all sent public channel reminders. On event completion or cancellation, the bot dynamically edits past public reminders to remove components, strip out old user mentions (clearing blue ping highlights from the chat history), strike-through text, and prepend a bold <code>⏹️ <strong>This reminder has concluded.</strong></code> banner.</li>
                             </ul>
                         </div>
                         <div>

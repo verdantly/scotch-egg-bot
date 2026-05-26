@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Rich Event Announcements:** Announcements now display start-to-end time ranges, dynamic human-readable durations (e.g., `1 hour 30 minutes`), and a dedicated `👤 Host` field linking to the organizer's Discord profile.
 - **Smart Voice Channel Calendar Locations:** The "Add to Calendar" link button now dynamically resolves and lists the actual voice or stage channel name (e.g. `General (Discord Voice/Stage)`) in Google Calendar instead of a generic "Discord Server" location.
+- **High-Contrast Past Event Visuals:** Announcements now dynamically wrap titles in strike-throughs on conclusion (e.g., `~~New Event: Meeting~~ [Completed]`), strike-through key time/location metadata, dim descriptions using blockquotes, and prepend a bold status banner (e.g., `⏹️ **This event has concluded.**`).
+- **Past Reminder Message Archiving:** Added tracking for all sent public channel reminders. On event completion or cancellation, the bot dynamically edits past public reminders to remove components, strip out old user mentions (clearing blue ping highlights from the chat history), strike-through text, and prepend a bold `⏹️ **This reminder has concluded.**` banner.
 
 ### Fixed
 
