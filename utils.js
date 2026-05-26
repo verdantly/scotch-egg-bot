@@ -99,7 +99,15 @@ function formatDuration(startMs, endMs) {
  */
 function generateGoogleCalendarLink(event) {
     const text = encodeURIComponent((event.name || '').substring(0, 100));
-    const locationStr = (event.entityMetadata?.location || 'Discord Server').substring(0, 100);
+    let locationStr = 'Discord Server';
+    if (event.entityMetadata?.location) {
+        locationStr = event.entityMetadata.location;
+    } else if (event.channel && event.channel.name) {
+        locationStr = `${event.channel.name} (Discord Voice/Stage)`;
+    } else if (event.channelId) {
+        locationStr = `Discord Voice Channel (ID: ${event.channelId})`;
+    }
+    locationStr = locationStr.substring(0, 100);
     const location = encodeURIComponent(locationStr);
 
     const formatToUTC = (timestamp) => {

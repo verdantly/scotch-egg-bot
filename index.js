@@ -242,18 +242,16 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
     }
 
     const startTime = event.scheduledStartTimestamp;
-    const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
-    const description = event.description ? `\n\n${event.description}` : '';
-    const timeString = getFormattedTimeString(startTime, 'F');
-
     const intervals = getReminderIntervals(event.guild.id);
     const minMs = intervals.length > 0 ? Math.min(...intervals.map(i => i.ms)) : 0;
     
+    // Store only interval details statically at scheduling time
     const alerts = intervals.map(interval => ({
         id: `${event.id}-${interval.value}${interval.unit}`,
         time: startTime - interval.ms,
         ms: interval.ms,
-        msg: `📢 ${interval.value}${interval.unit} until **${event.name}**!\n🗓️ ${timeString}\n📍 ${location}${description}`
+        value: interval.value,
+        unit: interval.unit
     }));
 
     alerts.forEach(alert => {
@@ -266,19 +264,45 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                     try {                            
                         const eventData = eventDb[event.id];
                         const mode = getAnnouncementMode(event.guild.id);
-                        
                         const userIds = eventData && eventData.users ? Object.keys(eventData.users) : [];
+                        
+                        // 1. DYNAMIC EVALUATION: Evaluate time string dynamically AT DISPATCH TIME
+                        // This guarantees the relative countdown (e.g. "in 1 hour") is always calculated correctly.
+                        // Since this runs exactly at dispatch time, start time is now within 1 week, so countdown will always show!
+                        // As per request, pings/DMs are lightweight, so we do not pass event.scheduledEndTimestamp (no time ranges).
+                        const currentFormattedTime = getFormattedTimeString(event.scheduledStartTimestamp, null, 'F');
+                        
+                        // 2. DYNAMIC LOCATION: Retrieve up-to-date location details from live cache
+                        const currentLocation = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
+                        
+                        // 3. DEFENSIVE SAFETY TRUNCATION: Keeping the whole message strictly under Discord's 2,000-character limit
+                        // We reserve 1,900 characters for the alert text to leave plenty of room for buttons, mentions, etc.
+                        const baseMsg = `📢 ${alert.value}${alert.unit} until **${event.name}**!\n🗓️ ${currentFormattedTime}\n📍 ${currentLocation}`;
+                        
+                        let truncatedDesc = '';
+                        if (event.description) {
+                            const maxDescLength = 1900 - baseMsg.length - 10; // 10 chars buffer for spacing/newlines/elipses
+                            if (maxDescLength > 10) {
+                                if (event.description.length > maxDescLength) {
+                                    truncatedDesc = `\n\n${event.description.substring(0, maxDescLength - 3)}...`;
+                                } else {
+                                    truncatedDesc = `\n\n${event.description}`;
+                                }
+                            }
+                        }
+                        
+                        const alertMsg = `${baseMsg}${truncatedDesc}`;
                         
                         if (mode === 'public') {
                             let mentions = '';
                             if (userIds.length > 0) {
                                 mentions = '\n\n' + userIds.map(id => `<@${id}>`).join(' ');
                             }
-                            const publicMsg = `${alert.msg}${mentions}`;
+                            const publicMsg = `${alertMsg}${mentions}`;
                             
                             const payload = {};
                             if (publicMsg.length > 2000) {
-                                let safeMsg = `${alert.msg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
+                                let safeMsg = `${alertMsg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
                                 if (safeMsg.length > 2000) safeMsg = safeMsg.substring(0, 1995) + '...';
                                 payload.content = safeMsg;
                             } else {
@@ -329,12 +353,12 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             }
 
                             // Fallback for users who couldn't be DMed
-                            const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alert.msg, components });
+                            const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alertMsg, components });
                             if (failedUserIds.length > 0) {
                                 const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
-                                const fallbackMsg = `${alert.msg}\n\nCould not DM: ${mentions}`;
+                                const fallbackMsg = `${alertMsg}\n\nCould not DM: ${mentions}`;
                                 if (fallbackMsg.length > 2000) {
-                                    let safeFallback = `${alert.msg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
+                                    let safeFallback = `${alertMsg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
                                     if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
                                     await channel.send(safeFallback);
                                 } else {
@@ -343,7 +367,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             }
                         } else {
                             // Fallback if nobody opted in at all
-                            let noOptInMsg = alert.msg;
+                            let noOptInMsg = alertMsg;
                             if (noOptInMsg.length > 2000) noOptInMsg = noOptInMsg.substring(0, 1995) + '...';
                             await channel.send(noOptInMsg);
                         }
