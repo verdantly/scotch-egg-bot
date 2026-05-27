@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.4.1] - 2026-05-27
 
+### Added
+
+- **Native Event Link Button:** Implemented a new link button (`View Event`) on all event announcements, public reminders, private DM reminders, and settings previews. This button links directly to the Discord native scheduled event window, eliminating the need to embed the URL in message text and preventing Discord from rendering a duplicate "double embed."
+
 ### Changed
 
 - **Dynamic Help Slash Command:** Customized the `/help` command to conditionally display the list of Administrator commands only if the command is executed by a user with Administrator permissions. The `/settings testreminder` footer tip is also dynamically hidden for non-administrators.

@@ -114,7 +114,7 @@ Simply use Discord's native **Create Event** button at the top of your channel l
 The moment you create an event, the bot will instantly post a rich-embed announcement in your configured channel.
 
 ### 3. Opting In (The "Remind Me!" Button)
-Users who want to be notified can click the **⏰ Remind Me!** button on the announcement. Next to it, they'll find a **📅 Add to Calendar** button to easily add the event to their Google Calendar.
+Users who want to be notified can click the **⏰ Remind Me!** button on the announcement. Next to it, they'll find a **📅 Add to Calendar** button to easily add the event to their Google Calendar, and a **🔗 View Event** button to jump directly to the native Discord event page (preventing double embed issues).
 
 - Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel at the configured intervals.
 - If they click it again, they will be opted out.

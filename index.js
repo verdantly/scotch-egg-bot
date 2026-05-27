@@ -143,7 +143,9 @@ async function updateLiveCounter(eventId) {
         if (currentComponents[0].label === newLabel) return; // Prevent redundant API calls
 
         const updatedRow = new ActionRowBuilder().addComponents(ButtonBuilder.from(currentComponents[0]).setLabel(newLabel));
-        if (currentComponents.length > 1) updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
+        for (let i = 1; i < currentComponents.length; i++) {
+            updatedRow.addComponents(ButtonBuilder.from(currentComponents[i]));
+        }
         await msg.edit({ components: [updatedRow] }).catch(() => {});
     } catch (err) {
         console.error(`Failed to update live counter for event ${eventId}:`, err);
@@ -321,6 +323,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             if (getCalendarEnabled(event.guild.id) && alert.ms > 60 * 60 * 1000) {
                                 row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
                             }
+                            row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
                             if (row.components.length > 0) {
                                 payload.components = [row];
                             }
@@ -354,11 +357,16 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             const isLastReminder = alert.ms === minMs;
                             const components = [];
+                            const row = new ActionRowBuilder();
                             if (!isLastReminder) {
-                                components.push(new ActionRowBuilder().addComponents(
+                                row.addComponents(
                                     new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
-                                ));
+                                );
                             }
+                            row.addComponents(
+                                new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗')
+                            );
+                            components.push(row);
 
                             // Fallback for users who couldn't be DMed
                             const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alertMsg, components });
@@ -531,6 +539,8 @@ async function postAnnouncement(event, channel) {
     if (getCalendarEnabled(event.guild.id)) {
         row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
     }
+
+    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
@@ -836,9 +846,11 @@ client.on(Events.InteractionCreate, async interaction => {
                     if (getCalendarEnabled(interaction.guildId)) {
                         row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
                     }
+                    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
                 } else {
                     replyContent += `${msg}`;
                     row.addComponents(new ButtonBuilder().setCustomId('mock_cancel').setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕').setDisabled(true));
+                    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
                 }
 
                 await interaction.reply({ content: replyContent, components: [row], flags: MessageFlags.Ephemeral });
@@ -1181,8 +1193,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 ButtonBuilder.from(currentComponents[0]).setLabel(newLabel)
             );
             
-            if (currentComponents.length > 1) {
-                updatedRow.addComponents(ButtonBuilder.from(currentComponents[1]));
+            for (let i = 1; i < currentComponents.length; i++) {
+                updatedRow.addComponents(ButtonBuilder.from(currentComponents[i]));
             }
             
             await interaction.message.edit({ components: [updatedRow] }).catch(() => {});
@@ -1434,6 +1446,8 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                                 const calendarLink = generateGoogleCalendarLink(n);
                                 updatedRow.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
                             }
+                            
+                            updatedRow.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${n.guild.id}/${n.id}`).setEmoji('🔗'));
 
                             components = [updatedRow];
                         }
