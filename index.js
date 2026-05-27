@@ -414,7 +414,7 @@ client.on(Events.ClientReady, async c => {
     c.user.setActivity({
         name: 'Custom Status',
         type: ActivityType.Custom,
-        state: '⏰ Announcing events & sending reminders | /help'
+        state: '/help | Event reminders and announcements'
     });
     
     const activeEventIds = new Set();
