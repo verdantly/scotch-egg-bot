@@ -3,6 +3,7 @@ const schedule = require('node-schedule');
 require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
 const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
+const { version } = require('./package.json');
 
 const client = new Client({ 
     intents: [
@@ -408,7 +409,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
 }
 
 client.on(Events.ClientReady, async c => {
-    console.log(`Bot logged in as ${c.user.tag}`);
+    console.log(`Bot logged in as ${c.user.tag} (v${version})`);
     
     c.user.setActivity({
         name: 'Custom Status',
@@ -939,7 +940,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     }
                 )
                 .setColor('#0099ff')
-                .setFooter({ text: 'Use /settings testreminder to preview your reminder messages!' });
+                .setFooter({ text: `v${version} • Use /settings testreminder to preview your reminder messages!` });
             
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
