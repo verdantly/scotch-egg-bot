@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scotch Egg Bot | Discord Event Reminders</title>
-    <meta name="description" content="A free Discord bot that uses native Discord events to send automated, opt-in reminders without clunky bot commands.">
-    
+    <meta name="description"
+        content="A free Discord bot that uses native Discord events to send automated, opt-in reminders without clunky bot commands.">
+
     <!-- Custom CSS & Fonts -->
     <link rel="stylesheet" href="css/custom.css">
-    
+
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
@@ -54,103 +56,153 @@
         }
     </script>
 </head>
-<body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+<body
+    class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Header & Navigation -->
     <header class="relative z-50">
         <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
-            <div class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk">
+            <div
+                class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk">
                 <span>🥚</span>
                 <span>Scotch Egg Bot</span>
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
-                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
-                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+                <a href="#features"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
             </div>
             <div class="flex items-center space-x-4">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                <button id="theme-toggle"
+                    class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors"
+                    aria-label="Toggle Dark Mode">
                     <span class="dark:hidden text-xl">🌙</span>
                     <span class="hidden dark:inline text-xl">☀️</span>
                 </button>
-                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer"
+                    class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
                     GitHub Repo
                 </a>
-                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
-                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <button id="mobile-menu-btn"
+                    class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors"
+                    aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
                 </button>
             </div>
         </nav>
 
         <!-- Mobile Menu Overlay -->
-        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+        <div id="mobile-menu"
+            class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
             <div class="flex flex-col space-y-4">
-                <a href="#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
-                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
-                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
-                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+                <a href="#features"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html"
+                    class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer"
+                    class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
             </div>
         </div>
     </header>
 
     <!-- Hero Section Wrapper with CSS Backgrounds -->
-    <div class="relative overflow-hidden bg-cream dark:bg-gray-900 transition-colors duration-300 border-b border-cream-dark dark:border-gray-800">
-        
+    <div
+        class="relative overflow-hidden bg-cream dark:bg-gray-900 transition-colors duration-300 border-b border-cream-dark dark:border-gray-800">
+
         <!-- Grid Background -->
-        <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        
+        <div
+            class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
+        </div>
+
         <!-- Animated Glowing Orbs -->
-        <div class="absolute top-[-10%] left-[-10%] w-72 h-72 md:w-96 md:h-96 bg-eggyolk rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob"></div>
-        <div class="absolute top-[20%] right-[-10%] w-72 h-72 md:w-96 md:h-96 bg-breadcrumb rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob" style="animation-delay: 2000ms;"></div>
-        <div class="absolute -bottom-8 left-[20%] w-72 h-72 md:w-96 md:h-96 bg-eggyolk-hover rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob" style="animation-delay: 4000ms;"></div>
+        <div
+            class="absolute top-[-10%] left-[-10%] w-72 h-72 md:w-96 md:h-96 bg-eggyolk rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob">
+        </div>
+        <div class="absolute top-[20%] right-[-10%] w-72 h-72 md:w-96 md:h-96 bg-breadcrumb rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob"
+            style="animation-delay: 2000ms;"></div>
+        <div class="absolute -bottom-8 left-[20%] w-72 h-72 md:w-96 md:h-96 bg-eggyolk-hover rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-40 animate-blob"
+            style="animation-delay: 4000ms;"></div>
 
         <!-- Hero Content -->
         <header class="relative z-10 w-full max-w-5xl mx-auto px-6 py-24 text-center flex flex-col items-center">
             <h1 class="text-5xl md:text-7xl font-serif font-black text-charcoal dark:text-white leading-tight mb-6">
-                Punctual Events. <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-eggyolk to-breadcrumb">Perfectly Cooked.</span>
+                Event Reminders.<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-eggyolk to-breadcrumb">Perfectly
+                    Cooked.</span>
             </h1>
             <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mb-10 leading-relaxed">
-                A completely free Discord bot that hooks seamlessly into <strong>native Discord events</strong>. No clunky special event commands. End <code>@everyone</code> spam and send automated reminders only to the users who actually want them.
+                Never miss another event again! A completely free Discord bot that hooks into native
+                Discord events and requires no clunky special event commands. Customizable reminders let users choose
+                how they want to be reminded!
             </p>
             <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <a href="documentation.html#setup" class="bg-eggyolk text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-eggyolk-hover hover:scale-105 transform transition-all shadow-md hover:shadow-lg flex items-center justify-center">
+                <a href="documentation.html#setup"
+                    class="bg-eggyolk text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-eggyolk-hover hover:scale-105 transform transition-all shadow-md hover:shadow-lg flex items-center justify-center">
                     Deploy with Docker
                 </a>
-                <a href="#features" class="bg-white dark:bg-gray-800 text-breadcrumb border-2 border-breadcrumb text-lg font-bold px-8 py-3 rounded-full hover:bg-cream-dark dark:hover:bg-gray-700 hover:scale-105 transform transition-all shadow-sm hover:shadow-lg flex items-center justify-center">
+                <a href="#features"
+                    class="bg-white dark:bg-gray-800 text-breadcrumb border-2 border-breadcrumb text-lg font-bold px-8 py-3 rounded-full hover:bg-cream-dark dark:hover:bg-gray-700 hover:scale-105 transform transition-all shadow-sm hover:shadow-lg flex items-center justify-center">
                     View Features
                 </a>
             </div>
 
             <!-- Discord Message Mockup (Visual Preview) -->
-            <div class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-2xl text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22]">
+            <div
+                class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-2xl text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22]">
                 <div class="flex items-start space-x-4">
-                    <div class="w-10 h-10 rounded-full bg-eggyolk flex items-center justify-center text-xl shrink-0 shadow-inner">🥚</div>
+                    <div
+                        class="w-10 h-10 rounded-full bg-eggyolk flex items-center justify-center text-xl shrink-0 shadow-inner">
+                        🥚</div>
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="font-medium text-white">Scotch Egg Bot</span>
-                            <span class="bg-[#5865F2] text-[10px] px-1.5 py-0.5 rounded text-white font-medium flex items-center"><span>APP</span></span>
+                            <span
+                                class="bg-[#5865F2] text-[10px] px-1.5 py-0.5 rounded text-white font-medium flex items-center"><span>APP</span></span>
                             <span class="text-xs text-gray-400">Today at 8:00 PM</span>
                         </div>
                         <div class="mt-1 bg-[#2b2d31] rounded-md p-3 sm:p-4 border-l-4 border-[#0099ff]">
-                            <h4 class="font-bold text-white mb-2 text-base sm:text-lg">New Event: Sunday Brunch at Eggcellent Café</h4>
-                            <p class="text-sm mb-2 text-gray-200">🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00 AM to 1:00 PM (in 5 days)<br>📍 <strong>Location:</strong> <span class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent Café (123 Yolk Street)</span></p>
-                            <p class="text-sm italic text-gray-400 mt-2">It's been far too long since we've had eggs benedict, french toast, and bottomless mimosas together.  Also, we need our yearly consumption of Scotch eggs as well!</p>
+                            <h4 class="font-bold text-white mb-2 text-base sm:text-lg">New Event: Sunday Brunch at
+                                Eggcellent Café</h4>
+                            <p class="text-sm mb-2 text-gray-200">🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00
+                                AM to 1:00 PM (in 5 days)<br>📍 <strong>Location:</strong> <span
+                                    class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent
+                                    Café (123 Yolk Street)</span></p>
+                            <p class="text-sm italic text-gray-400 mt-2">It's been far too long since we've had eggs
+                                benedict, french toast, and bottomless mimosas together. Also, we need our yearly
+                                consumption of Scotch eggs as well!</p>
                             <div class="grid grid-cols-2 gap-4 mt-3 border-t border-gray-700/50 pt-2 text-xs">
                                 <div>
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">👤 Host</span>
-                                    <span class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">👤
+                                        Host</span>
+                                    <span
+                                        class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
                                 </div>
                                 <div>
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">⏱️ Duration</span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">⏱️
+                                        Duration</span>
                                     <span class="text-sm text-gray-200 font-medium">2 hours</span>
                                 </div>
                             </div>
-                            <p class="text-[11px] text-gray-400 mt-3 italic">*Click the button below to receive a DM reminder at: 24h, 1h before the event begins!*</p>
+                            <p class="text-[11px] text-gray-400 mt-3 italic">*Click the button below to receive a DM
+                                reminder at: 24h, 1h before the event begins!*</p>
                         </div>
                         <div class="mt-2 flex flex-wrap gap-2">
-                            <button class="bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>⏰</span><span>Remind Me! (3)</span></button>
-                            <button class="bg-[#4e5058] hover:bg-[#6d6f78] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>📅</span><span>Add to Calendar</span></button>
+                            <button
+                                class="bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>⏰</span><span>Remind
+                                    Me! (3)</span></button>
+                            <button
+                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white text-sm font-medium px-4 py-1.5 rounded transition-all flex items-center space-x-2 mt-2 hover:-translate-y-0.5 hover:shadow-md"><span>📅</span><span>Add
+                                    to Calendar</span></button>
                         </div>
                     </div>
                 </div>
@@ -162,31 +214,47 @@
     <section id="features" class="bg-white dark:bg-gray-800 py-24 transition-colors duration-300">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="text-center mb-24">
-                <h2 class="text-4xl md:text-5xl font-serif font-bold text-charcoal dark:text-white">Everything you need.</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">Powerful features designed to keep your community engaged and on time.</p>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold text-charcoal dark:text-white">Everything you need.
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">Powerful features designed to
+                    keep your community engaged and on time.</p>
             </div>
-            
+
             <!-- Big Feature 1 -->
             <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">🤝</div>
+                    <div
+                        class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
+                        🤝</div>
                     <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Native Discord Events</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Stop wrestling with complicated <code>!create</code> commands. Scotch Egg Bot integrates seamlessly with Discord's native Scheduled Events feature. Just create an event using Discord's built-in UI, and the bot instantly posts an interactive announcement with strictly opt-in reminders.</p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Stop wrestling with complicated
+                        <code>!create</code> commands. Scotch Egg Bot integrates seamlessly with Discord's native
+                        Scheduled Events feature. Just create an event using Discord's built-in UI, and the bot
+                        instantly posts an interactive announcement with strictly opt-in reminders.
+                    </p>
                     <ul class="space-y-3 text-gray-600 dark:text-gray-300 font-medium">
-                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>Zero learning curve</span></li>
-                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>No more mass <code>@everyone</code> spam</span></li>
+                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>Zero
+                                learning curve</span></li>
+                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>No
+                                more mass <code>@everyone</code> spam</span></li>
                     </ul>
                 </div>
-                <div class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700">
+                <div
+                    class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700">
                     <div class="bg-[#313338] rounded-md p-4 shadow-md border border-[#1e1f22]">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="w-8 h-8 rounded-full bg-breadcrumb flex items-center justify-center text-white text-xs font-bold">Bot</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-breadcrumb flex items-center justify-center text-white text-xs font-bold">
+                                Bot</div>
                             <div class="h-4 w-32 bg-[#2b2d31] rounded"></div>
                         </div>
                         <div class="h-3 w-3/4 bg-[#2b2d31] rounded mb-2"></div>
                         <div class="h-3 w-1/2 bg-[#2b2d31] rounded mb-4"></div>
                         <div class="flex gap-2">
-                            <div class="px-3 py-1.5 bg-[#5865F2] rounded text-white text-xs font-bold flex items-center space-x-2"><span>⏰</span> <span>Remind Me! (42)</span></div>
+                            <div
+                                class="px-3 py-1.5 bg-[#5865F2] rounded text-white text-xs font-bold flex items-center space-x-2">
+                                <span>⏰</span> <span>Remind Me! (42)</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -195,87 +263,120 @@
             <!-- Big Feature 2 -->
             <div class="flex flex-col md:flex-row-reverse items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div class="w-16 h-16 bg-cream border border-breadcrumb/20 dark:border-breadcrumb/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">📅</div>
+                    <div
+                        class="w-16 h-16 bg-cream border border-breadcrumb/20 dark:border-breadcrumb/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
+                        📅</div>
                     <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Add to Calendar Button</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Event announcements automatically generate a smart link button. With a single click, users can add the scheduled event directly to their personal Google Calendar with the time, location, and description pre-filled.</p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Event announcements
+                        automatically generate a smart link button. With a single click, users can add the scheduled
+                        event directly to their personal Google Calendar with the time, location, and description
+                        pre-filled.</p>
                 </div>
-                <div class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex items-center justify-center min-h-[250px]">
-                     <div class="bg-white dark:bg-gray-800 rounded-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-xs w-full transform -rotate-2 hover:rotate-0 transition-transform duration-300">
-                         <div class="border-b-2 border-red-500 pb-2 mb-4">
-                             <span class="text-red-500 font-bold uppercase tracking-wider text-sm">October</span>
-                         </div>
-                         <div class="text-5xl font-black text-charcoal dark:text-white mb-2">24</div>
-                         <div class="text-gray-600 dark:text-gray-400 font-medium">11:00 AM • Sunday Brunch</div>
-                     </div>
+                <div
+                    class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex items-center justify-center min-h-[250px]">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-md p-6 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-xs w-full transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                        <div class="border-b-2 border-red-500 pb-2 mb-4">
+                            <span class="text-red-500 font-bold uppercase tracking-wider text-sm">October</span>
+                        </div>
+                        <div class="text-5xl font-black text-charcoal dark:text-white mb-2">24</div>
+                        <div class="text-gray-600 dark:text-gray-400 font-medium">11:00 AM • Sunday Brunch</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Big Feature 3 -->
             <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">💬</div>
+                    <div
+                        class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
+                        💬</div>
                     <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Auto-Threads</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Foster community engagement instantly. Scotch Egg Bot can automatically create a dedicated discussion thread on every new event announcement, giving your members a place to chat, plan, and hype up the event without cluttering the main channel.</p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Foster community engagement
+                        instantly. Scotch Egg Bot can automatically create a dedicated discussion thread on every new
+                        event announcement, giving your members a place to chat, plan, and hype up the event without
+                        cluttering the main channel.</p>
                 </div>
-                <div class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex flex-col justify-center">
+                <div
+                    class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex flex-col justify-center">
                     <div class="flex flex-col gap-3">
                         <div class="bg-[#313338] rounded-md p-4 border border-[#1e1f22]">
                             <div class="h-4 w-48 bg-[#5865F2] rounded mb-2"></div>
                             <div class="h-3 w-64 bg-[#2b2d31] rounded"></div>
                         </div>
                         <div class="ml-6 border-l-2 border-gray-400 dark:border-gray-600 pl-4 relative">
-                            <div class="absolute -left-[11px] top-4 w-5 h-5 bg-gray-400 dark:bg-gray-600 rounded-full border-4 border-cream dark:border-gray-900"></div>
-                            <div class="bg-white dark:bg-[#2b2d31] rounded-md p-3 shadow-md border border-gray-200 dark:border-transparent mt-2">
-                                <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Thread Started</span>
-                                <div class="text-sm font-medium text-charcoal dark:text-gray-200 mt-1">💬 Discussion: Sunday Brunch</div>
+                            <div
+                                class="absolute -left-[11px] top-4 w-5 h-5 bg-gray-400 dark:bg-gray-600 rounded-full border-4 border-cream dark:border-gray-900">
+                            </div>
+                            <div
+                                class="bg-white dark:bg-[#2b2d31] rounded-md p-3 shadow-md border border-gray-200 dark:border-transparent mt-2">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Thread
+                                    Started</span>
+                                <div class="text-sm font-medium text-charcoal dark:text-gray-200 mt-1">💬 Discussion:
+                                    Sunday Brunch</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- More Features Grid -->
             <div class="text-center mt-32 mb-12">
                 <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white">And so much more...</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                <div
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">💸</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">100% Free</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">No paywalls, no premium tiers, and no locked features. Completely free and open-source forever.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">No paywalls, no premium tiers, and no locked
+                        features. Completely free and open-source forever.</p>
                 </div>
-                <div class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                <div
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🛡️</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">No Privileged Intents</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Modern and secure. The bot relies entirely on modern slash commands and interactions.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Modern and secure. The bot relies entirely on
+                        modern slash commands and interactions.</p>
                 </div>
-                <div class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                <div
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🍓</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Pi & SD-Card Friendly</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses batched disk writes to dramatically extend SD card life.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses
+                        batched disk writes to dramatically extend SD card life.</p>
                 </div>
-                <div class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                <div
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🗑️</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Auto-Cleanup</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Keep channels tidy. Choose to completely delete or gracefully archive announcements when an event ends.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Keep channels tidy. Choose to completely delete
+                        or gracefully archive announcements when an event ends.</p>
                 </div>
             </div>
 
             <!-- Social Proof / Stats Banner -->
-            <div class="mt-24 flex flex-wrap justify-center items-center gap-8 sm:gap-16 border-t border-cream-dark dark:border-gray-700 pt-16 w-full max-w-4xl mx-auto" id="stats-section">
+            <div class="mt-24 flex flex-wrap justify-center items-center gap-8 sm:gap-16 border-t border-cream-dark dark:border-gray-700 pt-16 w-full max-w-4xl mx-auto"
+                id="stats-section">
                 <div class="flex flex-col items-center">
-                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="500">0</span>+</span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Active Servers</span>
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number"
+                            data-target="500">0</span>+</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Active
+                        Servers</span>
                 </div>
                 <div class="hidden sm:block h-12 w-px bg-cream-dark dark:bg-gray-700"></div>
                 <div class="flex flex-col items-center">
-                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="20000">0</span>+</span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Users Reminded</span>
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number"
+                            data-target="20000">0</span>+</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Users
+                        Reminded</span>
                 </div>
                 <div class="hidden sm:block h-12 w-px bg-cream-dark dark:bg-gray-700"></div>
                 <div class="flex flex-col items-center">
-                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number" data-target="100">0</span>%</span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Free & Open Source</span>
+                    <span class="text-4xl font-black text-charcoal dark:text-white"><span class="stat-number"
+                            data-target="100">0</span>%</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold mt-2">Free &
+                        Open Source</span>
                 </div>
             </div>
         </div>
@@ -284,42 +385,65 @@
     <!-- Comparison Section -->
     <section id="comparison" class="bg-cream dark:bg-gray-900 py-20 transition-colors duration-300">
         <div class="w-full max-w-5xl mx-auto px-6">
-            <h2 class="text-4xl font-serif font-bold text-center text-charcoal dark:text-white mb-16">How does it compare?</h2>
-            
+            <h2 class="text-4xl font-serif font-bold text-center text-charcoal dark:text-white mb-16">How does it
+                compare?</h2>
+
             <div class="overflow-x-auto rounded-2xl shadow-xl border border-cream-dark dark:border-gray-700">
                 <table class="w-full text-left border-collapse md:min-w-[600px]">
                     <thead>
-                        <tr class="bg-breadcrumb text-white dark:bg-gray-800 dark:text-gray-200 border-b border-cream-dark dark:border-gray-700">
+                        <tr
+                            class="bg-breadcrumb text-white dark:bg-gray-800 dark:text-gray-200 border-b border-cream-dark dark:border-gray-700">
                             <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg">Feature</th>
-                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center bg-breadcrumb-dark dark:bg-gray-900/50">🥚 Scotch Egg Bot</th>
-                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center">Other Event Bots</th>
+                            <th
+                                class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center bg-breadcrumb-dark dark:bg-gray-900/50">
+                                🥚 Scotch Egg Bot</th>
+                            <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center">Other Event Bots
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr
+                            class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="p-3 md:p-5 font-medium text-sm md:text-base">Integration</td>
-                            <td class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Native Discord Events</td>
-                            <td class="p-3 md:p-5 text-center text-gray-500 text-sm md:text-base">Special event commands</td>
+                            <td
+                                class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">
+                                Native Discord Events</td>
+                            <td class="p-3 md:p-5 text-center text-gray-500 text-sm md:text-base">Special event commands
+                            </td>
                         </tr>
-                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr
+                            class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="p-3 md:p-5 font-medium text-sm md:text-base">Pricing</td>
-                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">100% Free & Open Source</td>
-                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Paywalled "Premium" Tiers</td>
+                            <td
+                                class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">
+                                100% Free & Open Source</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">
+                                Paywalled "Premium" Tiers</td>
                         </tr>
-                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr
+                            class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="p-3 md:p-5 font-medium text-sm md:text-base">Reminder Limits</td>
-                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Unlimited</td>
-                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Capped on free plans</td>
+                            <td
+                                class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">
+                                Unlimited</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">
+                                Capped on free plans</td>
                         </tr>
-                        <tr class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <tr
+                            class="border-b border-cream-dark dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="p-3 md:p-5 font-medium text-sm md:text-base">Privacy</td>
-                            <td class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">Self-Hosted (You own the data)</td>
+                            <td
+                                class="p-3 md:p-5 text-center font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">
+                                Self-Hosted (You own the data)</td>
                             <td class="p-3 md:p-5 text-center text-gray-500 text-sm md:text-base">Cloud-Hosted</td>
                         </tr>
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="p-3 md:p-5 font-medium text-sm md:text-base">Discord API Requirements</td>
-                            <td class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">No Privileged Intents</td>
-                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">Server Members Intent Required</td>
+                            <td
+                                class="p-3 md:p-5 text-center text-green-600 dark:text-green-400 font-bold bg-cream/30 dark:bg-gray-900/30 text-sm md:text-base">
+                                No Privileged Intents</td>
+                            <td class="p-3 md:p-5 text-center text-red-500 dark:text-red-400 text-sm md:text-base">
+                                Server Members Intent Required</td>
                         </tr>
                     </tbody>
                 </table>
@@ -328,27 +452,33 @@
     </section>
 
     <!-- Final CTA -->
-    <section class="bg-white dark:bg-gray-800 py-20 border-t-2 border-cream-dark dark:border-gray-700 transition-colors duration-300">
+    <section
+        class="bg-white dark:bg-gray-800 py-20 border-t-2 border-cream-dark dark:border-gray-700 transition-colors duration-300">
         <div class="w-full max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-4xl font-serif font-bold text-charcoal dark:text-white mb-6">Ready to get started?</h2>
-            <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Deploying Scotch Egg Bot takes just a few minutes using Docker.</p>
-            <a href="documentation.html#setup" class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark hover:scale-105 hover:shadow-lg transform transition-all shadow-md inline-block">
+            <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Deploying Scotch Egg Bot takes just a few minutes
+                using Docker.</p>
+            <a href="documentation.html#setup"
+                class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark hover:scale-105 hover:shadow-lg transform transition-all shadow-md inline-block">
                 View the Setup Guide
             </a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-cream dark:bg-gray-900 py-10 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+    <footer
+        class="bg-cream dark:bg-gray-900 py-10 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
         <div class="w-full max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
+            <div
+                class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
                 <span>🥚</span>
                 <span>Scotch Egg Bot</span>
             </div>
             <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
                 <p>Open Source under the GPLv3 License.</p>
                 <p class="mt-1">
-                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors">GitHub</a>
+                    <a href="https://github.com/verdantly/scotch-egg-bot"
+                        class="hover:text-breadcrumb transition-colors">GitHub</a>
                 </p>
             </div>
         </div>
@@ -357,4 +487,5 @@
     <!-- Scripts -->
     <script src="js/script.js"></script>
 </body>
+
 </html>
