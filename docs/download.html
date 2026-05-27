@@ -153,6 +153,16 @@
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Dynamic Help Slash Command:</strong> Customized the <code>/help</code> command to conditionally display the list of Administrator commands only if the command is executed by a user with Administrator permissions. The <code>/settings testreminder</code> footer tip is also dynamically hidden for non-administrators.</li>
+                                <li><strong>Help Attribution Link:</strong> Added a subtle powered-by attribution link pointing to the GitHub repository within the <code>/help</code> command description embed.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Database Loading Metadata Loss:</strong> Fixed a critical bug in <code>storage.js</code> where <code>guildId</code> and <code>reminderMessageIds</code> were lost upon bot restart. This restores full capability to modify, clean up, and strip mentions from older public reminders upon event conclusion after a reboot.</li>
+                                <li><strong>Startup Garbage Collection Wipeout:</strong> Fixed a critical edge case in startup synchronization where a single guild sync failure (due to API timeouts or outages) would trigger a complete deletion of that guild's active reminder database records.</li>
                             </ul>
                         </div>
                     </div>

@@ -4,6 +4,7 @@ require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
 const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
 const { version } = require('./package.json');
+const { t } = require('./i18n.js');
 
 const client = new Client({ 
     intents: [
@@ -136,7 +137,9 @@ async function updateLiveCounter(eventId) {
         if (!msg || !msg.components || msg.components.length === 0) return;
 
         const userCount = Object.keys(eventData.users || {}).length;
-        const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
+        const guildLocale = guild.preferredLocale || 'en';
+        const baseRemindLabel = t(guildLocale, 'announcement_button_remind');
+        const newLabel = userCount > 0 ? `${baseRemindLabel} (${userCount})` : baseRemindLabel;
 
         const currentComponents = msg.components[0].components;
         if (!currentComponents[0].customId || !currentComponents[0].customId.startsWith('remind_')) return;
@@ -280,7 +283,14 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                         
                         // 3. DEFENSIVE SAFETY TRUNCATION: Keeping the whole message strictly under Discord's 2,000-character limit
                         // We reserve 1,900 characters for the alert text to leave plenty of room for buttons, mentions, etc.
-                        const baseMsg = `📢 ${alert.value}${alert.unit} until **${event.name}**!\n🗓️ ${currentFormattedTime}\n📍 ${currentLocation}`;
+                        const guildLocale = event.guild.preferredLocale || 'en';
+                        const baseMsg = t(guildLocale, mode === 'public' ? 'reminder_body_public' : 'reminder_body_private', {
+                            value: alert.value,
+                            unit: alert.unit,
+                            name: event.name,
+                            time: currentFormattedTime,
+                            location: currentLocation
+                        });
                         
                         let truncatedDesc = '';
                         if (event.description) {
@@ -305,7 +315,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             const payload = {};
                             if (publicMsg.length > 2000) {
-                                let safeMsg = `${alertMsg}\n\n*(${userIds.length} users opted in, mentions hidden to save space)*`;
+                                let safeMsg = `${alertMsg}\n\n` + t(guildLocale, 'public_reminders_hidden', { count: userIds.length });
                                 if (safeMsg.length > 2000) safeMsg = safeMsg.substring(0, 1995) + '...';
                                 payload.content = safeMsg;
                             } else {
@@ -317,13 +327,13 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             if (!isLastReminder) {
                                 row.addComponents(
-                                    new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+                                    new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰')
                                 );
                             }
                             if (getCalendarEnabled(event.guild.id) && alert.ms > 60 * 60 * 1000) {
-                                row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
+                                row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
                             }
-                            row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
+                            row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
                             if (row.components.length > 0) {
                                 payload.components = [row];
                             }
@@ -360,11 +370,11 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             const row = new ActionRowBuilder();
                             if (!isLastReminder) {
                                 row.addComponents(
-                                    new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕')
+                                    new ButtonBuilder().setCustomId(`cancel_remind_${event.id}`).setLabel(t(guildLocale, 'reminder_button_cancel')).setStyle(ButtonStyle.Danger).setEmoji('🔕')
                                 );
                             }
                             row.addComponents(
-                                new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗')
+                                new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗')
                             );
                             components.push(row);
 
@@ -372,10 +382,15 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alertMsg, components });
                             if (failedUserIds.length > 0) {
                                 const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
-                                const fallbackMsg = `${alertMsg}\n\nCould not DM: ${mentions}`;
+                                let prefix = 'Could not DM:';
+                                if (guildLocale === 'es') prefix = 'No se pudo enviar MD a:';
+                                else if (guildLocale === 'de') prefix = 'Konnte keine DM senden an:';
+                                else if (guildLocale === 'fr') prefix = "Impossible d'envoyer un DM à :";
+                                else if (guildLocale === 'pt') prefix = 'Não foi possível enviar DM para:';
+                                const fallbackMsg = `${alertMsg}\n\n${prefix} ${mentions}`;
                                 let sentMsg;
                                 if (fallbackMsg.length > 2000) {
-                                    let safeFallback = `${alertMsg}\n\n*Could not DM ${failedUserIds.length} users (mentions hidden to save space).*`;
+                                    let safeFallback = `${alertMsg}\n\n` + t(guildLocale, 'public_reminders_hidden_fallback', { count: failedUserIds.length });
                                     if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
                                     sentMsg = await channel.send(safeFallback).catch(() => null);
                                 } else {
@@ -426,12 +441,14 @@ client.on(Events.ClientReady, async c => {
     });
     
     const activeEventIds = new Set();
+    const successfulGuildIds = new Set();
     
     // Sync all events and collect active IDs concurrently across all guilds
     const syncPromises = c.guilds.cache.map(async guild => {
         try {
             await syncEventReminders(guild);
             guild.scheduledEvents.cache.forEach(e => activeEventIds.add(e.id));
+            successfulGuildIds.add(guild.id);
         } catch (err) {
             console.error(`Failed to sync events for guild ${guild.id}:`, err);
         }
@@ -441,9 +458,14 @@ client.on(Events.ClientReady, async c => {
     // Offline Garbage Collection: Remove events deleted while bot was offline
     let dbModified = false;
     for (const eventId in eventDb) {
-        if (!activeEventIds.has(eventId)) {
-            delete eventDb[eventId];
-            dbModified = true;
+        const eventData = eventDb[eventId];
+        // Only garbage collect if we successfully synced the guild the event belongs to,
+        // and the event is no longer active in that guild.
+        if (eventData && eventData.guildId && successfulGuildIds.has(eventData.guildId)) {
+            if (!activeEventIds.has(eventId)) {
+                delete eventDb[eventId];
+                dbModified = true;
+            }
         }
     }
     if (dbModified) await saveDb();
@@ -482,20 +504,28 @@ function buildAnnouncementEmbed(event) {
     const mode = getAnnouncementMode(event.guild.id);
     const intervals = getReminderIntervals(event.guild.id);
     const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-    const reminderText = mode === 'public' 
-        ? `*Click the button below to be pinged via @mention at: ${intervalsStr} before the event begins!*`
-        : `*Click the button below to receive a DM reminder at: ${intervalsStr} before the event begins!*`;
+    const guildLocale = event.guild.preferredLocale || 'en';
+    const reminderText = t(guildLocale, mode === 'public' ? 'announcement_footer_public' : 'announcement_footer_private', {
+        intervals: intervalsStr
+    });
 
-    let title = `New Event: ${event.name}`;
+    let titlePrefix = 'New Event:';
+    if (guildLocale === 'es') titlePrefix = 'Nuevo evento:';
+    else if (guildLocale === 'de') titlePrefix = 'Neues Event:';
+    else if (guildLocale === 'fr') titlePrefix = 'Nouvel événement :';
+    else if (guildLocale === 'pt') titlePrefix = 'Novo evento:';
+    let title = `${titlePrefix} ${event.name}`;
     if (title.length > 256) title = title.substring(0, 253) + '...';
 
-    let fullDescription = `🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}${description}\n\n${reminderText}`;
+    const timeField = t(guildLocale, 'announcement_time', { time: timeString });
+    const locationField = t(guildLocale, 'announcement_location', { location: location });
+    let fullDescription = `${timeField}\n${locationField}${description}\n\n${reminderText}`;
     
     // Defensive truncation for the 4096 embed description limit
     if (fullDescription.length > 4096 && event.description) {
         const overflow = fullDescription.length - 4096 + 3; // +3 for '...'
         const truncatedDesc = event.description.substring(0, event.description.length - overflow) + '...';
-        fullDescription = `🗓️ **Time:** ${timeString}\n📍 **Location:** ${location}\n\n${truncatedDesc}\n\n${reminderText}`;
+        fullDescription = `${timeField}\n${locationField}\n\n${truncatedDesc}\n\n${reminderText}`;
     }
 
     const embed = new EmbedBuilder()
@@ -507,10 +537,10 @@ function buildAnnouncementEmbed(event) {
     if (event.creatorId || duration) {
         const fields = [];
         if (event.creatorId) {
-            fields.push({ name: '👤 Host', value: `<@${event.creatorId}>`, inline: true });
+            fields.push({ name: t(guildLocale, 'announcement_host'), value: `<@${event.creatorId}>`, inline: true });
         }
         if (duration) {
-            fields.push({ name: '⏱️ Duration', value: duration, inline: true });
+            fields.push({ name: t(guildLocale, 'announcement_duration'), value: duration, inline: true });
         }
         embed.addFields(fields);
     }
@@ -531,16 +561,17 @@ function buildAnnouncementEmbed(event) {
  */
 async function postAnnouncement(event, channel) {
     const embed = buildAnnouncementEmbed(event);
+    const guildLocale = event.guild.preferredLocale || 'en';
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰')
+        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰')
     );
 
     if (getCalendarEnabled(event.guild.id)) {
-        row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
+        row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
     }
 
-    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
+    row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
@@ -576,8 +607,9 @@ async function generateUpcomingPage(interaction, page = 0) {
         return !users[userId] && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active);
     }).sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
+    const userLocale = interaction.locale || 'en';
     if (upcomingEvents.length === 0) {
-        return { content: 'There are no new upcoming events for you to opt into!', components: [] };
+        return { content: t(userLocale, 'upcoming_no_events'), components: [] };
     }
 
     const totalPages = Math.ceil(upcomingEvents.length / 25);
@@ -587,11 +619,12 @@ async function generateUpcomingPage(interaction, page = 0) {
     const startIndex = page * 25;
     const pageEvents = upcomingEvents.slice(startIndex, startIndex + 25);
 
-    let replyMessage = `**Upcoming Events (Select below to opt-in)${totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : ''}:**\n\n`;
+    const pageText = totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : '';
+    let replyMessage = t(userLocale, 'upcoming_title', { pageText: pageText });
     
     const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('list_optin_select')
-        .setPlaceholder('Select events to receive reminders for...')
+        .setPlaceholder(t(userLocale, 'upcoming_select_placeholder'))
         .setMinValues(1)
         .setMaxValues(pageEvents.length);
 
@@ -612,12 +645,12 @@ async function generateUpcomingPage(interaction, page = 0) {
         const navRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`upcoming_page_${page - 1}`)
-                .setLabel('⬅️ Previous')
+                .setLabel(t(userLocale, 'upcoming_btn_prev'))
                 .setStyle(ButtonStyle.Secondary)
                 .setDisabled(page === 0),
             new ButtonBuilder()
                 .setCustomId(`upcoming_page_${page + 1}`)
-                .setLabel('Next ➡️')
+                .setLabel(t(userLocale, 'upcoming_btn_next'))
                 .setStyle(ButtonStyle.Secondary)
                 .setDisabled(page === totalPages - 1)
         );
@@ -643,8 +676,9 @@ async function generateMyRemindersPage(interaction, page = 0) {
         }
     }
 
+    const userLocale = interaction.locale || 'en';
     if (myEventIds.size === 0) {
-        return { content: 'You are not currently opted-in to receive reminders for any events.', components: [] };
+        return { content: t(userLocale, 'myreminders_no_events'), components: [] };
     }
 
     // Fetch the actual events from the current guild to filter out events from other servers
@@ -654,7 +688,7 @@ async function generateMyRemindersPage(interaction, page = 0) {
         .sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
     if (myGuildEvents.length === 0) {
-         return { content: 'You are not currently opted-in to receive reminders for any upcoming events in this server.', components: [] };
+         return { content: t(userLocale, 'myreminders_no_guild_events'), components: [] };
     }
 
     const totalPages = Math.ceil(myGuildEvents.length / 25);
@@ -664,11 +698,12 @@ async function generateMyRemindersPage(interaction, page = 0) {
     const startIndex = page * 25;
     const pageEvents = myGuildEvents.slice(startIndex, startIndex + 25);
 
-    let replyMessage = `**Your Upcoming Reminders for this Server${totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : ''}:**\n\n`;
+    const pageText = totalPages > 1 ? ` - Page ${page + 1}/${totalPages}` : '';
+    let replyMessage = t(userLocale, 'myreminders_title', { pageText: pageText });
     
     const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('list_cancel_select')
-        .setPlaceholder('Select events to cancel reminders for...')
+        .setPlaceholder(t(userLocale, 'myreminders_select_placeholder'))
         .setMinValues(1)
         .setMaxValues(pageEvents.length);
 
@@ -687,8 +722,8 @@ async function generateMyRemindersPage(interaction, page = 0) {
 
     if (totalPages > 1) {
         const navRow = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`myreminders_page_${page - 1}`).setLabel('⬅️ Previous').setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
-            new ButtonBuilder().setCustomId(`myreminders_page_${page + 1}`).setLabel('Next ➡️').setStyle(ButtonStyle.Secondary).setDisabled(page === totalPages - 1)
+            new ButtonBuilder().setCustomId(`myreminders_page_${page - 1}`).setLabel(t(userLocale, 'upcoming_btn_prev')).setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
+            new ButtonBuilder().setCustomId(`myreminders_page_${page + 1}`).setLabel(t(userLocale, 'upcoming_btn_next')).setStyle(ButtonStyle.Secondary).setDisabled(page === totalPages - 1)
         );
         components.push(navRow);
     }
@@ -719,8 +754,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
+                const userLocale = interaction.locale || 'en';
                 return interaction.reply({ 
-                    content: `Please wait! You are on a cooldown for \`/${interaction.commandName}\`. You can use it again <t:${expiredTimestamp}:R>.`, 
+                    content: t(userLocale, 'command_cooldown', { command: interaction.commandName, time: `<t:${expiredTimestamp}:R>` }), 
                     flags: MessageFlags.Ephemeral 
                 });
             }
@@ -732,16 +768,17 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.commandName === 'settings') {
             const subcommand = interaction.options.getSubcommand();
 
+            const userLocale = interaction.locale || 'en';
             if (subcommand === 'channel') {
                 const channel = interaction.options.getChannel('channel');
 
                 if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
-                    return interaction.reply({ content: 'Please select a valid text channel within this server.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: t(userLocale, 'settings_invalid_channel'), flags: MessageFlags.Ephemeral });
                 }
 
                 const botPermissions = channel.permissionsFor(interaction.guild.members.me);
                 if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
-                    return interaction.reply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: t(userLocale, 'settings_bot_no_permissions', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
                 }
 
                 if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
@@ -751,7 +788,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await saveConfig();
 
-                await interaction.reply({ content: `Success! Event announcements will now be posted in ${channel}.`, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: t(userLocale, 'settings_channel_success', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'mode') {
@@ -766,8 +803,13 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await saveConfig();
 
-                const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
-                await interaction.reply({ content: `Success! Event reminders will now be sent via: **${modeText}**.`, flags: MessageFlags.Ephemeral });
+                let modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+                if (userLocale === 'es') modeText = mode === 'public' ? 'Recordatorios de canal público' : 'Recordatorios de MD privado (Opt-in)';
+                else if (userLocale === 'de') modeText = mode === 'public' ? 'Öffentliche Kanal-Erinnerungen' : 'Private DM-Erinnerungen (Opt-in)';
+                else if (userLocale === 'fr') modeText = mode === 'public' ? 'Rappels de salon public' : 'Rappels de DM privé (Opt-in)';
+                else if (userLocale === 'pt') modeText = mode === 'public' ? 'Lembretes de canal público' : 'Lembretes de DM privado (Opt-in)';
+
+                await interaction.reply({ content: t(userLocale, 'settings_mode_success', { mode: modeText }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'calendar') {
@@ -778,7 +820,14 @@ client.on(Events.InteractionCreate, async interaction => {
                     serverConfig[interaction.guildId] = { channelId: null, mode: 'private', calendarEnabled: enabled };
                 }
                 await saveConfig();
-                await interaction.reply({ content: `Success! "Add to Calendar" button on announcements is now **${enabled ? 'enabled' : 'disabled'}**.`, flags: MessageFlags.Ephemeral });
+
+                let statusText = enabled ? 'enabled' : 'disabled';
+                if (userLocale === 'es') statusText = enabled ? 'activado' : 'desactivado';
+                else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
+                else if (userLocale === 'fr') statusText = enabled ? 'activé' : 'désactivé';
+                else if (userLocale === 'pt') statusText = enabled ? 'ativado' : 'desativado';
+
+                await interaction.reply({ content: t(userLocale, 'settings_calendar_success', { status: statusText }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'threads') {
@@ -789,7 +838,14 @@ client.on(Events.InteractionCreate, async interaction => {
                     serverConfig[interaction.guildId] = { channelId: null, mode: 'private', threadsEnabled: enabled };
                 }
                 await saveConfig();
-                await interaction.reply({ content: `Success! Auto-creating discussion threads is now **${enabled ? 'enabled' : 'disabled'}**.`, flags: MessageFlags.Ephemeral });
+
+                let statusText = enabled ? 'enabled' : 'disabled';
+                if (userLocale === 'es') statusText = enabled ? 'activado' : 'desactivado';
+                else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
+                else if (userLocale === 'fr') statusText = enabled ? 'activé' : 'désactivé';
+                else if (userLocale === 'pt') statusText = enabled ? 'ativado' : 'desativado';
+
+                await interaction.reply({ content: t(userLocale, 'settings_threads_success', { status: statusText }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'autodelete') {
@@ -800,7 +856,24 @@ client.on(Events.InteractionCreate, async interaction => {
                     serverConfig[interaction.guildId] = { channelId: null, mode: 'private', autoDeleteEnabled: enabled };
                 }
                 await saveConfig();
-                await interaction.reply({ content: `Success! Auto-deleting concluded event announcements is now **${enabled ? 'enabled' : 'disabled'}** (Archiving is **${enabled ? 'disabled' : 'enabled'}**).`, flags: MessageFlags.Ephemeral });
+
+                let statusText = enabled ? 'enabled' : 'disabled';
+                let archiveStatusText = enabled ? 'disabled' : 'enabled';
+                if (userLocale === 'es') {
+                    statusText = enabled ? 'activado' : 'desactivado';
+                    archiveStatusText = enabled ? 'desactivado' : 'activado';
+                } else if (userLocale === 'de') {
+                    statusText = enabled ? 'aktiviert' : 'deaktiviert';
+                    archiveStatusText = enabled ? 'deaktiviert' : 'aktiviert';
+                } else if (userLocale === 'fr') {
+                    statusText = enabled ? 'activé' : 'désactivé';
+                    archiveStatusText = enabled ? 'désactivé' : 'activé';
+                } else if (userLocale === 'pt') {
+                    statusText = enabled ? 'ativado' : 'desativado';
+                    archiveStatusText = enabled ? 'desactivado' : 'ativado';
+                }
+
+                await interaction.reply({ content: t(userLocale, 'settings_autodelete_success', { status: statusText, archiveStatus: archiveStatusText }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'intervals') {
@@ -808,7 +881,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const parsed = parseIntervals(input);
                 
                 if (parsed.length === 0) {
-                    return interaction.reply({ content: 'Invalid format. Please use a comma-separated list of times like `24h, 1h, 15m` (using m, h, or d). Max 30 days.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: t(userLocale, 'settings_intervals_invalid'), flags: MessageFlags.Ephemeral });
                 }
                 
                 if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
@@ -824,7 +897,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 guildEvents.forEach(event => { cancelEventReminders(event.id); scheduleRemindersForEvent(event, now); });
                 
                 const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
-                await interaction.reply({ content: `Success! Reminder intervals for this server are now set to: **${intervalsStr}**.\n*(Note: Existing announcements will still show the old text, but the internal timers have been instantly updated!)*`, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'testreminder') {
@@ -835,22 +908,28 @@ client.on(Events.InteractionCreate, async interaction => {
                 const mockStartTime = Date.now() + timeUntil;
                 const timeString = getFormattedTimeString(mockStartTime, 'F');
                 
-                const msg = `📢 ${interval.value}${interval.unit} until **Test Event Name**!\n🗓️ ${timeString}\n📍 Test Location\n\nThis is a mock description for the test event.`;
+                const msg = t(userLocale, 'settings_testreminder_msg', { value: interval.value, unit: interval.unit, time: timeString });
                 
-                let replyContent = `**Test Reminder Preview (Mode: ${mode === 'public' ? 'Public' : 'Private'})**\n\n`;
+                let modeLabel = mode === 'public' ? 'Public' : 'Private';
+                if (userLocale === 'es') modeLabel = mode === 'public' ? 'Público' : 'Privado';
+                else if (userLocale === 'de') modeLabel = mode === 'public' ? 'Öffentlich' : 'Privat';
+                else if (userLocale === 'fr') modeLabel = mode === 'public' ? 'Public' : 'Privé';
+                else if (userLocale === 'pt') modeLabel = mode === 'public' ? 'Público' : 'Privado';
+
+                let previewHeader = t(userLocale, 'settings_testreminder_preview', { mode: modeLabel });
+                let replyContent = previewHeader + msg;
                 const row = new ActionRowBuilder();
                 
                 if (mode === 'public') {
-                    replyContent += `${msg}\n\n<@${interaction.user.id}>`;
-                    row.addComponents(new ButtonBuilder().setCustomId('mock_remind').setLabel('Remind Me!').setStyle(ButtonStyle.Primary).setEmoji('⏰').setDisabled(true));
+                    replyContent += `\n\n<@${interaction.user.id}>`;
+                    row.addComponents(new ButtonBuilder().setCustomId('mock_remind').setLabel(t(userLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰').setDisabled(true));
                     if (getCalendarEnabled(interaction.guildId)) {
-                        row.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
+                        row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
                     }
-                    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
+                    row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
                 } else {
-                    replyContent += `${msg}`;
-                    row.addComponents(new ButtonBuilder().setCustomId('mock_cancel').setLabel('Cancel Reminders').setStyle(ButtonStyle.Danger).setEmoji('🔕').setDisabled(true));
-                    row.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
+                    row.addComponents(new ButtonBuilder().setCustomId('mock_cancel').setLabel(t(userLocale, 'reminder_button_cancel')).setStyle(ButtonStyle.Danger).setEmoji('🔕').setDisabled(true));
+                    row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
                 }
 
                 await interaction.reply({ content: replyContent, components: [row], flags: MessageFlags.Ephemeral });
@@ -861,15 +940,46 @@ client.on(Events.InteractionCreate, async interaction => {
                 const mode = getAnnouncementMode(interaction.guildId);
                 const intervals = getReminderIntervals(interaction.guildId);
                 const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-                const modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+                
+                let modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+                let enabledText = 'Enabled ✅';
+                let disabledText = 'Disabled ❌';
+                let notConfiguredText = '*Not configured*';
+                
+                if (userLocale === 'es') {
+                    modeText = mode === 'public' ? 'Recordatorios de canal público' : 'Recordatorios de MD privado (Opt-in)';
+                    enabledText = 'Activado ✅';
+                    disabledText = 'Desactivado ❌';
+                    notConfiguredText = '*No configurado*';
+                } else if (userLocale === 'de') {
+                    modeText = mode === 'public' ? 'Öffentliche Kanal-Erinnerungen' : 'Private DM-Erinnerungen (Opt-in)';
+                    enabledText = 'Aktiviert ✅';
+                    disabledText = 'Deaktiviert ❌';
+                    notConfiguredText = '*Nicht konfiguriert*';
+                } else if (userLocale === 'fr') {
+                    modeText = mode === 'public' ? 'Rappels de salon public' : 'Rappels de DM privé (Opt-in)';
+                    enabledText = 'Activé ✅';
+                    disabledText = 'Désactivé ❌';
+                    notConfiguredText = '*Non configuré*';
+                } else if (userLocale === 'pt') {
+                    modeText = mode === 'public' ? 'Lembretes de canal público' : 'Lembretes de DM privado (Opt-in)';
+                    enabledText = 'Ativado ✅';
+                    disabledText = 'Desativado ❌';
+                    notConfiguredText = '*Não configurado*';
+                }
 
-                let replyMessage = '**Current Server Settings:**\n';
-                replyMessage += `**Announcement Channel:** ${channelId ? `<#${channelId}>` : '*Not configured*'}\n`;
-                replyMessage += `**Reminder Mode:** ${modeText}\n`;
-                replyMessage += `**Reminder Intervals:** ${intervalsStr}\n`;
-                replyMessage += `**Calendar Button:** ${getCalendarEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}\n`;
-                replyMessage += `**Auto-Threads:** ${getThreadsEnabled(interaction.guildId) ? 'Enabled ✅' : 'Disabled ❌'}\n`;
-                replyMessage += `**Auto-Delete Concluded Events:** ${getAutoDeleteEnabled(interaction.guildId) ? 'Enabled ✅ (Deleted)' : 'Disabled ❌ (Archived)'}`;
+                let replyMessage = t(userLocale, 'settings_view_title');
+                replyMessage += t(userLocale, 'settings_view_channel', { channel: channelId ? `<#${channelId}>` : notConfiguredText });
+                replyMessage += t(userLocale, 'settings_view_mode', { mode: modeText });
+                replyMessage += t(userLocale, 'settings_view_intervals', { intervals: intervalsStr });
+                replyMessage += t(userLocale, 'settings_view_calendar', { status: getCalendarEnabled(interaction.guildId) ? enabledText : disabledText });
+                replyMessage += t(userLocale, 'settings_view_threads', { status: getThreadsEnabled(interaction.guildId) ? enabledText : disabledText });
+                
+                const autoDeleteStatus = getAutoDeleteEnabled(interaction.guildId) 
+                    ? (userLocale === 'es' ? 'Activado ✅ (Eliminado)' : userLocale === 'de' ? 'Aktiviert ✅ (Gelöscht)' : userLocale === 'fr' ? 'Activé ✅ (Supprimé)' : userLocale === 'pt' ? 'Ativado ✅ (Excluído)' : 'Enabled ✅ (Deleted)')
+                    : (userLocale === 'es' ? 'Desactivado ❌ (Archivado)' : userLocale === 'de' ? 'Deaktiviert ❌ (Archiviert)' : userLocale === 'fr' ? 'Désactivé ❌ (Archivé)' : userLocale === 'pt' ? 'Desativado ❌ (Arquivado)' : 'Disabled ❌ (Archived)');
+                
+                replyMessage += t(userLocale, 'settings_view_autodelete', { status: autoDeleteStatus });
 
                 await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
             }
@@ -878,40 +988,41 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'announceevent') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+            const userLocale = interaction.locale || 'en';
 
             const eventIdentifier = interaction.options.getString('event_link_or_id');
             const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
             const eventId = match ? match[1] : null;
 
             if (!eventId) {
-                return interaction.editReply({ content: 'Invalid event link or ID provided. Please provide a valid Discord event link or the event ID.' });
+                return interaction.editReply({ content: t(userLocale, 'announce_invalid_id') });
             }
 
             if (eventDb[eventId]) {
-                return interaction.editReply({ content: 'An announcement for this event has already been posted.' });
+                return interaction.editReply({ content: t(userLocale, 'announce_already_posted') });
             }
 
             const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
             if (!event) {
-                return interaction.editReply({ content: 'Could not find an event with that ID in this server.' });
+                return interaction.editReply({ content: t(userLocale, 'announce_not_found') });
             }
 
             const channelId = getAnnouncementChannelId(interaction.guildId);
             const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
             if (!channel) {
-                return interaction.editReply({ content: 'The announcement channel is not configured for this server. Please use `/settings channel` first.' });
+                return interaction.editReply({ content: t(userLocale, 'announce_no_channel') });
             }
 
             const botPermissions = channel.permissionsFor(interaction.guild.members.me);
             if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
-                return interaction.editReply({ content: `I do not have permission to view, send messages, or embed links in ${channel}. Please update my role permissions in that channel first!` });
+                return interaction.editReply({ content: t(userLocale, 'settings_bot_no_permissions', { channel: channel.toString() }) });
             }
 
             try {
                 await postAnnouncement(event, channel);
-                await interaction.editReply({ content: `Successfully posted an announcement for **${event.name}**.` });
+                await interaction.editReply({ content: t(userLocale, 'announce_success', { name: event.name }) });
             } catch (err) {
-                await interaction.editReply({ content: 'An error occurred while trying to post the announcement. Please check the bot\'s permissions in the target channel.' });
+                await interaction.editReply({ content: t(userLocale, 'announce_error') });
             }
         }
 
@@ -929,41 +1040,32 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'help') {
             const isAdmin = interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+            const userLocale = interaction.locale || 'en';
 
             const fields = [
                 { 
-                    name: 'For Everyone', 
-                    value: '**`/upcoming`** - See a list of upcoming events and opt-in to reminders.\n' +
-                           '**`/myreminders`** - View and cancel reminders you are currently opted-in for.\n' +
-                           '**`⏰ Remind Me!`** - Click this button on any announcement to get reminders!'
+                    name: t(userLocale, 'help_everyone_title'), 
+                    value: t(userLocale, 'help_everyone_value')
                 }
             ];
 
             if (isAdmin) {
                 fields.push({
-                    name: 'For Administrators',
-                    value: '**`/settings channel`** - Set the channel for event announcements.\n' +
-                           '**`/settings mode`** - Choose between Private (DM) or Public (@mention) reminders.\n' +
-                           '**`/settings intervals`** - Customize reminder times (e.g., `24h, 1h, 15m`).\n' +
-                           '**`/settings autodelete`** - Choose to delete or archive events when they end.\n' +
-                           '**`/settings calendar`** - Toggle the "Add to Calendar" button.\n' +
-                           '**`/settings threads`** - Toggle automatic discussion threads.\n' +
-                           '**`/settings view`** - See all current settings.\n' +
-                           '**`/announceevent`** - Manually post an announcement for an existing event.\n' +
-                           '**`/stats`** - View opt-in statistics for active events.'
+                    name: t(userLocale, 'help_admin_title'),
+                    value: t(userLocale, 'help_admin_value')
                 });
             }
 
             const embed = new EmbedBuilder()
                 .setTitle('🥚 Scotch Egg Bot Help')
-                .setDescription('I automatically announce server events and send reminders at **customizable intervals**!')
+                .setDescription(t(userLocale, 'help_description'))
                 .addFields(fields)
                 .setColor('#0099ff');
 
             if (isAdmin) {
-                embed.setFooter({ text: `v${version} • Use /settings testreminder to preview your reminder messages!` });
+                embed.setFooter({ text: t(userLocale, 'help_footer_admin', { version: version }) });
             } else {
-                embed.setFooter({ text: `v${version}` });
+                embed.setFooter({ text: t(userLocale, 'help_footer_everyone', { version: version }) });
             }
             
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
@@ -971,12 +1073,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'stats') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+            const userLocale = interaction.locale || 'en';
 
             const guildEvents = await interaction.guild.scheduledEvents.fetch();
             const activeEvents = guildEvents.filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active);
             
             if (activeEvents.size === 0) {
-                return interaction.editReply({ content: 'There are no active upcoming events in this server.' });
+                return interaction.editReply({ content: t(userLocale, 'stats_no_events') });
             }
 
             let totalOptIns = 0;
@@ -994,9 +1097,9 @@ client.on(Events.InteractionCreate, async interaction => {
             });
 
             const embed = new EmbedBuilder()
-                .setTitle('📊 Event Opt-in Statistics')
-                .setDescription(description || 'No data to display.')
-                .addFields({ name: 'Total Server Opt-ins', value: totalOptIns.toString(), inline: true })
+                .setTitle(t(userLocale, 'stats_title'))
+                .setDescription(description || t(userLocale, 'stats_empty'))
+                .addFields({ name: t(userLocale, 'stats_total'), value: totalOptIns.toString(), inline: true })
                 .setColor('#0099ff');
 
             await interaction.editReply({ embeds: [embed] });
@@ -1027,6 +1130,7 @@ client.on(Events.InteractionCreate, async interaction => {
         timestamps.set(interaction.user.id, now);
         setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 
+        const userLocale = interaction.locale || 'en';
         if (interaction.customId === 'list_optin_select') {
             await interaction.deferUpdate();
             
@@ -1050,8 +1154,19 @@ client.on(Events.InteractionCreate, async interaction => {
             const mode = getAnnouncementMode(interaction.guildId);
             const intervals = getReminderIntervals(interaction.guildId);
             const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-            const modeText = mode === 'public' ? 'You will be pinged in the announcement channel' : 'I will DM you';
-            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully opted in to **${optedInCount}** event(s)!\n*${modeText} at: ${intervalsStr} before they begin.*`, components: [] });
+            
+            let successText = `✅ Successfully opted in to **${optedInCount}** event(s)!\n*${mode === 'public' ? 'You will be pinged in the announcement channel' : 'I will DM you'} at: ${intervalsStr} before they begin.*`;
+            if (userLocale === 'es') {
+                successText = `✅ ¡Te has inscrito con éxito en **${optedInCount}** evento(s)!\n*${mode === 'public' ? 'Se te mencionará en el canal de anuncios' : 'Te enviaré un mensaje directo'}: ${intervalsStr} antes de que comiencen.*`;
+            } else if (userLocale === 'de') {
+                successText = `✅ Erfolgreich für **${optedInCount}** Event(s) angemeldet!\n*${mode === 'public' ? 'Du wirst im Ankündigungskanal benachrichtigt' : 'Ich werde dir eine DM senden'}: ${intervalsStr} bevor sie beginnen.*`;
+            } else if (userLocale === 'fr') {
+                successText = `✅ Inscrit avec succès à **${optedInCount}** événement(s) !\n*${mode === 'public' ? 'Vous serez mentionné dans le salon d\'annonces' : 'Je vous enverrai un DM'} : ${intervalsStr} avant qu'ils ne commencent.*`;
+            } else if (userLocale === 'pt') {
+                successText = `✅ Inscrito com sucesso em **${optedInCount}** evento(s)!\n*${mode === 'public' ? 'Você será mencionado no canal de anúncios' : 'Eu lhe enviarei uma DM'}: ${intervalsStr} antes de começarem.*`;
+            }
+
+            await interaction.editReply({ content: `${interaction.message.content}\n\n${successText}`, components: [] });
         }
 
         if (interaction.customId === 'list_cancel_select') {
@@ -1073,14 +1188,18 @@ client.on(Events.InteractionCreate, async interaction => {
                 await saveDb();
             }
             
-            await interaction.editReply({ content: `${interaction.message.content}\n\n✅ Successfully canceled reminders for **${cancelledCount}** event(s).`, components: [] });
-        }
-        return;
-    }
+            let cancelText = `✅ Successfully canceled reminders for **${cancelledCount}** event(s).`;
+            if (userLocale === 'es') {
+                cancelText = `✅ Se cancelaron con éxito los recordatorios para **${cancelledCount}** evento(s).`;
+            } else if (userLocale === 'de') {
+                cancelText = `✅ Erinnerungen für **${cancelledCount}** Event(s) erfolgreich abbestellt.`;
+            } else if (userLocale === 'fr') {
+                cancelText = `✅ Rappels annulés avec succès pour **${cancelledCount}** événement(s).`;
+            } else if (userLocale === 'pt') {
+                cancelText = `✅ Lembretes cancelados com sucesso para **${cancelledCount}** evento(s).`;
+            }
 
-    if (!interaction.isButton()) return;
-    
-    // Button Cooldown System to prevent database save spam
+            await intera    // Button Cooldown System to prevent database save spam
     if (interaction.customId.startsWith('remind_') || interaction.customId.startsWith('cancel_remind_')) {
         if (!buttonCooldowns.has('remind_btn')) {
             buttonCooldowns.set('remind_btn', new Collection());
@@ -1090,12 +1209,13 @@ client.on(Events.InteractionCreate, async interaction => {
         const timestamps = buttonCooldowns.get('remind_btn');
         const cooldownAmount = 3000; // 3 seconds cooldown
 
+        const userLocale = interaction.locale || 'en';
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
                 return interaction.reply({ 
-                    content: `Please wait! You are clicking too fast. You can use this button again <t:${expiredTimestamp}:R>.`, 
+                    content: t(userLocale, 'button_cooldown', { time: `<t:${expiredTimestamp}:R>` }), 
                     flags: MessageFlags.Ephemeral 
                 });
             }
@@ -1114,12 +1234,13 @@ client.on(Events.InteractionCreate, async interaction => {
         const timestamps = buttonCooldowns.get('pagination');
         const cooldownAmount = 2000;
 
+        const userLocale = interaction.locale || 'en';
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
                 return interaction.reply({ 
-                    content: `Please wait! You are turning pages too fast. Try again <t:${expiredTimestamp}:R>.`, 
+                    content: t(userLocale, 'button_cooldown', { time: `<t:${expiredTimestamp}:R>` }), 
                     flags: MessageFlags.Ephemeral 
                 });
             }
@@ -1144,6 +1265,7 @@ client.on(Events.InteractionCreate, async interaction => {
         return;
     }
 
+    const userLocale = interaction.locale || 'en';
     if (interaction.customId.startsWith('remind_')) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const eventId = interaction.customId.replace('remind_', '');
@@ -1151,7 +1273,7 @@ client.on(Events.InteractionCreate, async interaction => {
         // Ensure the event still actively exists in Discord
         const event = await interaction.guild?.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
-            return interaction.editReply({ content: 'This event is no longer active or has been deleted.' });
+            return interaction.editReply({ content: t(userLocale, 'remind_inactive') });
         }
 
         // Auto-heal database if the event record was somehow lost
@@ -1167,7 +1289,7 @@ client.on(Events.InteractionCreate, async interaction => {
             if (users[userId]) {
                 // Remove user from reminders
                 delete eventDb[eventId].users[userId];
-                replyText = 'You will no longer receive reminders for this event.';
+                replyText = t(userLocale, 'remind_removed');
             } else {
                 // Add user to reminders
                 eventDb[eventId].users[userId] = true;
@@ -1177,16 +1299,18 @@ client.on(Events.InteractionCreate, async interaction => {
                 const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
                 
                 if (mode === 'public') {
-                    replyText = `Reminder set! You will be pinged in the announcement channel at: ${intervalsStr} before the event.`;
+                    replyText = t(userLocale, 'remind_set_public', { intervals: intervalsStr });
                 } else {
-                    replyText = `Reminder set! I will DM you at: ${intervalsStr} before the event.`;
+                    replyText = t(userLocale, 'remind_set_private', { intervals: intervalsStr });
                 }
             }
             await saveDb();
 
             // Update the button on the original message to show the new count
             const userCount = Object.keys(users).length;
-            const newLabel = userCount > 0 ? `Remind Me! (${userCount})` : 'Remind Me!';
+            const guildLocale = interaction.guild?.preferredLocale || 'en';
+            const baseRemindLabel = t(guildLocale, 'announcement_button_remind');
+            const newLabel = userCount > 0 ? `${baseRemindLabel} (${userCount})` : baseRemindLabel;
             
             const currentComponents = interaction.message.components[0].components;
             const updatedRow = new ActionRowBuilder().addComponents(
@@ -1206,7 +1330,7 @@ client.on(Events.InteractionCreate, async interaction => {
             }
         } catch (error) {
             console.error('Failed to handle remind interaction:', error);
-            await interaction.editReply({ content: 'An error occurred while processing your request.' }).catch(() => {});
+            await interaction.editReply({ content: t(userLocale, 'remind_error') }).catch(() => {});
         }
     }
 
@@ -1222,16 +1346,29 @@ client.on(Events.InteractionCreate, async interaction => {
                     delete eventDb[eventId].users[userId];
                     await saveDb();
                     updateLiveCounter(eventId); // Fire asynchronously
+                    
+                    let cancelNotice = '*(Reminders cancelled)*';
+                    if (userLocale === 'es') cancelNotice = '*(Recordatorios cancelados)*';
+                    else if (userLocale === 'de') cancelNotice = '*(Erinnerungen abbestellt)*';
+                    else if (userLocale === 'fr') cancelNotice = '*(Rappels annulés)*';
+                    else if (userLocale === 'pt') cancelNotice = '*(Lembretes cancelados)*';
+
                     // Replaces the button with text confirming the cancellation to avoid spam clicks
-                    let newContent = `${interaction.message.content}\n\n*(Reminders cancelled)*`;
+                    let newContent = `${interaction.message.content}\n\n${cancelNotice}`;
                     if (newContent.length > 2000) {
-                        newContent = `${interaction.message.content.substring(0, 1950)}...\n\n*(Reminders cancelled)*`;
+                        newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
                     }
                     await interaction.update({ content: newContent, components: [] });
                 } else {
-                    let newContent = `${interaction.message.content}\n\n*(You are not receiving reminders for this event)*`;
+                    let notOptedNotice = '*(You are not receiving reminders for this event)*';
+                    if (userLocale === 'es') notOptedNotice = '*(No estás recibiendo recordatorios para este evento)*';
+                    else if (userLocale === 'de') notOptedNotice = '*(Du erhältst keine Erinnerungen für dieses Event)*';
+                    else if (userLocale === 'fr') notOptedNotice = '*(Vous ne recevez pas de rappels pour cet événement)*';
+                    else if (userLocale === 'pt') notOptedNotice = '*(Você não está recebendo lembretes para este evento)*';
+
+                    let newContent = `${interaction.message.content}\n\n${notOptedNotice}`;
                     if (newContent.length > 2000) {
-                        newContent = `${interaction.message.content.substring(0, 1930)}...\n\n*(You are not receiving reminders for this event)*`;
+                        newContent = `${interaction.message.content.substring(0, 1930)}...\n\n${notOptedNotice}`;
                     }
                     await interaction.update({ content: newContent, components: [] });
                 }
@@ -1239,9 +1376,15 @@ client.on(Events.InteractionCreate, async interaction => {
                 console.error('Failed to handle cancel_remind interaction:', error);
             }
         } else {
-            let newContent = `${interaction.message.content}\n\n*(This event is no longer active)*`;
+            let inactiveNotice = '*(This event is no longer active)*';
+            if (userLocale === 'es') inactiveNotice = '*(Este evento ya no está activo)*';
+            else if (userLocale === 'de') inactiveNotice = '*(Dieses Event ist nicht mehr aktiv)*';
+            else if (userLocale === 'fr') inactiveNotice = '*(Cet événement n\'est plus actif)*';
+            else if (userLocale === 'pt') inactiveNotice = '*(Este evento não está mais ativo)*';
+
+            let newContent = `${interaction.message.content}\n\n${inactiveNotice}`;
             if (newContent.length > 2000) {
-                newContent = `${interaction.message.content.substring(0, 1950)}...\n\n*(This event is no longer active)*`;
+                newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${inactiveNotice}`;
             }
             await interaction.update({ content: newContent, components: [] });
         }
@@ -1277,23 +1420,28 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
             const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
             const autoDelete = getAutoDeleteEnabled(guild.id);
             
+            const guildLocale = guild.preferredLocale || 'en';
             if (msg && autoDelete) {
                 await msg.delete().catch(() => {});
             } else if (msg && msg.embeds.length > 0) {
                 const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
                 
+                let statusLabel = '';
+                if (statusText === 'Completed') statusLabel = t(guildLocale, 'announcement_button_completed');
+                else if (statusText === 'Deleted') statusLabel = t(guildLocale, 'announcement_button_deleted');
+                else if (statusText === 'Canceled') statusLabel = t(guildLocale, 'announcement_button_canceled');
+
                 // Format the title with a premium strike-through and modern status tag
-                const cleanTitle = (originalEmbed.data.title || '').replace(/^~~|~~$/g, '').replace(/ \[(Completed|Deleted|Canceled)\]$/g, '');
-                let newTitle = `~~${cleanTitle}~~ [${statusText}]`;
+                const cleanTitle = (originalEmbed.data.title || '').replace(/^~~|~~$/g, '').replace(/ \[[^\]]+\]$/g, '');
+                let newTitle = `~~${cleanTitle}~~ [${statusLabel}]`;
                 if (newTitle.length > 256) {
-                    newTitle = `~~${cleanTitle.substring(0, 256 - statusText.length - 7)}...~~ [${statusText}]`;
+                    newTitle = `~~${cleanTitle.substring(0, 256 - statusLabel.length - 7)}...~~ [${statusLabel}]`;
                 }
                 originalEmbed.setTitle(newTitle);
                 originalEmbed.setColor('#808080'); // Gray out the sidebar
                 originalEmbed.setImage(null); // Remove cover image to shrink visibility
                 
-                const bannerEmoji = statusText === 'Completed' ? '⏹️' : '⚠️';
-                const statusBanner = `**${bannerEmoji} This event has ${statusText.toLowerCase()}.**\n\n`;
+                const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : statusText === 'Deleted' ? 'deleted_banner' : 'canceled_banner') + '\n\n';
                 
                 if (originalEmbed.data.description) {
                     let newDesc = originalEmbed.data.description
@@ -1317,7 +1465,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                 const disabledRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()
                         .setCustomId(`archived_${eventId}`)
-                        .setLabel(`Event ${statusText}`)
+                        .setLabel(statusLabel)
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true)
                         .setEmoji(statusText === 'Completed' ? '✅' : '❌')
@@ -1353,8 +1501,8 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                         rText = rText.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
                         
                         // Prepend the bold status banner
-                        const bannerEmoji = statusText === 'Completed' ? '⏹️' : '⚠️';
-                        const statusBanner = `**${bannerEmoji} This event has ${statusText.toLowerCase()}.**\n\n`;
+                        const reminderBannerKey = statusText === 'Completed' ? 'reminder_banner_concluded' : statusText === 'Deleted' ? 'reminder_banner_deleted' : 'reminder_banner_canceled';
+                        const statusBanner = t(guildLocale, reminderBannerKey);
                         rText = `${statusBanner}${rText}`;
                         
                         if (rText.length > 2000) rText = rText.substring(0, 1995) + '...';
@@ -1375,7 +1523,8 @@ client.on(Events.GuildScheduledEventDelete, async e => {
     // Cleanup of the database
     if (eventDb[e.id]) {
         try {
-            await notifyUsersOfEventChange(e, `⚠️ The event **${e.name}** has been deleted.`);
+            const guildLocale = e.guild.preferredLocale || 'en';
+            await notifyUsersOfEventChange(e, t(guildLocale, 'notification_deleted', { name: e.name }));
             await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
             delete eventDb[e.id];
             await saveDb();
@@ -1399,7 +1548,8 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         if (eventDb[n.id]) {
             const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
             if (n.status === GuildScheduledEventStatus.Canceled) {
-                await notifyUsersOfEventChange(n, `⚠️ The event **${n.name}** has been canceled.`);
+                const guildLocale = n.guild.preferredLocale || 'en';
+                await notifyUsersOfEventChange(n, t(guildLocale, 'notification_canceled', { name: n.name }));
             }
             await archiveAnnouncementMessage(n.guild, n.id, statusText);
             delete eventDb[n.id];
@@ -1414,13 +1564,22 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
             const locationChanged = oldLocation !== newLocation;
 
             if (timeChanged || locationChanged) {
-                let changeMsg = `🔔 The event **${n.name}** has been updated!\n`;
-                if (timeChanged) {
-                    changeMsg += `• **New Time:** <t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>\n`;
-                }
-                if (locationChanged) {
+                const guildLocale = n.guild.preferredLocale || 'en';
+                let changeMsg = '';
+                
+                if (timeChanged && locationChanged) {
+                    changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
+                    changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
+                    
                     const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
-                    changeMsg += `• **New Location:** ${locStr}\n`;
+                    changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
+                } else if (timeChanged) {
+                    changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
+                    changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
+                } else if (locationChanged) {
+                    changeMsg += t(guildLocale, 'notification_location_changed', { name: n.name });
+                    const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                    changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
                 }
                 await notifyUsersOfEventChange(n, changeMsg);
             }
@@ -1437,17 +1596,24 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                         const updatedEmbed = buildAnnouncementEmbed(n);
                         let components = msg.components;
                         if (components && components.length > 0) {
+                            const guildLocale = n.guild.preferredLocale || 'en';
                             const currentComponents = components[0].components;
-                            const remindButton = ButtonBuilder.from(currentComponents[0]);
                             
+                            // Re-build/update the remind button using the new label in the guild's language, preserving the existing user count if any.
+                            const originalLabel = currentComponents[0].label || '';
+                            const match = originalLabel.match(/\((\d+)\)/);
+                            const countText = match ? ` (${match[1]})` : '';
+                            const newRemindLabel = t(guildLocale, 'announcement_button_remind') + countText;
+                            
+                            const remindButton = ButtonBuilder.from(currentComponents[0]).setLabel(newRemindLabel);
                             const updatedRow = new ActionRowBuilder().addComponents(remindButton);
                             
                             if (getCalendarEnabled(n.guild.id)) {
                                 const calendarLink = generateGoogleCalendarLink(n);
-                                updatedRow.addComponents(new ButtonBuilder().setLabel('Add to Calendar').setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
+                                updatedRow.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(calendarLink).setEmoji('📅'));
                             }
                             
-                            updatedRow.addComponents(new ButtonBuilder().setLabel('View Event').setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${n.guild.id}/${n.id}`).setEmoji('🔗'));
+                            updatedRow.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${n.guild.id}/${n.id}`).setEmoji('🔗'));
 
                             components = [updatedRow];
                         }

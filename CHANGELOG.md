@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Dynamic Help Slash Command:** Customized the `/help` command to conditionally display the list of Administrator commands only if the command is executed by a user with Administrator permissions. The `/settings testreminder` footer tip is also dynamically hidden for non-administrators.
+- **Help Attribution Link:** Added a subtle powered-by attribution link pointing to the GitHub repository within the `/help` command description embed.
+
+### Fixed
+
+- **Database Loading Metadata Loss:** Fixed a critical bug in `storage.js` where `guildId` and `reminderMessageIds` were lost upon bot restart. This restores full capability to modify, clean up, and strip mentions from older public reminders upon event conclusion after a reboot.
+- **Startup Garbage Collection Wipeout:** Fixed a critical edge case in startup synchronization where a single guild sync failure (due to API timeouts or outages) would trigger a complete deletion of that guild's active reminder database records.
 
 ## [1.4.0] - 2026-05-26
 
