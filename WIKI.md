@@ -136,7 +136,7 @@ Users who want to be notified can click the **⏰ Remind Me!** button on the ann
 **Public Commands**
 - `/upcoming` - Public command to view a paginated list of upcoming events and quickly opt in to reminders.
 - `/myreminders` - Public command that lists a paginated view of all upcoming events you are currently receiving reminders for in this server.
-- `/help` - Displays information on how to use the bot and a list of available commands.
+- `/help` - Displays information on how to use the bot and a list of available commands (dynamically filtered to only show Administrator commands to server administrators).
 
 ---
 
