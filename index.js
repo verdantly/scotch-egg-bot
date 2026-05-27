@@ -916,31 +916,43 @@ client.on(Events.InteractionCreate, async interaction => {
         }
 
         if (interaction.commandName === 'help') {
+            const isAdmin = interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+
+            const fields = [
+                { 
+                    name: 'For Everyone', 
+                    value: '**`/upcoming`** - See a list of upcoming events and opt-in to reminders.\n' +
+                           '**`/myreminders`** - View and cancel reminders you are currently opted-in for.\n' +
+                           '**`⏰ Remind Me!`** - Click this button on any announcement to get reminders!'
+                }
+            ];
+
+            if (isAdmin) {
+                fields.push({
+                    name: 'For Administrators',
+                    value: '**`/settings channel`** - Set the channel for event announcements.\n' +
+                           '**`/settings mode`** - Choose between Private (DM) or Public (@mention) reminders.\n' +
+                           '**`/settings intervals`** - Customize reminder times (e.g., `24h, 1h, 15m`).\n' +
+                           '**`/settings autodelete`** - Choose to delete or archive events when they end.\n' +
+                           '**`/settings calendar`** - Toggle the "Add to Calendar" button.\n' +
+                           '**`/settings threads`** - Toggle automatic discussion threads.\n' +
+                           '**`/settings view`** - See all current settings.\n' +
+                           '**`/announceevent`** - Manually post an announcement for an existing event.\n' +
+                           '**`/stats`** - View opt-in statistics for active events.'
+                });
+            }
+
             const embed = new EmbedBuilder()
                 .setTitle('🥚 Scotch Egg Bot Help')
                 .setDescription('I automatically announce server events and send reminders at **customizable intervals**!')
-                .addFields(
-                    { 
-                        name: 'For Everyone', 
-                        value: '**`/upcoming`** - See a list of upcoming events and opt-in to reminders.\n' +
-                               '**`/myreminders`** - View and cancel reminders you are currently opted-in for.\n' +
-                               '**`⏰ Remind Me!`** - Click this button on any announcement to get reminders!'
-                    },
-                    {
-                        name: 'For Administrators',
-                        value: '**`/settings channel`** - Set the channel for event announcements.\n' +
-                               '**`/settings mode`** - Choose between Private (DM) or Public (@mention) reminders.\n' +
-                               '**`/settings intervals`** - Customize reminder times (e.g., `24h, 1h, 15m`).\n' +
-                               '**`/settings autodelete`** - Choose to delete or archive events when they end.\n' +
-                               '**`/settings calendar`** - Toggle the "Add to Calendar" button.\n' +
-                               '**`/settings threads`** - Toggle automatic discussion threads.\n' +
-                               '**`/settings view`** - See all current settings.\n' +
-                               '**`/announceevent`** - Manually post an announcement for an existing event.\n' +
-                               '**`/stats`** - View opt-in statistics for active events.'
-                    }
-                )
-                .setColor('#0099ff')
-                .setFooter({ text: `v${version} • Use /settings testreminder to preview your reminder messages!` });
+                .addFields(fields)
+                .setColor('#0099ff');
+
+            if (isAdmin) {
+                embed.setFooter({ text: `v${version} • Use /settings testreminder to preview your reminder messages!` });
+            } else {
+                embed.setFooter({ text: `v${version}` });
+            }
             
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
