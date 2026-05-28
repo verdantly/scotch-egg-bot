@@ -1215,7 +1215,12 @@ client.on(Events.InteractionCreate, async interaction => {
                 cancelText = `✅ Lembretes cancelados com sucesso para **${cancelledCount}** evento(s).`;
             }
 
-            await intera    // Button Cooldown System to prevent database save spam
+            await interaction.editReply({ content: `${interaction.message.content}\n\n${cancelText}`, components: [] });
+        }
+        return;
+    }
+
+    // Button Cooldown System to prevent database save spam
     if (interaction.customId.startsWith('remind_') || interaction.customId.startsWith('cancel_remind_')) {
         if (!buttonCooldowns.has('remind_btn')) {
             buttonCooldowns.set('remind_btn', new Collection());
@@ -1461,7 +1466,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                 
                 if (originalEmbed.data.description) {
                     let newDesc = originalEmbed.data.description
-                        .replace(/\n\n\*Click the button below.*?\*/, '') // Remove opt-in text
+                        .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '') // Remove opt-in text
                         .replace(/\s\(<t:\d+:R>\)/, ''); // Remove relative countdowns
                         
                     // Let's add strike-throughs to Time and Location
@@ -1502,7 +1507,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                         let rText = rMsg.content;
                         
                         // Strip out mentions if any (e.g. \n\n<@123> <@456> etc.) to clean up highlighted pings
-                        rText = rText.replace(/\n\n<@\d+>(\s+<@\d+)*/g, '');
+                        rText = rText.replace(/\n\n<@\d+>(\s+<@\d+>)*/g, '');
                         // Strip out the safety mentions text if any
                         rText = rText.replace(/\n\n\*\(.*mentions hidden.*\)\*/g, '');
                         
