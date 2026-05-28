@@ -412,6 +412,10 @@ echo "{}" > config.json</pre>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays a mock preview of what a reminder message will look like with the server's current settings.</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                        <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings cleanup</code>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Scans the announcement channel and automatically archives (or deletes) any unarchived concluded event announcements.</span>
+                    </li>
+                    <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/announceevent</code>
                         <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).</span>
                     </li>
@@ -453,7 +457,7 @@ echo "{}" > config.json</pre>
                     <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
                         <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">What happens if the bot goes offline?</summary>
                         <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and deletes data for events that were canceled while it was down.</p>
+                            <p>Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, deletes data for canceled events, and automatically archives or deletes announcements for events that concluded while it was offline. Additionally, administrators can run the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings cleanup</code> command at any time to scan the channel and clean up any legacy concluded events.</p>
                         </div>
                     </details>
                     <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">

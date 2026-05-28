@@ -132,6 +132,9 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 *   `/settings testreminder`
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
 
+*   `/settings cleanup`
+    -   **Action:** Scans the announcement channel's recent messages and automatically archives (or deletes) any unarchived concluded event announcements. Helpful for cleaning up retroactively or handling old orphaned posts.
+
 *   `/announceevent [event_link_or_id]`
     -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.
 
@@ -189,8 +192,8 @@ graph TD
 **Q: Does the bot support multiple servers (Guilds)?**
 A: Yes! You can invite the bot to as many servers as you want. Just use `/settings channel` in each server to configure where announcements should be posted. The bot keeps all reminders and configurations perfectly separated.
 
-**Q: What happens if the bot goes offline while an event is created or deleted?**
-A: Don't worry! Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and deletes data for events that were canceled while it was down.
+**Q: What happens if the bot goes offline while an event is created, deleted, or concluded?**
+A: Don't worry! Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and automatically archives or deletes announcements for events that concluded while it was down. Furthermore, administrators can run `/settings cleanup` at any time to manually scan and archive any orphaned legacy announcements.
 
 **Q: Why do I need to create empty `events.json` and `config.json` files for Docker?**
 A: Docker Compose maps these files from your host to the container. If the files don't exist on your host machine *before* you run `docker compose up`, Docker assumes you are trying to map directories and will create folders named `events.json` and `config.json`. This will crash the bot.
