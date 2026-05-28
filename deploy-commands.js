@@ -77,7 +77,7 @@ const commands = [
                     'es-ES': 'Elige si los recordatorios se publican públicamente o en privado por MD.',
                     'de': 'Wähle, ob Event-Erinnerungen öffentlich oder privat per DM gesendet werden.',
                     'fr': 'Choisir si les rappels d\'événements sont postés publiquement ou en privé via DM.',
-                    'pt-BR': 'Escolha se os lembretes de eventos são publicados publicamente ou de forma privada via DM.'
+                    'pt-BR': 'Escolha se os lembretes são enviados publicamente ou no privado por DM.'
                 })
                 .addStringOption(option =>
                     option.setName('mode')
@@ -299,7 +299,7 @@ const commands = [
         .setDescriptionLocalizations({
             'es-ES': 'Lista todos los próximos eventos de los que estás recibiendo recordatorios en este servidor.',
             'de': 'Listet alle bevorstehenden Events auf, für die du aktuell Erinnerungen auf diesem Server erhältst.',
-            'fr': 'Liste tous les événements à venir pour lesquels vous recevez actuellement des rappels sur ce serveur.',
+            'fr': 'Liste les événements à venir dont vous recevez des rappels sur ce serveur.',
             'pt-BR': 'Lista todos os próximos eventos para os quais você está recebendo lembretes neste servidor.'
         })
         .setDMPermission(false),
