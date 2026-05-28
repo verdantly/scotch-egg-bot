@@ -286,6 +286,22 @@ const commands = [
                     'de': 'Teste, wie eine Event-Erinnerung auf deinem Server aussehen wird.',
                     'fr': 'Tester à quoi ressemblera un rappel d\'événement sur votre serveur.',
                     'pt-BR': 'Teste como um lembrete de evento ficará no seu servidor.'
+                }))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('cleanup')
+                .setNameLocalizations({
+                    'es-ES': 'limpieza',
+                    'de': 'bereinigung',
+                    'fr': 'nettoyage',
+                    'pt-BR': 'limpeza'
+                })
+                .setDescription('Scan and archive any unarchived concluded event announcements.')
+                .setDescriptionLocalizations({
+                    'es-ES': 'Escanear y archivar anuncios de eventos concluidos no archivados.',
+                    'de': 'Scanne und archiviere unarchivierte beendete Event-Ankündigungen.',
+                    'fr': 'Scanner et archiver les annonces d\'événements terminés non archivées.',
+                    'pt-BR': 'Escanear e arquivar anúncios de eventos concluídos não arquivados.'
                 })),
     new SlashCommandBuilder()
         .setName('myreminders')

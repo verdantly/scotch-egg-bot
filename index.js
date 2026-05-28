@@ -481,6 +481,16 @@ client.on(Events.ClientReady, async c => {
         // and the event is no longer active in that guild.
         if (eventData && eventData.guildId && successfulGuildIds.has(eventData.guildId)) {
             if (!activeEventIds.has(eventId)) {
+                try {
+                    const guild = c.guilds.cache.get(eventData.guildId);
+                    if (guild) {
+                        const event = await guild.scheduledEvents.fetch(eventId).catch(() => null);
+                        const statusText = event && event.status === GuildScheduledEventStatus.Canceled ? 'Canceled' : 'Completed';
+                        await archiveAnnouncementMessage(guild, eventId, statusText);
+                    }
+                } catch (archiveErr) {
+                    console.error(`Failed to auto-archive offline event ${eventId}:`, archiveErr);
+                }
                 delete eventDb[eventId];
                 dbModified = true;
             }
@@ -998,6 +1008,128 @@ client.on(Events.InteractionCreate, async interaction => {
                 replyMessage += t(userLocale, 'settings_view_autodelete', { status: autoDeleteStatus });
 
                 await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
+            }
+
+            if (subcommand === 'cleanup') {
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+                const userLocale = interaction.locale || 'en';
+                const channelId = getAnnouncementChannelId(interaction.guildId);
+                const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
+                
+                if (!channel) {
+                    return interaction.editReply({ content: t(userLocale, 'announce_no_channel') });
+                }
+
+                // Fetch last 100 messages from the channel to scan for announcements
+                const messages = await channel.messages.fetch({ limit: 100 }).catch(() => null);
+                if (!messages || messages.size === 0) {
+                    let noMsg = 'No messages found in the announcement channel to clean up.';
+                    if (userLocale === 'es') noMsg = 'No se encontraron mensajes en el canal de anuncios para limpiar.';
+                    else if (userLocale === 'de') noMsg = 'Keine Nachrichten im Ankündigungskanal zum Bereinigen gefunden.';
+                    else if (userLocale === 'fr') noMsg = 'Aucun message trouvé dans le salon d\'annonces à nettoyer.';
+                    else if (userLocale === 'pt') noMsg = 'Nenhuma mensagem encontrada no canal de anúncios para limpar.';
+                    return interaction.editReply({ content: noMsg });
+                }
+
+                // Fetch scheduled events in the guild (both active and concluded)
+                const guildEvents = await interaction.guild.scheduledEvents.fetch().catch(() => []);
+                const concludedEvents = Array.from(guildEvents.values()).filter(event => 
+                    event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled
+                );
+
+                if (concludedEvents.length === 0) {
+                    let noConcluded = 'No concluded events found in this server\'s event list.';
+                    if (userLocale === 'es') noConcluded = 'No se encontraron eventos concluidos en la lista de eventos de este servidor.';
+                    else if (userLocale === 'de') noConcluded = 'Keine beendeten Events in der Event-Liste dieses Servers gefunden.';
+                    else if (userLocale === 'fr') noConcluded = 'Aucun événement terminé trouvé dans la liste des événements de ce serveur.';
+                    else if (userLocale === 'pt') noConcluded = 'Nenhum evento concluído encontrado na lista de eventos deste servidor.';
+                    return interaction.editReply({ content: noConcluded });
+                }
+
+                const autoDelete = getAutoDeleteEnabled(interaction.guildId);
+                let cleanedCount = 0;
+
+                for (const event of concludedEvents) {
+                    const eventId = event.id;
+                    const statusText = event.status === GuildScheduledEventStatus.Canceled ? 'Canceled' : 'Completed';
+                    
+                    // 1. If it's still tracked in eventDb, trigger the normal archiveAnnouncementMessage
+                    if (eventDb[eventId]) {
+                        await archiveAnnouncementMessage(interaction.guild, eventId, statusText);
+                        delete eventDb[eventId];
+                        cleanedCount++;
+                    } else {
+                        // 2. If it was already garbage collected, we scan messages manually to match the event ID
+                        // An announcement matches if it contains the event URL: https://discord.com/events/guildId/eventId
+                        const eventUrl = `https://discord.com/events/${interaction.guildId}/${eventId}`;
+                        const matchingAnnouncements = messages.filter(msg => {
+                            if (msg.author.id !== client.user.id) return false;
+                            
+                            // Check description for link
+                            if (msg.embeds.length > 0 && msg.embeds[0].description && msg.embeds[0].description.includes(eventUrl)) {
+                                return true;
+                            }
+                            // Check button URLs
+                            if (msg.components.length > 0) {
+                                for (const row of msg.components) {
+                                    for (const comp of row.components) {
+                                        if (comp.url && comp.url.includes(eventUrl)) return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        });
+
+                        if (matchingAnnouncements.size > 0) {
+                            for (const msg of matchingAnnouncements.values()) {
+                                if (autoDelete) {
+                                    await msg.delete().catch(() => {});
+                                } else {
+                                    // Manually archive this orphaned announcement message
+                                    const originalEmbed = EmbedBuilder.from(msg.embeds[0]);
+                                    const guildLocale = interaction.guild.preferredLocale || 'en';
+                                    let statusLabel = '';
+                                    if (statusText === 'Completed') statusLabel = t(guildLocale, 'announcement_button_completed');
+                                    else if (statusText === 'Canceled') statusLabel = t(guildLocale, 'announcement_button_canceled');
+                                    
+                                    const cleanTitle = (originalEmbed.data.title || '').replace(/^~~|~~$/g, '').replace(/ \[[^\]]+\]$/g, '');
+                                    let newTitle = `~~${cleanTitle}~~ [${statusLabel}]`;
+                                    if (newTitle.length > 256) {
+                                        newTitle = `~~${cleanTitle.substring(0, 256 - statusLabel.length - 7)}...~~ [${statusLabel}]`;
+                                    }
+                                    originalEmbed.setTitle(newTitle);
+                                    originalEmbed.setColor('#808080');
+                                    originalEmbed.setImage(null);
+                                    
+                                    const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : 'canceled_banner') + '\n\n';
+                                    if (originalEmbed.data.description) {
+                                        let newDesc = originalEmbed.data.description
+                                            .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '')
+                                            .replace(/\s\(<t:\d+:R>\)/, '');
+                                        newDesc = newDesc.replace(/(🗓️ \*\*Time:\*\* .*?)(\n|$)/g, '~~$1~~$2')
+                                                         .replace(/(📍 \*\*Location:\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                        newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                                        newDesc = `${statusBanner}${newDesc}`;
+                                        if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
+                                        originalEmbed.setDescription(newDesc);
+                                    }
+                                    await msg.edit({ embeds: [originalEmbed], components: [] }).catch(() => {});
+                                }
+                            }
+                            cleanedCount++;
+                        }
+                    }
+                }
+
+                if (cleanedCount > 0) await saveDb();
+
+                let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s)!`;
+                if (userLocale === 'es') successMsg = `¡Se escanearon y limpiaron con éxito **${cleanedCount}** anuncio(s) de eventos concluidos!`;
+                else if (userLocale === 'de') successMsg = `Erfolgreich gescannt und **${cleanedCount}** beendete Event-Ankündigung(en) bereinigt!`;
+                else if (userLocale === 'fr') successMsg = `Scan et nettoyage réussis pour **${cleanedCount}** annonce(s) d'événements terminés !`;
+                else if (userLocale === 'pt') successMsg = `Escaneado e limpo com sucesso **${cleanedCount}** anúncio(s) de eventos concluídos!`;
+
+                await interaction.editReply({ content: successMsg });
             }
             return;
         }
