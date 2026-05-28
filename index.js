@@ -1502,7 +1502,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText) {
                         let rText = rMsg.content;
                         
                         // Strip out mentions if any (e.g. \n\n<@123> <@456> etc.) to clean up highlighted pings
-                        rText = rText.replace(/\n\n<@\d+>( <@\d+>)*/g, '');
+                        rText = rText.replace(/\n\n<@\d+>(\s+<@\d+)*/g, '');
                         // Strip out the safety mentions text if any
                         rText = rText.replace(/\n\n\*\(.*mentions hidden.*\)\*/g, '');
                         
