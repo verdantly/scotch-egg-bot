@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-## [1.4.1] - 2026-05-27
+## [1.5.0] - 2026-05-28
 
 ### Added
 
+- **Hybrid Reminder Mode:** Introduced a new, third configuration option for server reminders (`hybrid`). When enabled, the bot posts public event reminders in the configured text channel with **zero user mentions/pings** (preserving clean channel histories), while simultaneously dispatching **private DM reminders** directly to opted-in users. Enforces strict privacy by suppressing any fallback mentions in public chat if a user's DMs are closed.
 - **Automatic Database Self-Healing:** Implemented a robust, dual-layer resilience mechanism in `storage.js` to prevent data loss. The system automatically maintains atomic `.bak` backup files for both events and configs. If a primary database file fails to load due to truncation or corruption, it seamlessly falls back to the backup. If both files are damaged, it engages a recursive, Regex-based partial JSON salvage utility to extract intact records and automatically reconstructs the database structure.
 - **Multi-Language (Localization) Support:** Integrated comprehensive localization support for 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Implemented localized name and description metadata for all slash commands in `deploy-commands.js`. Created `i18n.js` to dynamically translate event announcements, button labels, select menus, DMs, reminders, and interactive UI feedback on the fly using user client or guild locale preferences.
 - **Native Event Link Button:** Implemented a new link button (`View Event`) on all event announcements, public reminders, private DM reminders, and settings previews. This button links directly to the Discord native scheduled event window, eliminating the need to embed the URL in message text and preventing Discord from rendering a duplicate "double embed."

@@ -39,6 +39,36 @@ function getAnnouncementMode(guildId) {
 }
 
 /**
+ * Resolves the localized text description of the reminder mode.
+ * @param {string} mode - The reminder mode ('public', 'private', or 'hybrid').
+ * @param {string} locale - The user/guild locale.
+ * @returns {string} The localized mode description.
+ */
+function getModeText(mode, locale) {
+    const normalized = typeof locale === 'string' ? locale.toLowerCase() : 'en';
+    if (mode === 'public') {
+        if (normalized.startsWith('es')) return 'Recordatorios de canal público';
+        if (normalized.startsWith('de')) return 'Öffentliche Kanal-Erinnerungen';
+        if (normalized.startsWith('fr')) return 'Rappels de salon public';
+        if (normalized.startsWith('pt')) return 'Lembretes de canal público';
+        return 'Public Channel Reminders';
+    } else if (mode === 'hybrid') {
+        if (normalized.startsWith('es')) return 'Híbrido (Canal público y MD)';
+        if (normalized.startsWith('de')) return 'Hybrid (Öffentlicher Kanal & DM)';
+        if (normalized.startsWith('fr')) return 'Hybride (Salon public & DM)';
+        if (normalized.startsWith('pt')) return 'Híbrido (Canal público e DM)';
+        return 'Hybrid (Public Channel & DM)';
+    } else {
+        if (normalized.startsWith('es')) return 'Recordatorios de MD privado (Opt-in)';
+        if (normalized.startsWith('de')) return 'Private DM-Erinnerungen (Opt-in)';
+        if (normalized.startsWith('fr')) return 'Rappels de DM privé (Opt-in)';
+        if (normalized.startsWith('pt')) return 'Lembretes de DM privado (Opt-in)';
+        return 'Private DM Reminders (Opt-in)';
+    }
+}
+
+
+/**
  * Retrieves the configured reminder intervals for a specific guild.
  * @param {string} guildId - The Discord Guild ID.
  * @returns {Array<{value: number, unit: string, ms: number}>} Array of interval objects.
@@ -306,9 +336,12 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                         
                         const alertMsg = `${baseMsg}${truncatedDesc}`;
                         
-                        if (mode === 'public') {
+                        const isLastReminder = alert.ms === minMs;
+
+                        // 1. Send public channel reminder if mode is 'public' or 'hybrid'
+                        if (mode === 'public' || mode === 'hybrid') {
                             let mentions = '';
-                            if (userIds.length > 0) {
+                            if (mode === 'public' && userIds.length > 0) {
                                 mentions = '\n\n' + userIds.map(id => `<@${id}>`).join(' ');
                             }
                             const publicMsg = `${alertMsg}${mentions}`;
@@ -322,9 +355,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 payload.content = publicMsg;
                             }
                             
-                            const isLastReminder = alert.ms === minMs;
                             const row = new ActionRowBuilder();
-                            
                             if (!isLastReminder) {
                                 row.addComponents(
                                     new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰')
@@ -346,26 +377,10 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 eventDb[event.id].reminderMessageIds.push(sentMsg.id);
                                 await saveDb();
                             }
-                        } else if (userIds.length > 0) {
-                            const users = [];
-                            const fetchFailedUserIds = [];
-                            const fetchPromises = userIds.map(async userId => {
-                                try {
-                                    const user = client.users.cache.get(userId) || await client.users.fetch(userId);
-                                    if (user) return { success: true, user, id: userId };
-                                } catch (e) {
-                                    console.log(`Could not fetch user ${userId}`);
-                                }
-                                return { success: false, id: userId };
-                            });
-                            
-                            const fetchResults = await Promise.all(fetchPromises);
-                            for (const result of fetchResults) {
-                                if (result.success) users.push(result.user);
-                                else fetchFailedUserIds.push(result.id);
-                            }
-                            
-                            const isLastReminder = alert.ms === minMs;
+                        }
+
+                        // 2. Send private DM reminders if mode is 'private' or 'hybrid' AND there are opted-in users
+                        if ((mode === 'private' || mode === 'hybrid') && userIds.length > 0) {
                             const components = [];
                             const row = new ActionRowBuilder();
                             if (!isLastReminder) {
@@ -378,9 +393,10 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             );
                             components.push(row);
 
-                            // Fallback for users who couldn't be DMed
                             const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alertMsg, components });
-                            if (failedUserIds.length > 0) {
+                            
+                            // If DMs failed, and NOT hybrid mode, post fallback mentions in public channel
+                            if (failedUserIds.length > 0 && mode !== 'hybrid') {
                                 const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
                                 let prefix = 'Could not DM:';
                                 if (guildLocale === 'es') prefix = 'No se pudo enviar MD a:';
@@ -404,8 +420,10 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                     await saveDb();
                                 }
                             }
-                        } else {
-                            // Fallback if nobody opted in at all
+                        }
+
+                        // 3. Fallback if mode is 'private' and nobody opted in at all (keeps legacy behavior)
+                        if (mode === 'private' && userIds.length === 0) {
                             let noOptInMsg = alertMsg;
                             if (noOptInMsg.length > 2000) noOptInMsg = noOptInMsg.substring(0, 1995) + '...';
                             const sentMsg = await channel.send(noOptInMsg).catch(() => null);
@@ -803,11 +821,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
                 await saveConfig();
 
-                let modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
-                if (userLocale === 'es') modeText = mode === 'public' ? 'Recordatorios de canal público' : 'Recordatorios de MD privado (Opt-in)';
-                else if (userLocale === 'de') modeText = mode === 'public' ? 'Öffentliche Kanal-Erinnerungen' : 'Private DM-Erinnerungen (Opt-in)';
-                else if (userLocale === 'fr') modeText = mode === 'public' ? 'Rappels de salon public' : 'Rappels de DM privé (Opt-in)';
-                else if (userLocale === 'pt') modeText = mode === 'public' ? 'Lembretes de canal público' : 'Lembretes de DM privado (Opt-in)';
+                const modeText = getModeText(mode, userLocale);
 
                 await interaction.reply({ content: t(userLocale, 'settings_mode_success', { mode: modeText }), flags: MessageFlags.Ephemeral });
             }
@@ -910,18 +924,24 @@ client.on(Events.InteractionCreate, async interaction => {
                 
                 const msg = t(userLocale, 'settings_testreminder_msg', { value: interval.value, unit: interval.unit, time: timeString });
                 
-                let modeLabel = mode === 'public' ? 'Public' : 'Private';
-                if (userLocale === 'es') modeLabel = mode === 'public' ? 'Público' : 'Privado';
-                else if (userLocale === 'de') modeLabel = mode === 'public' ? 'Öffentlich' : 'Privat';
-                else if (userLocale === 'fr') modeLabel = mode === 'public' ? 'Public' : 'Privé';
-                else if (userLocale === 'pt') modeLabel = mode === 'public' ? 'Público' : 'Privado';
+                let modeLabel = 'Private';
+                if (mode === 'public') modeLabel = 'Public';
+                else if (mode === 'hybrid') modeLabel = 'Hybrid';
+
+                const normalized = userLocale.toLowerCase();
+                if (normalized.startsWith('es')) modeLabel = mode === 'public' ? 'Público' : (mode === 'hybrid' ? 'Híbrido' : 'Privado');
+                else if (normalized.startsWith('de')) modeLabel = mode === 'public' ? 'Öffentlich' : (mode === 'hybrid' ? 'Hybrid' : 'Privat');
+                else if (normalized.startsWith('fr')) modeLabel = mode === 'public' ? 'Public' : (mode === 'hybrid' ? 'Hybride' : 'Privé');
+                else if (normalized.startsWith('pt')) modeLabel = mode === 'public' ? 'Público' : (mode === 'hybrid' ? 'Híbrido' : 'Privado');
 
                 let previewHeader = t(userLocale, 'settings_testreminder_preview', { mode: modeLabel });
                 let replyContent = previewHeader + msg;
                 const row = new ActionRowBuilder();
                 
-                if (mode === 'public') {
-                    replyContent += `\n\n<@${interaction.user.id}>`;
+                if (mode === 'public' || mode === 'hybrid') {
+                    if (mode === 'public') {
+                        replyContent += `\n\n<@${interaction.user.id}>`;
+                    }
                     row.addComponents(new ButtonBuilder().setCustomId('mock_remind').setLabel(t(userLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰').setDisabled(true));
                     if (getCalendarEnabled(interaction.guildId)) {
                         row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
@@ -941,28 +961,24 @@ client.on(Events.InteractionCreate, async interaction => {
                 const intervals = getReminderIntervals(interaction.guildId);
                 const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
                 
-                let modeText = mode === 'public' ? 'Public Channel Reminders' : 'Private DM Reminders (Opt-in)';
+                const modeText = getModeText(mode, userLocale);
                 let enabledText = 'Enabled ✅';
                 let disabledText = 'Disabled ❌';
                 let notConfiguredText = '*Not configured*';
                 
                 if (userLocale === 'es') {
-                    modeText = mode === 'public' ? 'Recordatorios de canal público' : 'Recordatorios de MD privado (Opt-in)';
                     enabledText = 'Activado ✅';
                     disabledText = 'Desactivado ❌';
                     notConfiguredText = '*No configurado*';
                 } else if (userLocale === 'de') {
-                    modeText = mode === 'public' ? 'Öffentliche Kanal-Erinnerungen' : 'Private DM-Erinnerungen (Opt-in)';
                     enabledText = 'Aktiviert ✅';
                     disabledText = 'Deaktiviert ❌';
                     notConfiguredText = '*Nicht konfiguriert*';
                 } else if (userLocale === 'fr') {
-                    modeText = mode === 'public' ? 'Rappels de salon public' : 'Rappels de DM privé (Opt-in)';
                     enabledText = 'Activé ✅';
                     disabledText = 'Désactivé ❌';
                     notConfiguredText = '*Non configuré*';
                 } else if (userLocale === 'pt') {
-                    modeText = mode === 'public' ? 'Lembretes de canal público' : 'Lembretes de DM privado (Opt-in)';
                     enabledText = 'Ativado ✅';
                     disabledText = 'Desativado ❌';
                     notConfiguredText = '*Não configurado*';

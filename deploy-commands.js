@@ -96,8 +96,36 @@ const commands = [
                         })
                         .setRequired(true)
                         .addChoices(
-                            { name: 'Public Channel Reminders', value: 'public' },
-                            { name: 'Private DM Reminders (Opt-in)', value: 'private' }
+                            { 
+                                name: 'Public Channel Reminders', 
+                                nameLocalizations: {
+                                    'es-ES': 'Recordatorios de canal público',
+                                    'de': 'Öffentliche Kanal-Erinnerungen',
+                                    'fr': 'Rappels de salon public',
+                                    'pt-BR': 'Lembretes de canal público'
+                                },
+                                value: 'public' 
+                            },
+                            { 
+                                name: 'Private DM Reminders (Opt-in)', 
+                                nameLocalizations: {
+                                    'es-ES': 'Recordatorios de MD privado (Opt-in)',
+                                    'de': 'Private DM-Erinnerungen (Opt-in)',
+                                    'fr': 'Rappels de DM privé (Opt-in)',
+                                    'pt-BR': 'Lembretes de DM privado (Opt-in)'
+                                },
+                                value: 'private' 
+                            },
+                            { 
+                                name: 'Hybrid (Public Channel & DM)', 
+                                nameLocalizations: {
+                                    'es-ES': 'Híbrido (Canal público y MD)',
+                                    'de': 'Hybrid (Öffentlicher Kanal & DM)',
+                                    'fr': 'Hybride (Salon public & DM)',
+                                    'pt-BR': 'Híbrido (Canal público e DM)'
+                                },
+                                value: 'hybrid' 
+                            }
                         )))
         .addSubcommand(subcommand =>
             subcommand

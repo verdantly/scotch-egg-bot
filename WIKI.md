@@ -1,6 +1,8 @@
 # 🥚 Scotch Egg Bot: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-efficient Discord bot automatically announces server events and sends opt-in reminders (either via private DM or public channel @ mentions) to your community exactly when you need them.
+Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-resilient, and localized Discord bot automatically announces server events and sends opt-in reminders (via private DM, public channel @ mentions, or a hybrid configuration) to your community exactly when you need them.
+
+Scotch Egg Bot features robust **Multi-Language Support** (fully localized in English, Spanish, German, French, and Portuguese) and **Automatic Database Self-Healing** (to prevent database corruption on low-end hardware like Raspberry Pis during sudden power losses).
 
 This guide will walk you through the setup process step-by-step.
 
@@ -116,14 +118,22 @@ The moment you create an event, the bot will instantly post a rich-embed announc
 ### 3. Opting In (The "Remind Me!" Button)
 Users who want to be notified can click the **⏰ Remind Me!** button on the announcement. Next to it, they'll find a **📅 Add to Calendar** button to easily add the event to their Google Calendar, and a **🔗 View Event** button to jump directly to the native Discord event page (preventing double embed issues).
 
-- Depending on the server's configuration mode, the bot will either DM them or publicly @ ping them in the channel at the configured intervals.
+- Depending on the server's configuration mode, the bot will notify them via public channel @ mentions (`Public`), direct message alerts (`Private`), or post to the public channel with zero pings while sending direct message alerts (`Hybrid`).
 - If they click it again, they will be opted out.
 
-### 4. Commands Reference
+### 4. Database Resiliency & Storage (Self-Healing)
+To minimize disk wear on single-board computers (like the Raspberry Pi) and protect your data against sudden power outages:
+- When an announcement is posted, it creates a record for that event in a local `events.json` database. Bot configurations are saved to `config.json`.
+- **Double-Layer Backups:** When save events occur, the storage engine automatically maintains matching `.bak` duplicate copies (`events.json.bak` and `config.json.bak`).
+- **Startup Loading Fallbacks:** On startup, if a primary file is corrupt, it seamlessly loads from the `.bak` file.
+- **Regex Salvage Parsing:** If both the primary and backup are corrupt, a recursive Regex-based JSON salvage parser scans the damaged files, extracts intact records, and automatically reconstructs the database structure to prevent data loss.
+- **Low disk-write wear:** The database utilizes null-prototype in-memory cache and performs minified batched saves to disk, saving your Raspberry Pi's MicroSD card from wear and tear.
+
+### 5. Commands Reference
 
 **Administrator Commands**
 - `/settings channel [channel]` - Sets or changes the server's announcement channel.
-- `/settings mode [mode]` - Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.
+- `/settings mode [mode]` - Selects the reminder delivery mode (`Public` channel @ pings, `Private` DM-only alerts, or `Hybrid` public-channel-posts with private DMs and zero user mentions).
 - `/settings view` - Admin command that shows current bot configurations.
 - `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
 - `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
@@ -148,6 +158,16 @@ If you ever edit the code or download an updated version of the bot, applying th
    `docker compose up -d --build`
 2. If your update includes changes to slash commands, register them by running:
    `docker exec -it scotch-egg-bot node deploy-commands.js`
+
+---
+
+## ❓ Frequently Asked Questions (FAQ)
+
+**Q: How does the Multi-Language support work?**  
+A: Scotch Egg Bot automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly!
+
+**Q: How does Database Self-Healing protect my data?**  
+A: If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg Bot automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.
 
 ---
 

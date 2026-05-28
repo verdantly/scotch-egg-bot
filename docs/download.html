@@ -129,12 +129,12 @@
             </div>
 
             <div class="space-y-12">
-                                <!-- Release: v1.4.1 -->
+                                <!-- Release: v1.5.0 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
-                            <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.4.1</h3>
-                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 27, 2026</span>
+                            <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.5.0</h3>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 28, 2026</span>
                         </div>
                         <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
                     </div>
@@ -144,6 +144,9 @@
                                 <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> Features
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Hybrid Reminder Mode:</strong> Introduced a new, third configuration option for server reminders (<code>hybrid</code>). When enabled, the bot posts public event reminders in the configured text channel with <strong>zero user mentions/pings</strong> (preserving clean channel histories), while simultaneously dispatching <strong>private DM reminders</strong> directly to opted-in users. Enforces strict privacy by suppressing any fallback mentions in public chat if a user's DMs are closed.</li>
+                                <li><strong>Automatic Database Self-Healing:</strong> Implemented a robust, dual-layer resilience mechanism in <code>storage.js</code> to prevent data loss. The system automatically maintains atomic <code>.bak</code> backup files for both events and configs. If a primary database file fails to load due to truncation or corruption, it seamlessly falls back to the backup. If both files are damaged, it engages a recursive, Regex-based partial JSON salvage utility to extract intact records and automatically reconstructs the database structure.</li>
+                                <li><strong>Multi-Language (Localization) Support:</strong> Integrated comprehensive localization support for 5 major native locales: English (<code>en</code>), Spanish (<code>es</code>), German (<code>de</code>), French (<code>fr</code>), and Portuguese (<code>pt</code>). Implemented localized name and description metadata for all slash commands in <code>deploy-commands.js</code>. Created <code>i18n.js</code> to dynamically translate event announcements, button labels, select menus, DMs, reminders, and interactive UI feedback on the fly using user client or guild locale preferences.</li>
                                 <li><strong>Native Event Link Button:</strong> Implemented a new link button (<code>View Event</code>) on all event announcements, public reminders, private DM reminders, and settings previews. This button links directly to the Discord native scheduled event window, eliminating the need to embed the URL in message text and preventing Discord from rendering a duplicate "double embed."</li>
                             </ul>
                         </div>

@@ -271,15 +271,15 @@ echo "{}" > config.json</pre>
                                 </div>
                             </div>
                             
-                            <!-- Active Reminders (Public & Private) -->
+                            <!-- Active Reminders (Public, Private, & Hybrid) -->
                             <div class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public Ping & Private DM)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for high-priority mobile push notifications. Public reminders mention opted-in users in the channel. Event URLs are omitted to keep chats clutter-free.</p>
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public Ping, Private DM, & Hybrid Mode)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for high-priority mobile push notifications. Reminders can be sent via public channel pings (Public), private DMs (Private), or a mixture of both where public reminders have zero mentions while pings are delivered privately via DM (Hybrid).</p>
                                 
                                 <div class="space-y-6 mt-auto">
                                     <!-- Public Reminder Alert -->
                                     <div class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (with mentions)</p>
+                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (Public Mode: with mentions | Hybrid Mode: identical, but zero mentions)</p>
                                         <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
                                         <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
                                         <p>📍 <span class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent Café</span></p>
@@ -385,7 +385,7 @@ echo "{}" > config.json</pre>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings mode</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event reminders are posted publicly in the channel or DMed privately to opted-in users.</span>
+                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets the reminder delivery mode: <code>Public</code> (channel posts + @ mentions), <code>Private</code> (DM-only alerts), or <code>Hybrid</code> (channel posts with zero mentions + private DMs).</span>
                     </li>
                     <li class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                         <code class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings view</code>
@@ -466,6 +466,18 @@ echo "{}" > config.json</pre>
                         <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">Can users opt out of reminders?</summary>
                         <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
                             <p>Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM, or use the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/myreminders</code> command to opt out.</p>
+                        </div>
+                    </details>
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">How does the Multi-Language support work?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>Scotch Egg Bot automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly! The bot is fully localized in <strong>English, Spanish, German, French, and Portuguese</strong>.</p>
+                        </div>
+                    </details>
+                    <details class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                        <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">How does Database Self-Healing protect my data?</summary>
+                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                            <p>If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg Bot automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.</p>
                         </div>
                     </details>
                 </div>
