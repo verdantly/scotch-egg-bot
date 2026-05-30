@@ -1027,25 +1027,94 @@ client.on(Events.InteractionCreate, async interaction => {
                     if (userLocale === 'es') noMsg = 'No se encontraron mensajes en el canal de anuncios para limpiar.';
                     else if (userLocale === 'de') noMsg = 'Keine Nachrichten im Ankündigungskanal zum Bereinigen gefunden.';
                     else if (userLocale === 'fr') noMsg = 'Aucun message trouvé dans le salon d\'annonces à nettoyer.';
-                    else if (userLocale === 'pt') noMsg = 'Nenhuma mensagem encontrada no canal de anúncios para limpar.';
-                    return interaction.editReply({ content: noMsg });
-                }
-
-                const autoDelete = getAutoDeleteEnabled(interaction.guildId);
+                    else if (userLocale === 'pt') noMsg = 'Nenhuma mensag                const autoDelete = getAutoDeleteEnabled(interaction.guildId);
+                const guildLocale = interaction.guild.preferredLocale || 'en';
                 let cleanedCount = 0;
+                let remindersDeletedCount = 0;
 
                 // Process bot messages to find unarchived announcements
                 const botMessages = Array.from(messages.values()).filter(msg => msg.author.id === client.user.id);
                 
+                // Track parsed details for all events found in the announcement channel
+                const foundEvents = new Map();
+                const deletedMessageIds = new Set();
+
+                // Fetch all active scheduled events in the guild to cross-reference
+                const activeEventsCollection = await interaction.guild.scheduledEvents.fetch().catch(() => null);
+                const activeEventsList = activeEventsCollection ? Array.from(activeEventsCollection.values()) : [];
+
                 for (const msg of botMessages) {
-                    if (msg.embeds.length === 0) continue;
+                    const isAnnouncement = msg.embeds.length > 0;
+
+                    if (!isAnnouncement) {
+                        let eventId = null;
+                        let eventName = '';
+
+                        // 1. Try to parse eventId from button components if buttons exist
+                        if (msg.components.length > 0) {
+                            for (const row of msg.components) {
+                                for (const comp of row.components) {
+                                    if (comp.url) {
+                                        const match = comp.url.match(/(?:\/events\/|discord\.com\/events\/\d+\/)(\d{17,19})/);
+                                        if (match) {
+                                            eventId = match[1];
+                                            break;
+                                        }
+                                    }
+                                    if (comp.customId && comp.customId.startsWith('remind_')) {
+                                        eventId = comp.customId.replace('remind_', '');
+                                        break;
+                                    }
+                                }
+                                if (eventId) break;
+                            }
+                        }
+
+                        // 2. Try to parse eventName from the content (between ** asterisks)
+                        if (msg.content) {
+                            const match = msg.content.match(/\*\*(.*?)\*\*/);
+                            if (match) {
+                                eventName = match[1];
+                            }
+                        }
+
+                        // 3. Determine if the reminder belongs to a concluded event
+                        let isConcluded = false;
+                        if (eventId) {
+                            const event = activeEventsCollection ? activeEventsCollection.get(eventId) : null;
+                            if (!event || event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
+                                isConcluded = true;
+                            }
+                        } else if (eventName) {
+                            const activeEvent = activeEventsList.find(e => e.name === eventName);
+                            if (!activeEvent) {
+                                isConcluded = true;
+                            } else {
+                                eventId = activeEvent.id;
+                            }
+                        }
+
+                        if (isConcluded) {
+                            // Immediately delete concluded reminder message (even if it has no buttons)
+                            await msg.delete().catch(() => {});
+                            if (!deletedMessageIds.has(msg.id)) {
+                                deletedMessageIds.add(msg.id);
+                                remindersDeletedCount++;
+                            }
+                        } else if (eventId && eventName) {
+                            // Track active reminders so we can match them if necessary
+                            if (!foundEvents.has(eventId)) {
+                                foundEvents.set(eventId, { eventName, isAnnouncement: false, msg });
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Process Announcement Messages
+                    let eventId = null;
                     const embed = msg.embeds[0];
                     const title = embed.data.title || '';
-                    
-                    // If the title starts with "~~" or contains Unicode strike-through/newline, it is already archived
-                    if (title.startsWith('~~') || title.includes('\u0336') || title.includes('\n')) continue;
-
-                    let eventId = null;
+                    const isArchived = title.startsWith('~~') || title.includes('\u0336') || title.includes('\n');
 
                     // 1. Try to extract eventId from button custom ID
                     if (msg.components.length > 0) {
@@ -1084,68 +1153,86 @@ client.on(Events.InteractionCreate, async interaction => {
                         }
                     }
 
-                    if (!eventId) continue;
-
-                    // Fetch the scheduled event from Discord by ID
-                    const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
-                    
-                    // If the event does not exist (null) OR is Completed/Canceled, it is concluded!
-                    if (!event || event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
-                        const statusText = event && event.status === GuildScheduledEventStatus.Canceled ? 'Canceled' : 'Completed';
-                        
-                        // Extract clean title and event name for robust matching
+                    if (eventId) {
                         const cleanTitle = title
                              .replace(/^~~|~~$/g, '')
                              .replace(/[\u0336]/g, '')
                              .replace(/\n.*/g, '')
                              .replace(/ \[[^\]]+\]$/g, '');
-                        const eventName = cleanTitle
-                            .replace(/^(New Event:|Nuevo evento:|Neues Event:|Nouvel événement\s*:|Novo evento:)\s*/i, '');
-                        
-                        // A. If the event is still tracked in eventDb, trigger the normal archiveAnnouncementMessage
-                        if (eventDb[eventId]) {
-                            await archiveAnnouncementMessage(interaction.guild, eventId, statusText, msg);
-                            delete eventDb[eventId];
-                        } else {
-                            // B. If it was already garbage collected, we manually archive/delete the announcement message
-                            if (autoDelete) {
-                                await msg.delete().catch(() => {});
+                        const eventName = cleanTitle.replace(/^(New Event:|Nuevo evento:|Neues Event:|Nouvel événement\s*:|Novo evento:)\s*/i, '');
+
+                        // Announcement takes precedence to preserve isArchived status
+                        foundEvents.set(eventId, { eventName, isAnnouncement: true, msg, isArchived });
+                    }
+                }
+
+                // Process compiled event IDs to clean up announcements and any remaining public pings
+                for (const [eventId, info] of foundEvents.entries()) {
+                    const event = activeEventsCollection ? activeEventsCollection.get(eventId) : null;
+                    
+                    // If the event does not exist (null) OR is Completed/Canceled, it is concluded!
+                    if (!event || event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
+                        const statusText = event && event.status === GuildScheduledEventStatus.Canceled ? 'Canceled' : 'Completed';
+                        const { eventName, isAnnouncement, msg: announceMsg, isArchived } = info;
+
+                        // A. Process announcement archiving if the announcement is unarchived
+                        if (isAnnouncement && !isArchived) {
+                            if (eventDb[eventId]) {
+                                await archiveAnnouncementMessage(interaction.guild, eventId, statusText, announceMsg);
+                                delete eventDb[eventId];
                             } else {
-                                const originalEmbed = EmbedBuilder.from(embed);
-                                 let newTitle = toUnicodeStrikeThrough(cleanTitle);
-                                 if (newTitle.length > 256) {
-                                     newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
-                                 }
-                                 originalEmbed.setTitle(newTitle);
-                                 originalEmbed.setColor('#808080');
-                                 originalEmbed.setImage(null);
-                                 
-                                 const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : 'canceled_banner') + '\n\n';
-                                 
-                                 let newDesc = originalEmbed.data.description || '';
-                                 newDesc = newDesc
-                                     .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '')
-                                     .replace(/\s\(<t:\d+:R>\)/, '');
-                                 newDesc = newDesc.replace(/(🗓️ \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2')
-                                                  .replace(/(📍 \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2');
-                                                  
-                                 if (newDesc.trim()) {
-                                     newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
-                                     newDesc = `${statusBanner}${newDesc}`;
-                                 } else {
-                                     newDesc = statusBanner.trim();
-                                 }
-                                 
-                                 if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
-                                 originalEmbed.setDescription(newDesc);
-                                await msg.edit({ embeds: [originalEmbed], components: [] }).catch(() => {});
+                                if (autoDelete) {
+                                    await announceMsg.delete().catch(() => {});
+                                } else {
+                                    const originalEmbed = EmbedBuilder.from(announceMsg.embeds[0]);
+                                    const title = announceMsg.embeds[0].data.title || '';
+                                    const cleanTitle = title
+                                         .replace(/^~~|~~$/g, '')
+                                         .replace(/[\u0336]/g, '')
+                                         .replace(/\n.*/g, '')
+                                         .replace(/ \[[^\]]+\]$/g, '');
+
+                                    let newTitle = toUnicodeStrikeThrough(cleanTitle);
+                                    if (newTitle.length > 256) {
+                                        newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
+                                    }
+                                    originalEmbed.setTitle(newTitle);
+                                    originalEmbed.setColor('#808080');
+                                    originalEmbed.setImage(null);
+                                    
+                                    const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : 'canceled_banner') + '\n\n';
+                                    
+                                    let newDesc = originalEmbed.data.description || '';
+                                    newDesc = newDesc
+                                        .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '')
+                                        .replace(/\s\(<t:\d+:R>\)/, '');
+                                    newDesc = newDesc.replace(/(🗓️ \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2')
+                                                     .replace(/(📍 \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                                     
+                                    if (newDesc.trim()) {
+                                        newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                                        newDesc = `${statusBanner}${newDesc}`;
+                                    } else {
+                                        newDesc = statusBanner.trim();
+                                    }
+                                    
+                                    if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
+                                    originalEmbed.setDescription(newDesc);
+                                    await announceMsg.edit({ embeds: [originalEmbed], components: [] }).catch(() => {});
+                                }
+                            }
+                            cleanedCount++;
+                        } else {
+                            // If the event database still tracks this concluded event but announcement is already archived/deleted
+                            if (eventDb[eventId]) {
+                                delete eventDb[eventId];
                             }
                         }
 
-                        // C. Fail-safe: Always scan and clean up any public reminder messages associated with this event!
+                        // B. Fail-safe: Always scan and clean up any remaining public reminder messages associated with this event!
                         const eventUrl = `https://discord.com/events/${interaction.guildId}/${eventId}`;
                         const matchingReminders = botMessages.filter(remMsg => {
-                            if (remMsg.id === msg.id) return false;
+                            if (isAnnouncement && remMsg.id === announceMsg.id) return false;
                             
                             // Match by event link URL or exact bold event name wrapped in asterisks
                             if (remMsg.content && (remMsg.content.includes(eventUrl) || remMsg.content.includes(`**${eventName}**`))) return true;
@@ -1162,20 +1249,22 @@ client.on(Events.InteractionCreate, async interaction => {
                         });
 
                         for (const remMsg of matchingReminders) {
-                            await remMsg.delete().catch(() => {});
+                            if (!deletedMessageIds.has(remMsg.id)) {
+                                await remMsg.delete().catch(() => {});
+                                deletedMessageIds.add(remMsg.id);
+                                remindersDeletedCount++;
+                            }
                         }
-
-                        cleanedCount++;
                     }
                 }
 
-                if (cleanedCount > 0) await saveDb();
+                if (cleanedCount > 0 || remindersDeletedCount > 0) await saveDb();
 
-                let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s)!`;
-                if (userLocale === 'es') successMsg = `¡Se escanearon y limpiaron con éxito **${cleanedCount}** anuncio(s) de eventos concluidos!`;
-                else if (userLocale === 'de') successMsg = `Erfolgreich gescannt und **${cleanedCount}** beendete Event-Ankündigung(en) bereinigt!`;
-                else if (userLocale === 'fr') successMsg = `Scan et nettoyage réussis pour **${cleanedCount}** annonce(s) d'événements terminés !`;
-                else if (userLocale === 'pt') successMsg = `Escaneado e limpo com sucesso **${cleanedCount}** anúncio(s) de eventos concluídos!`;
+                let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s) and deleted **${remindersDeletedCount}** public reminder(s)!`;
+                if (userLocale === 'es') successMsg = `¡Se escanearon y limpiaron con éxito **${cleanedCount}** anuncio(s) de eventos y se eliminaron **${remindersDeletedCount}** recordatorio(s) público(s)!`;
+                else if (userLocale === 'de') successMsg = `Erfolgreich gescannt und **${cleanedCount}** beendete Event-Ankündigung(en) bereinigt sowie **${remindersDeletedCount}** öffentliche Erinnerung(en) gelöscht!`;
+                else if (userLocale === 'fr') successMsg = `Scan et nettoyage réussis pour **${cleanedCount}** annonce(s) d'événements et **${remindersDeletedCount}** rappel(s) public(s) supprimé(s) !`;
+                else if (userLocale === 'pt') successMsg = `Escaneado e limpo com sucesso **${cleanedCount}** anúncio(s) de eventos e excluído(s) **${remindersDeletedCount}** lembrete(s) público(s)!`;
 
                 await interaction.editReply({ content: successMsg });
             }

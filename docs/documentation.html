@@ -407,8 +407,7 @@ echo "{}" > config.json</pre>
                         <p>Administrators must tell the bot which text channel to use for event announcements. Type the
                             following command in any channel:</p>
                         <blockquote class="bg-cream-dark dark:bg-gray-800 border-l-4 border-breadcrumb pl-4 py-2 mt-2">
-                            <code
-                                class="text-breadcrumb-dark dark:text-breadcrumb">/settings channel channel:#events</code>
+                            <code class="text-breadcrumb-dark dark:text-breadcrumb">/settings channel</code>
                         </blockquote>
                     </div>
                     <div>
@@ -838,7 +837,12 @@ echo "{}" > config.json</pre>
                             class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
                             What is the Hybrid delivery mode and when should I use it?</summary>
                         <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Hybrid mode is the best of both worlds! It posts all event reminders in your public announcement channel (providing a gorgeous, searchable, and clean chronological stream of events) but with <strong>zero pings or user mentions</strong> to avoid public chat disruption. Simultaneously, the bot delivers private, custom-localized direct messages directly to each opted-in member. Use this to keep channels tidy while guaranteeing that interested users never miss a notification.</p>
+                            <p>Hybrid mode is the best of both worlds! It posts all event reminders in your public
+                                announcement channel (providing a gorgeous, searchable, and clean chronological stream
+                                of events) but with <strong>zero pings or user mentions</strong> to avoid public chat
+                                disruption. Simultaneously, the bot delivers private, custom-localized direct messages
+                                directly to each opted-in member. Use this to keep channels tidy while guaranteeing that
+                                interested users never miss a notification.</p>
                         </div>
                     </details>
                     <details
@@ -906,7 +910,12 @@ echo "{}" > config.json</pre>
                             class="font-bold text-xl text-red-700 dark:text-red-400 cursor-pointer select-none outline-none">
                             The bot is not posting announcements or shows permission errors in the channel</summary>
                         <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>The bot requires explicit role permissions in your configured announcement channel to operate. Make sure that the bot's integration role (or the bot itself) is granted the following permissions in the target channel's settings: <strong>View Channel</strong>, <strong>Send Messages</strong>, and <strong>Embed Links</strong>. If the bot is missing any of these, it will fail to post announcements or return descriptive permission warning responses.</p>
+                            <p>The bot requires explicit role permissions in your configured announcement channel to
+                                operate. Make sure that the bot's integration role (or the bot itself) is granted the
+                                following permissions in the target channel's settings: <strong>View Channel</strong>,
+                                <strong>Send Messages</strong>, and <strong>Embed Links</strong>. If the bot is missing
+                                any of these, it will fail to post announcements or return descriptive permission
+                                warning responses.</p>
                         </div>
                     </details>
                     <details
@@ -915,7 +924,12 @@ echo "{}" > config.json</pre>
                             class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
                             Why aren't some users receiving their private DM reminders?</summary>
                         <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>This is almost always due to Discord direct message privacy settings. If a user blocks DMs from server members, the bot is blocked from messaging them. To fix this, the user must go to their <strong>Server Privacy Settings</strong> in Discord and toggle <strong>"Allow direct messages from server members"</strong> to <strong>On</strong>. Alternatively, server admins can switch the server's mode to <code>Public</code> so reminders are posted directly in the channel with pings.</p>
+                            <p>This is almost always due to Discord direct message privacy settings. If a user blocks
+                                DMs from server members, the bot is blocked from messaging them. To fix this, the user
+                                must go to their <strong>Server Privacy Settings</strong> in Discord and toggle
+                                <strong>"Allow direct messages from server members"</strong> to <strong>On</strong>.
+                                Alternatively, server admins can switch the server's mode to <code>Public</code> so
+                                reminders are posted directly in the channel with pings.</p>
                         </div>
                     </details>
                     <details

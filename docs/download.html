@@ -129,7 +129,39 @@
             </div>
 
             <div class="space-y-12">
-                                <!-- Release: v1.5.0 -->
+                <!-- Release: v1.5.1 -->
+                <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                        <div>
+                            <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.5.1</h3>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">May 30, 2026</span>
+                        </div>
+                        <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Changed</span> Improvements
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Always Delete Public Reminders on Conclusion:</strong> Refactored the reminder archiving logic to always delete public reminder messages entirely on event conclusion, regardless of whether <code>autoDelete</code> is enabled or disabled. This leaves only the main, low-contrast event announcement message in the channel, significantly reducing chat history clutter.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Concluded Event Archiving in Settings Cleanup:</strong> Fixed a bug where concluded event announcements were not being archived or deleted during <code>/settings cleanup</code> if they were still tracked in <code>eventDb</code> but missing their <code>messageId</code> field. <code>archiveAnnouncementMessage</code> now accepts an optional pre-fetched message parameter to ensure it can archive the message directly and safely populate <code>messageId</code>.</li>
+                                <li><strong>Multilingual Strike-Through Matching:</strong> Replaced hardcoded English text regexes (<code>**Time:**</code> and <code>**Location:**</code>) with language-agnostic emoji-based matching (<code>(🗓️ \*\*.*?\*\* .*?)</code> and <code>(📍 \*\*.*?\*\* .*?)</code>) to ensure Time and Location details are successfully struck-through on event conclusion across all five supported native languages.</li>
+                                <li><strong>Native Embed Title Strike-Through:</strong> Discord embed titles do not support standard Markdown formatting (like <code>~~strikethrough~~</code>), causing literal <code>~~</code> tildes to be shown as raw text. Implemented native client-side strike-through rendering for titles using Unicode combining characters (<code>U+0336</code>).</li>
+                                <li><strong>Resilient Empty Description Status Banner:</strong> Fixed a bug where the bold status banner (e.g. <code>⏹️ This event has concluded.</code>) was omitted if the original Discord event had no description. If the description is empty, it is now cleanly set to display only the status banner.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Release: v1.5.0 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
