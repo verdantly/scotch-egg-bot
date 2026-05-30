@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.1] - 2026-05-30
 
+### Changed
+
+- **Always Delete Public Reminders on Conclusion:** Refactored the reminder archiving logic to always delete public reminder messages entirely on event conclusion, regardless of whether `autoDelete` is enabled or disabled. This leaves only the main, low-contrast event announcement message in the channel, significantly reducing chat history clutter.
+
 ### Fixed
 
 - **Concluded Event Archiving in Settings Cleanup:** Fixed a bug where concluded event announcements were not being archived or deleted during `/settings cleanup` if they were still tracked in `eventDb` but missing their `messageId` field. `archiveAnnouncementMessage` now accepts an optional pre-fetched message parameter to ensure it can archive the message directly and safely populate `messageId`.
+- **Multilingual Strike-Through Matching:** Replaced hardcoded English text regexes (`**Time:**` and `**Location:**`) with dynamic, language-agnostic emoji-based matching (`(🗓️ \*\*.*?\*\* .*?)` and `(📍 \*\*.*?\*\* .*?)`) to ensure Time and Location details are successfully struck-through on event conclusion across all five supported native languages.
+- **Native Embed Title Strike-Through:** Discord embed titles do not support standard Markdown formatting (like `~~strikethrough~~`), causing literal `~~` tildes to be shown as raw text. Implemented native client-side strike-through rendering for titles using Unicode combining characters (`U+0336`).
+- **Resilient Empty Description Status Banner:** Fixed a bug where the bold status banner (e.g. `⏹️ This event has concluded.`) was omitted if the original Discord event had no description. If the description is empty, it is now cleanly set to display only the status banner.
 
 ## [1.5.0] - 2026-05-28
 

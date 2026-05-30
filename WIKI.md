@@ -137,10 +137,10 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 - `/settings view` - Admin command that shows current bot configurations.
 - `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
 - `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
-- `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived.
+- `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter).
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
-- `/settings cleanup` - Admin command that scans the announcement channel's recent messages and automatically archives (or deletes) any unarchived concluded event announcements.
+- `/settings cleanup` - Admin command that scans the announcement channel's recent messages, automatically archives (or deletes) any unarchived concluded event announcements, and **always deletes** any matching public event reminder messages to reduce channel clutter.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
 - `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 

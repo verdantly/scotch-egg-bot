@@ -1042,8 +1042,8 @@ client.on(Events.InteractionCreate, async interaction => {
                     const embed = msg.embeds[0];
                     const title = embed.data.title || '';
                     
-                    // If the title starts with "~~", it is already archived
-                    if (title.startsWith('~~')) continue;
+                    // If the title starts with "~~" or contains Unicode strike-through/newline, it is already archived
+                    if (title.startsWith('~~') || title.includes('\u0336') || title.includes('\n')) continue;
 
                     let eventId = null;
 
@@ -1103,32 +1103,37 @@ client.on(Events.InteractionCreate, async interaction => {
                                 await msg.delete().catch(() => {});
                             } else {
                                 const originalEmbed = EmbedBuilder.from(embed);
-                                const guildLocale = interaction.guild.preferredLocale || 'en';
-                                let statusLabel = '';
-                                if (statusText === 'Completed') statusLabel = t(guildLocale, 'announcement_button_completed');
-                                else if (statusText === 'Canceled') statusLabel = t(guildLocale, 'announcement_button_canceled');
-                                
-                                const cleanTitle = title.replace(/^~~|~~$/g, '').replace(/ \[[^\]]+\]$/g, '');
-                                let newTitle = `~~${cleanTitle}~~ [${statusLabel}]`;
-                                if (newTitle.length > 256) {
-                                    newTitle = `~~${cleanTitle.substring(0, 256 - statusLabel.length - 7)}...~~ [${statusLabel}]`;
-                                }
-                                originalEmbed.setTitle(newTitle);
-                                originalEmbed.setColor('#808080');
-                                originalEmbed.setImage(null);
-                                
-                                const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : 'canceled_banner') + '\n\n';
-                                if (originalEmbed.data.description) {
-                                    let newDesc = originalEmbed.data.description
-                                        .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '')
-                                        .replace(/\s\(<t:\d+:R>\)/, '');
-                                    newDesc = newDesc.replace(/(🗓️ \*\*Time:\*\* .*?)(\n|$)/g, '~~$1~~$2')
-                                                     .replace(/(📍 \*\*Location:\*\* .*?)(\n|$)/g, '~~$1~~$2');
-                                    newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
-                                    newDesc = `${statusBanner}${newDesc}`;
-                                    if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
-                                    originalEmbed.setDescription(newDesc);
-                                }
+                                const cleanTitle = title
+                                     .replace(/^~~|~~$/g, '')
+                                     .replace(/[\u0336]/g, '')
+                                     .replace(/\n.*/g, '')
+                                     .replace(/ \[[^\]]+\]$/g, '');
+                                 let newTitle = toUnicodeStrikeThrough(cleanTitle);
+                                 if (newTitle.length > 256) {
+                                     newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
+                                 }
+                                 originalEmbed.setTitle(newTitle);
+                                 originalEmbed.setColor('#808080');
+                                 originalEmbed.setImage(null);
+                                 
+                                 const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : 'canceled_banner') + '\n\n';
+                                 
+                                 let newDesc = originalEmbed.data.description || '';
+                                 newDesc = newDesc
+                                     .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '')
+                                     .replace(/\s\(<t:\d+:R>\)/, '');
+                                 newDesc = newDesc.replace(/(🗓️ \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2')
+                                                  .replace(/(📍 \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                                  
+                                 if (newDesc.trim()) {
+                                     newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
+                                     newDesc = `${statusBanner}${newDesc}`;
+                                 } else {
+                                     newDesc = statusBanner.trim();
+                                 }
+                                 
+                                 if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
+                                 originalEmbed.setDescription(newDesc);
                                 await msg.edit({ embeds: [originalEmbed], components: [] }).catch(() => {});
                             }
 
@@ -1149,24 +1154,7 @@ client.on(Events.InteractionCreate, async interaction => {
                             });
 
                             for (const remMsg of matchingReminders) {
-                                if (autoDelete) {
-                                    await remMsg.delete().catch(() => {});
-                                } else {
-                                    let rText = remMsg.content;
-                                    rText = rText.replace(/\n\n<@\d+>(\s+<@\d+>)*/g, '');
-                                    rText = rText.replace(/\n\n\*\(.*mentions hidden.*\)\*/g, '');
-                                    rText = rText.replace(/(📢 .*? until \*\*.*?\*\*!)/g, '~~$1~~');
-                                    rText = rText.replace(/(🗓️ .*?)(\n|$)/g, '~~$1~~$2')
-                                                 .replace(/(📍 .*?)(\n|$)/g, '~~$1~~$2')
-                                                 .replace(/(🔗 \*\*Discord Event:\*\* .*?)(\n|$)/g, '~~$1~~$2');
-                                    rText = rText.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
-                                    
-                                    const reminderBannerKey = statusText === 'Completed' ? 'reminder_banner_concluded' : 'reminder_banner_canceled';
-                                    const statusBanner = t(interaction.guild.preferredLocale || 'en', reminderBannerKey);
-                                    rText = `${statusBanner}${rText}`;
-                                    if (rText.length > 2000) rText = rText.substring(0, 1995) + '...';
-                                    await remMsg.edit({ content: rText, components: [] }).catch(() => {});
-                                }
+                                await remMsg.delete().catch(() => {});
                             }
                         }
                         cleanedCount++;
@@ -1610,6 +1598,16 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 /**
+ * Converts a plain string to a Unicode strike-through string (using U+0336).
+ * This works around Discord's lack of markdown support in embed titles.
+ * @param {string} text - The input text.
+ * @returns {string} The text with combining strike-through characters.
+ */
+function toUnicodeStrikeThrough(text) {
+    return text.split('').map(char => char + '\u0336').join('');
+}
+
+/**
  * Archives an active event announcement by changing its embed color to gray 
  * and disabling its interaction buttons to indicate it has concluded.
  * @param {Guild} guild - The Discord Guild object.
@@ -1641,11 +1639,15 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                 else if (statusText === 'Deleted') statusLabel = t(guildLocale, 'announcement_button_deleted');
                 else if (statusText === 'Canceled') statusLabel = t(guildLocale, 'announcement_button_canceled');
 
-                // Format the title with a premium strike-through and modern status tag
-                const cleanTitle = (originalEmbed.data.title || '').replace(/^~~|~~$/g, '').replace(/ \[[^\]]+\]$/g, '');
-                let newTitle = `~~${cleanTitle}~~ [${statusLabel}]`;
+                // Format the title with a premium strike-through
+                const cleanTitle = (originalEmbed.data.title || '')
+                    .replace(/^~~|~~$/g, '')
+                    .replace(/[\u0336]/g, '')
+                    .replace(/\n.*/g, '')
+                    .replace(/ \[[^\]]+\]$/g, '');
+                let newTitle = toUnicodeStrikeThrough(cleanTitle);
                 if (newTitle.length > 256) {
-                    newTitle = `~~${cleanTitle.substring(0, 256 - statusLabel.length - 7)}...~~ [${statusLabel}]`;
+                    newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
                 }
                 originalEmbed.setTitle(newTitle);
                 originalEmbed.setColor('#808080'); // Gray out the sidebar
@@ -1653,24 +1655,25 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                 
                 const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : statusText === 'Deleted' ? 'deleted_banner' : 'canceled_banner') + '\n\n';
                 
-                if (originalEmbed.data.description) {
-                    let newDesc = originalEmbed.data.description
-                        .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '') // Remove opt-in text
-                        .replace(/\s\(<t:\d+:R>\)/, ''); // Remove relative countdowns
-                        
-                    // Let's add strike-throughs to Time and Location
-                    newDesc = newDesc.replace(/(🗓️ \*\*Time:\*\* .*?)(\n|$)/g, '~~$1~~$2')
-                                     .replace(/(📍 \*\*Location:\*\* .*?)(\n|$)/g, '~~$1~~$2');
-                                     
-                    // Prefix every line with a blockquote to dim and indent the text
+                let newDesc = originalEmbed.data.description || '';
+                newDesc = newDesc
+                    .replace(/\n\n\*(?:Click|¡Haz|Klicke|Cliquez|Clique)[^*]+\*/gi, '') // Remove opt-in text
+                    .replace(/\s\(<t:\d+:R>\)/, ''); // Remove relative countdowns
+                    
+                // Let's add strike-throughs to Time and Location
+                newDesc = newDesc.replace(/(🗓️ \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2')
+                                 .replace(/(📍 \*\*.*?\*\* .*?)(\n|$)/g, '~~$1~~$2');
+                                 
+                // Prefix every line with a blockquote to dim and indent the text
+                if (newDesc.trim()) {
                     newDesc = newDesc.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
-                    
-                    // Prepend the bold status banner to the description
                     newDesc = `${statusBanner}${newDesc}`;
-                    
-                    if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
-                    originalEmbed.setDescription(newDesc);
+                } else {
+                    newDesc = statusBanner.trim();
                 }
+                
+                if (newDesc.length > 4096) newDesc = newDesc.substring(0, 4093) + '...';
+                originalEmbed.setDescription(newDesc);
                 
                 const disabledRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()
@@ -1689,36 +1692,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
             for (const rMsgId of reminderMessageIds) {
                 const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
                 if (rMsg) {
-                    if (autoDelete) {
-                        await rMsg.delete().catch(() => {});
-                    } else {
-                        // Remove components (buttons) and edit the text to strike-through and add status banner
-                        let rText = rMsg.content;
-                        
-                        // Strip out mentions if any (e.g. \n\n<@123> <@456> etc.) to clean up highlighted pings
-                        rText = rText.replace(/\n\n<@\d+>(\s+<@\d+>)*/g, '');
-                        // Strip out the safety mentions text if any
-                        rText = rText.replace(/\n\n\*\(.*mentions hidden.*\)\*/g, '');
-                        
-                        // Add strike-through to the header line: 📢 X until **Event**!
-                        rText = rText.replace(/(📢 .*? until \*\*.*?\*\*!)/g, '~~$1~~');
-                        // Add strike-through to Time, Location, and Link lines
-                        rText = rText.replace(/(🗓️ .*?)(\n|$)/g, '~~$1~~$2')
-                                     .replace(/(📍 .*?)(\n|$)/g, '~~$1~~$2')
-                                     .replace(/(🔗 \*\*Discord Event:\*\* .*?)(\n|$)/g, '~~$1~~$2');
-                                     
-                        // Blockquote the reminder details for a clean, dimmed look
-                        rText = rText.split('\n').map(line => line.startsWith('> ') ? line : `> ${line}`).join('\n');
-                        
-                        // Prepend the bold status banner
-                        const reminderBannerKey = statusText === 'Completed' ? 'reminder_banner_concluded' : statusText === 'Deleted' ? 'reminder_banner_deleted' : 'reminder_banner_canceled';
-                        const statusBanner = t(guildLocale, reminderBannerKey);
-                        rText = `${statusBanner}${rText}`;
-                        
-                        if (rText.length > 2000) rText = rText.substring(0, 1995) + '...';
-                        
-                        await rMsg.edit({ content: rText, components: [] }).catch(() => {});
-                    }
+                    await rMsg.delete().catch(() => {});
                 }
             }
         }
