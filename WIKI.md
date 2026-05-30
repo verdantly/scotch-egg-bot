@@ -140,7 +140,7 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 - `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter).
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
-- `/settings cleanup` - Admin command that scans the announcement channel's recent messages, automatically archives (or deletes) any unarchived concluded event announcements, and **always deletes** any matching public event reminder messages to reduce channel clutter.
+- `/settings cleanup` - Admin command that scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, and performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages and keep the channel clean.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
 - `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 

@@ -133,7 +133,7 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
 
 *   `/settings cleanup`
-    -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) any unarchived concluded event announcements, and **always deletes** any matching public event reminder messages to reduce channel clutter.
+    -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, and performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages and keep the channel clean.
 
 *   `/announceevent [event_link_or_id]`
     -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.
