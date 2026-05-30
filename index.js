@@ -1027,7 +1027,11 @@ client.on(Events.InteractionCreate, async interaction => {
                     if (userLocale === 'es') noMsg = 'No se encontraron mensajes en el canal de anuncios para limpiar.';
                     else if (userLocale === 'de') noMsg = 'Keine Nachrichten im Ankündigungskanal zum Bereinigen gefunden.';
                     else if (userLocale === 'fr') noMsg = 'Aucun message trouvé dans le salon d\'annonces à nettoyer.';
-                    else if (userLocale === 'pt') noMsg = 'Nenhuma mensag                const autoDelete = getAutoDeleteEnabled(interaction.guildId);
+                    else if (userLocale === 'pt') noMsg = 'Nenhuma mensagem encontrada no canal de anúncios para limpar.';
+                    return interaction.editReply({ content: noMsg });
+                }
+
+                const autoDelete = getAutoDeleteEnabled(interaction.guildId);
                 const guildLocale = interaction.guild.preferredLocale || 'en';
                 let cleanedCount = 0;
                 let remindersDeletedCount = 0;
