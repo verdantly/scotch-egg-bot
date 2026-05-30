@@ -1095,7 +1095,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         
                         // A. If the event is still tracked in eventDb, trigger the normal archiveAnnouncementMessage
                         if (eventDb[eventId]) {
-                            await archiveAnnouncementMessage(interaction.guild, eventId, statusText);
+                            await archiveAnnouncementMessage(interaction.guild, eventId, statusText, msg);
                             delete eventDb[eventId];
                         } else {
                             // B. If it was already garbage collected, we manually archive/delete the announcement message
@@ -1615,14 +1615,19 @@ client.on(Events.InteractionCreate, async interaction => {
  * @param {Guild} guild - The Discord Guild object.
  * @param {string} eventId - The ID of the event to archive.
  * @param {string} statusText - The status reason ('Completed' or 'Deleted' or 'Canceled').
+ * @param {Message} [existingMsg=null] - Optional already-fetched message object.
  */
-async function archiveAnnouncementMessage(guild, eventId, statusText) {
-    if (!eventDb[eventId] || !eventDb[eventId].messageId) return;
+async function archiveAnnouncementMessage(guild, eventId, statusText, existingMsg = null) {
+    if (!eventDb[eventId]) return;
+    if (!eventDb[eventId].messageId && existingMsg) {
+        eventDb[eventId].messageId = existingMsg.id;
+    }
+    if (!eventDb[eventId].messageId) return;
     try {
         const channelId = getAnnouncementChannelId(guild.id);
         const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
         if (channel) {
-            const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+            const msg = existingMsg || await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
             const autoDelete = getAutoDeleteEnabled(guild.id);
             
             const guildLocale = guild.preferredLocale || 'en';
