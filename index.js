@@ -4,7 +4,7 @@ require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
 const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
 const { version } = require('./package.json');
-const { t } = require('./i18n.js');
+const { t, getNormalizedLocale } = require('./i18n.js');
 
 const client = new Client({ 
     intents: [
@@ -167,7 +167,7 @@ async function updateLiveCounter(eventId) {
         if (!msg || !msg.components || msg.components.length === 0) return;
 
         const userCount = Object.keys(eventData.users || {}).length;
-        const guildLocale = guild.preferredLocale || 'en';
+        const guildLocale = getNormalizedLocale(guild.preferredLocale);
         const baseRemindLabel = t(guildLocale, 'announcement_button_remind');
         const newLabel = userCount > 0 ? `${baseRemindLabel} (${userCount})` : baseRemindLabel;
 
@@ -313,7 +313,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                         
                         // 3. DEFENSIVE SAFETY TRUNCATION: Keeping the whole message strictly under Discord's 2,000-character limit
                         // We reserve 1,900 characters for the alert text to leave plenty of room for buttons, mentions, etc.
-                        const guildLocale = event.guild.preferredLocale || 'en';
+                        const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
                         const baseMsg = t(guildLocale, mode === 'public' ? 'reminder_body_public' : 'reminder_body_private', {
                             value: alert.value,
                             unit: alert.unit,
@@ -532,7 +532,7 @@ function buildAnnouncementEmbed(event) {
     const mode = getAnnouncementMode(event.guild.id);
     const intervals = getReminderIntervals(event.guild.id);
     const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-    const guildLocale = event.guild.preferredLocale || 'en';
+    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
     const reminderText = t(guildLocale, mode === 'public' ? 'announcement_footer_public' : 'announcement_footer_private', {
         intervals: intervalsStr
     });
@@ -589,7 +589,7 @@ function buildAnnouncementEmbed(event) {
  */
 async function postAnnouncement(event, channel) {
     const embed = buildAnnouncementEmbed(event);
-    const guildLocale = event.guild.preferredLocale || 'en';
+    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰')
@@ -635,7 +635,7 @@ async function generateUpcomingPage(interaction, page = 0) {
         return !users[userId] && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active);
     }).sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
-    const userLocale = interaction.locale || 'en';
+    const userLocale = getNormalizedLocale(interaction.locale);
     if (upcomingEvents.length === 0) {
         return { content: t(userLocale, 'upcoming_no_events'), components: [] };
     }
@@ -704,7 +704,7 @@ async function generateMyRemindersPage(interaction, page = 0) {
         }
     }
 
-    const userLocale = interaction.locale || 'en';
+    const userLocale = getNormalizedLocale(interaction.locale);
     if (myEventIds.size === 0) {
         return { content: t(userLocale, 'myreminders_no_events'), components: [] };
     }
@@ -782,7 +782,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
-                const userLocale = interaction.locale || 'en';
+                const userLocale = getNormalizedLocale(interaction.locale);
                 return interaction.reply({ 
                     content: t(userLocale, 'command_cooldown', { command: interaction.commandName, time: `<t:${expiredTimestamp}:R>` }), 
                     flags: MessageFlags.Ephemeral 
@@ -796,7 +796,7 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.commandName === 'settings') {
             const subcommand = interaction.options.getSubcommand();
 
-            const userLocale = interaction.locale || 'en';
+            const userLocale = getNormalizedLocale(interaction.locale);
             if (subcommand === 'channel') {
                 const channel = interaction.options.getChannel('channel');
 
@@ -1012,7 +1012,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (subcommand === 'cleanup') {
                 await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-                const userLocale = interaction.locale || 'en';
+                const userLocale = getNormalizedLocale(interaction.locale);
                 const channelId = getAnnouncementChannelId(interaction.guildId);
                 const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
                 
@@ -1032,7 +1032,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
 
                 const autoDelete = getAutoDeleteEnabled(interaction.guildId);
-                const guildLocale = interaction.guild.preferredLocale || 'en';
+                const guildLocale = getNormalizedLocale(interaction.guild.preferredLocale);
                 let cleanedCount = 0;
                 let remindersDeletedCount = 0;
 
@@ -1277,7 +1277,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'announceevent') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-            const userLocale = interaction.locale || 'en';
+            const userLocale = getNormalizedLocale(interaction.locale);
 
             const eventIdentifier = interaction.options.getString('event_link_or_id');
             const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
@@ -1329,7 +1329,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'help') {
             const isAdmin = interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-            const userLocale = interaction.locale || 'en';
+            const userLocale = getNormalizedLocale(interaction.locale);
 
             const fields = [
                 { 
@@ -1362,7 +1362,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         if (interaction.commandName === 'stats') {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-            const userLocale = interaction.locale || 'en';
+            const userLocale = getNormalizedLocale(interaction.locale);
 
             const guildEvents = await interaction.guild.scheduledEvents.fetch();
             const activeEvents = guildEvents.filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active);
@@ -1419,7 +1419,7 @@ client.on(Events.InteractionCreate, async interaction => {
         timestamps.set(interaction.user.id, now);
         setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 
-        const userLocale = interaction.locale || 'en';
+        const userLocale = getNormalizedLocale(interaction.locale);
         if (interaction.customId === 'list_optin_select') {
             await interaction.deferUpdate();
             
@@ -1503,7 +1503,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const timestamps = buttonCooldowns.get('remind_btn');
         const cooldownAmount = 3000; // 3 seconds cooldown
 
-        const userLocale = interaction.locale || 'en';
+        const userLocale = getNormalizedLocale(interaction.locale);
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
             if (now < expirationTime) {
@@ -1528,7 +1528,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const timestamps = buttonCooldowns.get('pagination');
         const cooldownAmount = 2000;
 
-        const userLocale = interaction.locale || 'en';
+        const userLocale = getNormalizedLocale(interaction.locale);
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
             if (now < expirationTime) {
@@ -1559,7 +1559,7 @@ client.on(Events.InteractionCreate, async interaction => {
         return;
     }
 
-    const userLocale = interaction.locale || 'en';
+    const userLocale = getNormalizedLocale(interaction.locale);
     if (interaction.customId.startsWith('remind_')) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const eventId = interaction.customId.replace('remind_', '');
@@ -1729,7 +1729,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
             const msg = existingMsg || await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
             const autoDelete = getAutoDeleteEnabled(guild.id);
             
-            const guildLocale = guild.preferredLocale || 'en';
+            const guildLocale = getNormalizedLocale(guild.preferredLocale);
             if (msg && autoDelete) {
                 await msg.delete().catch(() => {});
             } else if (msg && msg.embeds.length > 0) {
@@ -1808,7 +1808,7 @@ client.on(Events.GuildScheduledEventDelete, async e => {
     // Cleanup of the database
     if (eventDb[e.id]) {
         try {
-            const guildLocale = e.guild.preferredLocale || 'en';
+            const guildLocale = getNormalizedLocale(e.guild.preferredLocale);
             await notifyUsersOfEventChange(e, t(guildLocale, 'notification_deleted', { name: e.name }));
             await archiveAnnouncementMessage(e.guild, e.id, 'Deleted');
             delete eventDb[e.id];
@@ -1833,7 +1833,7 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         if (eventDb[n.id]) {
             const statusText = n.status === GuildScheduledEventStatus.Completed ? 'Completed' : 'Canceled';
             if (n.status === GuildScheduledEventStatus.Canceled) {
-                const guildLocale = n.guild.preferredLocale || 'en';
+                const guildLocale = getNormalizedLocale(n.guild.preferredLocale);
                 await notifyUsersOfEventChange(n, t(guildLocale, 'notification_canceled', { name: n.name }));
             }
             await archiveAnnouncementMessage(n.guild, n.id, statusText);
@@ -1849,7 +1849,7 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
             const locationChanged = oldLocation !== newLocation;
 
             if (timeChanged || locationChanged) {
-                const guildLocale = n.guild.preferredLocale || 'en';
+                const guildLocale = getNormalizedLocale(n.guild.preferredLocale);
                 let changeMsg = '';
                 
                 if (timeChanged && locationChanged) {
@@ -1881,7 +1881,7 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                         const updatedEmbed = buildAnnouncementEmbed(n);
                         let components = msg.components;
                         if (components && components.length > 0) {
-                            const guildLocale = n.guild.preferredLocale || 'en';
+                            const guildLocale = getNormalizedLocale(n.guild.preferredLocale);
                             const currentComponents = components[0].components;
                             
                             // Re-build/update the remind button using the new label in the guild's language, preserving the existing user count if any.
