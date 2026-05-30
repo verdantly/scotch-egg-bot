@@ -72,12 +72,12 @@ const commands = [
                     'fr': 'mode',
                     'pt-BR': 'modo'
                 })
-                .setDescription('Choose whether event reminders are posted publicly or privately via DM.')
+                .setDescription('Choose the reminder delivery mode (Public channel pings, Private DM-only, or Hybrid).')
                 .setDescriptionLocalizations({
-                    'es-ES': 'Elige si los recordatorios se publican públicamente o en privado por MD.',
-                    'de': 'Wähle, ob Event-Erinnerungen öffentlich oder privat per DM gesendet werden.',
-                    'fr': 'Choisir si les rappels d\'événements sont postés publiquement ou en privé via DM.',
-                    'pt-BR': 'Escolha se os lembretes são enviados publicamente ou no privado por DM.'
+                    'es-ES': 'Elige el modo de entrega de recordatorios (Canal público, MD privado o Híbrido).',
+                    'de': 'Wähle den Übertragungsmodus für Erinnerungen (Öffentlicher Kanal, Private DM oder Hybrid).',
+                    'fr': 'Choisir le mode d\'envoi des rappels (Salon public, DM privé ou Hybride).',
+                    'pt-BR': 'Escolha o modo de envio dos lembretes (Canal público, DM privada ou Híbrido).'
                 })
                 .addStringOption(option =>
                     option.setName('mode')
