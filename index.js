@@ -1093,6 +1093,15 @@ client.on(Events.InteractionCreate, async interaction => {
                     if (!event || event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
                         const statusText = event && event.status === GuildScheduledEventStatus.Canceled ? 'Canceled' : 'Completed';
                         
+                        // Extract clean title and event name for robust matching
+                        const cleanTitle = title
+                             .replace(/^~~|~~$/g, '')
+                             .replace(/[\u0336]/g, '')
+                             .replace(/\n.*/g, '')
+                             .replace(/ \[[^\]]+\]$/g, '');
+                        const eventName = cleanTitle
+                            .replace(/^(New Event:|Nuevo evento:|Neues Event:|Nouvel événement\s*:|Novo evento:)\s*/i, '');
+                        
                         // A. If the event is still tracked in eventDb, trigger the normal archiveAnnouncementMessage
                         if (eventDb[eventId]) {
                             await archiveAnnouncementMessage(interaction.guild, eventId, statusText, msg);
@@ -1103,11 +1112,6 @@ client.on(Events.InteractionCreate, async interaction => {
                                 await msg.delete().catch(() => {});
                             } else {
                                 const originalEmbed = EmbedBuilder.from(embed);
-                                const cleanTitle = title
-                                     .replace(/^~~|~~$/g, '')
-                                     .replace(/[\u0336]/g, '')
-                                     .replace(/\n.*/g, '')
-                                     .replace(/ \[[^\]]+\]$/g, '');
                                  let newTitle = toUnicodeStrikeThrough(cleanTitle);
                                  if (newTitle.length > 256) {
                                      newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
@@ -1136,27 +1140,31 @@ client.on(Events.InteractionCreate, async interaction => {
                                  originalEmbed.setDescription(newDesc);
                                 await msg.edit({ embeds: [originalEmbed], components: [] }).catch(() => {});
                             }
+                        }
 
-                            // C. Also scan and clean up any public reminder messages associated with this event!
-                            const eventUrl = `https://discord.com/events/${interaction.guildId}/${eventId}`;
-                            const matchingReminders = botMessages.filter(remMsg => {
-                                if (remMsg.id === msg.id) return false;
-                                if (remMsg.content && remMsg.content.includes(eventUrl)) return true;
-                                if (remMsg.components.length > 0) {
-                                    for (const row of remMsg.components) {
-                                        for (const comp of row.components) {
-                                            if (comp.url && comp.url.includes(eventUrl)) return true;
-                                            if (comp.customId && comp.customId.includes(eventId)) return true;
-                                        }
+                        // C. Fail-safe: Always scan and clean up any public reminder messages associated with this event!
+                        const eventUrl = `https://discord.com/events/${interaction.guildId}/${eventId}`;
+                        const matchingReminders = botMessages.filter(remMsg => {
+                            if (remMsg.id === msg.id) return false;
+                            
+                            // Match by event link URL or exact bold event name wrapped in asterisks
+                            if (remMsg.content && (remMsg.content.includes(eventUrl) || remMsg.content.includes(`**${eventName}**`))) return true;
+                            
+                            if (remMsg.components.length > 0) {
+                                for (const row of remMsg.components) {
+                                    for (const comp of row.components) {
+                                        if (comp.url && comp.url.includes(eventUrl)) return true;
+                                        if (comp.customId && comp.customId.includes(eventId)) return true;
                                     }
                                 }
-                                return false;
-                            });
-
-                            for (const remMsg of matchingReminders) {
-                                await remMsg.delete().catch(() => {});
                             }
+                            return false;
+                        });
+
+                        for (const remMsg of matchingReminders) {
+                            await remMsg.delete().catch(() => {});
                         }
+
                         cleanedCount++;
                     }
                 }
