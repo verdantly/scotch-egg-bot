@@ -1090,11 +1090,22 @@ client.on(Events.InteractionCreate, async interaction => {
                                 isConcluded = true;
                             }
                         } else if (eventName) {
-                            const activeEvent = activeEventsList.find(e => e.name === eventName);
-                            if (!activeEvent) {
-                                isConcluded = true;
+                            const timeMatch = msg.content ? msg.content.match(/<t:(\d+):[a-zA-Z]?>/) : null;
+                            if (timeMatch) {
+                                const msgStartTimestampMs = parseInt(timeMatch[1], 10) * 1000;
+                                const matchingActiveEvent = activeEventsList.find(e => e.name === eventName && e.scheduledStartTimestamp === msgStartTimestampMs);
+                                if (!matchingActiveEvent) {
+                                    isConcluded = true;
+                                } else {
+                                    eventId = matchingActiveEvent.id;
+                                }
                             } else {
-                                eventId = activeEvent.id;
+                                const activeEvent = activeEventsList.find(e => e.name === eventName);
+                                if (!activeEvent) {
+                                    isConcluded = true;
+                                } else {
+                                    eventId = activeEvent.id;
+                                }
                             }
                         }
 
@@ -1235,11 +1246,20 @@ client.on(Events.InteractionCreate, async interaction => {
 
                         // B. Fail-safe: Always scan and clean up any remaining public reminder messages associated with this event!
                         const eventUrl = `https://discord.com/events/${interaction.guildId}/${eventId}`;
+                        
+                        let announceTimestamp = null;
+                        if (isAnnouncement && announceMsg && announceMsg.embeds.length > 0 && announceMsg.embeds[0].description) {
+                            const timeMatch = announceMsg.embeds[0].description.match(/<t:(\d+):[a-zA-Z]?>/);
+                            if (timeMatch) {
+                                announceTimestamp = timeMatch[1];
+                            }
+                        }
+
                         const matchingReminders = botMessages.filter(remMsg => {
                             if (isAnnouncement && remMsg.id === announceMsg.id) return false;
                             
-                            // Match by event link URL or exact bold event name wrapped in asterisks
-                            if (remMsg.content && (remMsg.content.includes(eventUrl) || remMsg.content.includes(`**${eventName}**`))) return true;
+                            // 1. Precise match: check if the reminder contains the specific event ID/URL in content or components
+                            if (remMsg.content && remMsg.content.includes(eventUrl)) return true;
                             
                             if (remMsg.components.length > 0) {
                                 for (const row of remMsg.components) {
@@ -1249,6 +1269,23 @@ client.on(Events.InteractionCreate, async interaction => {
                                     }
                                 }
                             }
+                            
+                            // 2. Name match (only for fallback/no-button reminders that lack the specific event URL):
+                            // Must match the event name AND belong to the same occurrence (by matching timestamp) or be a past reminder
+                            if (remMsg.content && remMsg.content.includes(`**${eventName}**`)) {
+                                const remTimeMatch = remMsg.content.match(/<t:(\d+):[a-zA-Z]?>/);
+                                if (remTimeMatch) {
+                                    if (announceTimestamp) {
+                                        return remTimeMatch[1] === announceTimestamp;
+                                    } else {
+                                        // If no announcement timestamp is available, safely delete if the reminder's timestamp is in the past
+                                        const remTimeMs = parseInt(remTimeMatch[1], 10) * 1000;
+                                        return remTimeMs < Date.now();
+                                    }
+                                }
+                                return true; // Legacy fallback if no timestamp can be found at all
+                            }
+                            
                             return false;
                         });
 
