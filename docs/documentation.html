@@ -172,112 +172,131 @@
                 <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Core Features</h2>
                 <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">
                     Scotch Egg Bot is designed to be highly reliable, private, and fully automated. Below is a detailed
-                    overview of the core features that make it the go-to event reminder bot for your Discord server.
+                    overview of the bot's features, categorized by user-facing Discord capabilities and the robust technical architecture under the hood.
                 </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Feature 1 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">✨</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native Discord
-                                Events</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using Discord's
-                                built-in scheduled event UI, and the bot handles
-                                the rest instantly. No need to learn any new commands to create events.</p>
+                <!-- Discord Features Section -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                        <span class="text-2xl">💬</span>
+                        <span>Discord & User-Facing Features</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Feature: Native Discord Events -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">✨</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native Discord Events</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using Discord's built-in scheduled event UI, and the bot handles the rest instantly. No need to learn any complicated commands to create events.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Strictly Opt-In Reminders -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🔔</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Strictly Opt-In Reminders</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members click a simple "Remind Me!" button to explicitly choose which events they want to be notified about via Private DMs, Public Mentions, or Hybrid Mode.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Flexible Delivery Modes -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">⚙️</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible Delivery Modes</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Choose between three configuration options: <strong>Public</strong> channel reminders with pings, <strong>Private</strong> DM-only alerts, or <strong>Hybrid</strong> mode (un-pinged public reminders + private DMs).</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Custom Reminder Intervals -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">⏱️</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom Reminder Intervals</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when reminders are sent (e.g., 24h, 1h, 15m before start) to suit the community using interactive slash command settings.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Google Calendar & Link Buttons -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">📅</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Add to Calendar & View Buttons</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Features interactive link buttons. The "Add to Calendar" button populates Google Calendar with event details, while "View Event" links directly to native Discord events.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Automated Discussion Threads -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">💬</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated Discussion Threads</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements to encourage community interaction and keep chatter organized.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Concluded Event Archiving -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🧹</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">High-Contrast Archiving & Cleanups</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Grays out concluded announcements, strikes through obsolete timestamps, and deletes all public pings. Admins can run <code>/settings cleanup</code> to sweep legacy messages.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Native Multi-Language Localization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🌍</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Multi-Language Support (Localization)</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both server announcements and client slash command levels across 5 languages: English, Spanish, German, French, and Portuguese.</p>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Feature 2 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">🔔</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Interactive
-                                Opt-In Pings</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members click a
-                                simple "Remind Me!" button to opt into reminders on their own terms.
-                            </p>
+                <!-- Technical & Runtime Features Section -->
+                <div>
+                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                        <span class="text-2xl">⚡</span>
+                        <span>Runtime & Technical Features</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Feature: SD-Card Friendly Storage -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">💾</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">SD-Card Friendly Architecture</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Explicitly optimized for single-board computers like the Raspberry Pi. Implements a lightweight JSON storage schema with batched minified disk writes to prevent SD card wear.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Feature 3 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">⚙️</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible
-                                Delivery Modes</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Configure reminder delivery:
-                                <strong>Public</strong> channel pings, <strong>Private</strong> DM-only alerts, or a
-                                <strong>Hybrid</strong> option that sends reminders through DMs while keeping public
-                                announcements and reminders as well.
-                            </p>
+                        <!-- Feature: Database Self-Healing -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🩹</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automatic Database Self-Healing</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Resilient dual-layer mechanism maintaining atomic <code>.bak</code> copies of configurations. If damaged, a recursive Regex-based JSON salvage parser rebuilds database files automatically.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Feature 4 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">⏱️</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom Reminder
-                                Intervals</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when
-                                reminders are sent (e.g., 24h, 1h, 15m before start) to suit the
-                                community.</p>
+                        <!-- Feature: Offline Startup Synchronization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🔄</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Offline Startup Sync & Garbage Collection</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Syncs live events with Discord upon boot. Schedules reminders for any newly created events and safely archives announcements/deletes reminders of events that concluded while the bot was offline.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Feature 5 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">📅</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Google Calendar
-                                Integration</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Features an interactive "Add to
-                                Calendar" link button that populates all event info—including start/end times and voice
-                                channel locations.</p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 6 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">💬</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated
-                                Discussion Threads</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated
-                                discussion threads under announcements, keeping chatter focused and the main channel
-                                clean.</p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 7 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">🧹</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated
-                                Archiving or Deletion</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">When events end, announcements are
-                                either auto-deleted or gracefully archived.</p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 8 -->
-                    <div
-                        class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                        <span class="text-3xl shrink-0">🌍</span>
-                        <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native
-                                Multi-Language Support (Localization)</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both client slash
-                                command and server announcement levels across 5 native languages: English, Spanish,
-                                German, French, and Portuguese.</p>
+                        <!-- Feature: Real-time Event Hook Synchronization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🚀</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Real-Time Event Hook Synchronization</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Dynamically reschedules, deletes, or recreates scheduled reminder jobs in response to real-time Discord scheduled event creations, start time updates, or cancellations.</p>
+                            </div>
                         </div>
                     </div>
                 </div>

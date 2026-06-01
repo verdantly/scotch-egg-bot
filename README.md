@@ -4,18 +4,22 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 
 ## Features
 
+### 💬 Discord & User-Facing Features
 - **Native Discord Events:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created. No need to learn complicated `!create` commands.
 - **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about. Keep your community in the loop exactly how you prefer via Private DMs, Public Mentions, or a Hybrid configuration (Public reminders + Private DM alerts).
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude, while **always deleting** the associated public reminders to keep channels completely clutter-free.
 - **Add to Calendar & View Event Buttons:** Event announcements and reminders feature dedicated interactive link buttons. The **Add to Calendar** button lets users add the event directly to Google Calendar pre-filled with the details. The **View Event** button links directly to Discord's native event window, resolving duplicate "double embed" clutter in chat.
-- **Multi-Language (Localization):** Fully supports 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Features native name and description slash command metadata, client-locale detection for translating slash command interfaces on the fly, and guild-locale preferred language detection for dynamic server announcements.
-- **Automatic Database Self-Healing:** Premium dual-layer resiliency mechanism in `storage.js` to protect your data. Automatically maintains atomic `.bak` backup copies for all databases on write events, seamlessly falling back to them if a primary file is corrupt or truncated (e.g. from power loss on Raspberry Pis). Engages a recursive, Regex-based partial JSON salvage parser as a final line of defense to recover intact records from severely damaged files.
 - **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
 - **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
-- **Resilience & Fallbacks:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost. In Hybrid Mode, public fallbacks are suppressed if DMs fail to protect user privacy. Supported by robust atomic `.bak` fallbacks and Regex salvage healing tools for unmatched stability.
+- **Multi-Language (Localization):** Fully supports 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Features native name and description slash command metadata, client-locale detection for translating slash command interfaces on the fly, and guild-locale preferred language detection for dynamic server announcements.
+
+### ⚡ Runtime & Technical Features
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
-- **Dynamic Updates:** Automatically resyncs reminders if an event's start time is updated, and cleans up scheduled jobs/data if an event is deleted.
+- **Automatic Database Self-Healing:** Premium dual-layer resiliency mechanism in `storage.js` to protect your data. Automatically maintains atomic `.bak` backup copies for all databases on write events, seamlessly falling back to them if a primary file is corrupt or truncated (e.g. from power loss on Raspberry Pis). Engages a recursive, Regex-based partial JSON salvage parser as a final line of defense to recover intact records from severely damaged files.
+- **Resilience & Fallbacks:** In Private Mode, if no users opt-in or if the bot cannot DM users, it falls back to posting the reminder in the public announcement channel so the alert is not lost. In Hybrid Mode, public fallbacks are suppressed if DMs fail to protect user privacy. Supported by robust atomic `.bak` fallbacks and Regex salvage healing tools for unmatched stability.
+- **Offline Sync & Garbage Collection:** Every time the bot starts up, it automatically syncs with Discord, schedules reminders for any new events it missed, and automatically archives/deletes announcements and public reminders for events that concluded while it was offline.
+- **Dynamic Live Updates:** Automatically resyncs scheduled reminder jobs in response to real-time Discord event updates, and cleans up scheduled jobs/data instantly if an event is deleted.
 
 ## Example Reminder Message
 **Public Reminder (24-Hour Alert)**  
