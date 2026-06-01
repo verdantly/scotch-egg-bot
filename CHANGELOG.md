@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-06-01
+
+### Fixed
+
+- **Recurring Event Public Reminder Cleanup:** Resolved a bug in `/settings cleanup` where orphaned public reminder pings for past occurrences of recurring events were not deleted because they shared the same name as upcoming occurrences. The bot now extracts and matches the unique Discord start timestamp tag (`<t:TIMESTAMP:F>`) to safely distinguish and clean up only the concluded occurrence.
+
 ## [1.5.1] - 2026-05-30
 
 ### Changed
