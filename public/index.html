@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Login | Scotch Egg Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="login-body flex items-center justify-center min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased overflow-hidden">
+    <!-- Background elements -->
+    <div class="background-orbs">
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-brown"></div>
+    </div>
+    
+    <div class="login-card glass-panel text-center max-w-md w-full mx-4 p-8 rounded-2xl shadow-2xl relative z-10 border border-white/10">
+        <div class="logo text-6xl mb-6">🥚</div>
+        <h1 class="font-serif text-3xl font-black text-white mb-2">Scotch Egg Bot</h1>
+        <p class="text-slate-400 mb-8 font-medium">Configure server announcement channels, reminder modes, custom intervals, and view statistics.</p>
+        
+        <button id="login-btn" class="login-btn w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#5865f2]/20 flex items-center justify-center space-x-3 cursor-pointer">
+            <span>Login with Discord</span>
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/auth-config');
+                const config = await response.json();
+                
+                const clientId = config.clientId;
+                const redirectUri = encodeURIComponent(window.location.origin + '/dashboard.html');
+                const scope = encodeURIComponent('identify guilds');
+                const responseType = 'token';
+                
+                const oauthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
+                window.location.href = oauthUrl;
+            } catch (err) {
+                alert('Failed to initialize Discord Login. Please make sure the backend is running and client configuration is correct.');
+            }
+        });
+        
+        // Auto-redirect if already logged in
+        if (localStorage.getItem('discord_token')) {
+            window.location.href = '/dashboard.html';
+        }
+    </script>
+</body>
+</html>

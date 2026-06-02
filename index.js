@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags, Collection } = require('discord.js');
 const schedule = require('node-schedule');
 require('dotenv').config();
+const path = require('path');
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
 const { eventDb, serverConfig, saveConfig, saveDb, forceSaveDb, setStorageErrorHandler } = require('./storage.js');
 const { version } = require('./package.json');
@@ -497,6 +498,9 @@ client.on(Events.ClientReady, async c => {
         }
     }
     if (dbModified) await saveDb();
+    
+    // Start the Web Dashboard server
+    startDashboardServer();
 });
 
 client.on(Events.GuildScheduledEventCreate, async e => {
@@ -1951,6 +1955,251 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         console.error(`Unhandled error in GuildScheduledEventUpdate for event ${n?.id}:`, error);
     }
 });
+
+/**
+ * Helper to cancel all pending reminder jobs for a specific guild.
+ */
+function cancelEventRemindersForGuild(guildId) {
+    for (const [eventId, data] of Object.entries(eventDb)) {
+        if (data && data.guildId === guildId) {
+            cancelEventReminders(eventId);
+        }
+    }
+}
+
+/**
+ * Middleware to authenticate requests using Discord OAuth2 Bearer Token.
+ */
+async function checkAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Missing or malformed Authorization header' });
+    }
+    const token = authHeader.split(' ')[1];
+    
+    try {
+        const userResponse = await fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!userResponse.ok) {
+            return res.status(401).json({ error: 'Invalid access token' });
+        }
+        const userData = await userResponse.json();
+        req.user = userData;
+        req.token = token;
+        next();
+    } catch (err) {
+        console.error('Error in auth middleware:', err);
+        res.status(500).json({ error: 'Internal server error during authentication' });
+    }
+}
+
+/**
+ * Middleware to check if the authenticated user has Administrator/Manage Guild permissions in the guild.
+ */
+async function checkGuildAdmin(req, res, next) {
+    const guildId = req.params.guildId;
+    if (!guildId) return res.status(400).json({ error: 'Missing guild ID' });
+    
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) {
+        return res.status(404).json({ error: 'Guild not found or bot is not in the guild' });
+    }
+    
+    try {
+        const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+            headers: { Authorization: `Bearer ${req.token}` }
+        });
+        if (!guildsResponse.ok) {
+            return res.status(500).json({ error: 'Failed to retrieve user guilds from Discord' });
+        }
+        const userGuilds = await guildsResponse.json();
+        const userGuild = userGuilds.find(g => g.id === guildId);
+        
+        if (!userGuild) {
+            return res.status(403).json({ error: 'User is not a member of this guild' });
+        }
+        
+        const permissions = BigInt(userGuild.permissions);
+        const isAdmin = (permissions & 0x8n) !== 0n || (permissions & 0x20n) !== 0n || req.user.id === process.env.ADMIN_USER_ID;
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'User does not have Administrator or Manage Guild permissions' });
+        }
+        
+        req.guild = guild;
+        next();
+    } catch (err) {
+        console.error(`Error authorizing guild admin for guild ${guildId}:`, err);
+        res.status(500).json({ error: 'Internal server error during authorization' });
+    }
+}
+
+/**
+ * Initializes and starts the lightweight Express server for the web dashboard.
+ */
+function startDashboardServer() {
+    const express = require('express');
+    const app = express();
+    
+    app.use(express.json());
+    app.use(express.static(path.join(__dirname, 'public')));
+    
+    app.get('/api/auth-config', (req, res) => {
+        res.json({
+            clientId: process.env.CLIENT_ID
+        });
+    });
+    
+    app.get('/api/guilds', checkAuth, async (req, res) => {
+        try {
+            const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+                headers: { Authorization: `Bearer ${req.token}` }
+            });
+            if (!guildsResponse.ok) {
+                return res.status(500).json({ error: 'Failed to fetch user guilds from Discord' });
+            }
+            const userGuilds = await guildsResponse.json();
+            
+            const sharedGuilds = userGuilds.filter(g => {
+                const permissions = BigInt(g.permissions);
+                const isAdmin = (permissions & 0x8n) !== 0n || (permissions & 0x20n) !== 0n || req.user.id === process.env.ADMIN_USER_ID;
+                const botIsPresent = client.guilds.cache.has(g.id);
+                return isAdmin && botIsPresent;
+            }).map(g => ({
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null
+            }));
+            
+            res.json(sharedGuilds);
+        } catch (err) {
+            console.error('Error fetching authorized guilds:', err);
+            res.status(500).json({ error: 'Failed to retrieve servers list' });
+        }
+    });
+    
+    app.get('/api/guilds/:guildId/settings', checkAuth, checkGuildAdmin, async (req, res) => {
+        const guild = req.guild;
+        const config = serverConfig[guild.id] || {};
+        
+        const channels = guild.channels.cache
+            .filter(ch => ch.type === ChannelType.GuildText || ch.type === ChannelType.GuildAnnouncement)
+            .map(ch => ({
+                id: ch.id,
+                name: ch.name
+            }));
+            
+        const rawIntervals = config.intervals || [{ value: 24, unit: 'h' }, { value: 1, unit: 'h' }];
+        const formattedIntervals = rawIntervals.map(i => ({ value: i.value, unit: i.unit }));
+        
+        res.json({
+            settings: {
+                channelId: config.channelId || '',
+                mode: config.mode || 'private',
+                calendarEnabled: config.calendarEnabled !== undefined ? config.calendarEnabled : true,
+                threadsEnabled: config.threadsEnabled !== undefined ? config.threadsEnabled : true,
+                autoDeleteEnabled: config.autoDeleteEnabled !== undefined ? config.autoDeleteEnabled : false,
+                intervals: formattedIntervals
+            },
+            channels: channels
+        });
+    });
+    
+    app.post('/api/guilds/:guildId/settings', checkAuth, checkGuildAdmin, async (req, res) => {
+        const guild = req.guild;
+        const { channelId, mode, calendarEnabled, threadsEnabled, autoDeleteEnabled, intervals } = req.body;
+        
+        if (!channelId) {
+            return res.status(400).json({ error: 'Announcement channel is required' });
+        }
+        if (!['public', 'private', 'hybrid'].includes(mode)) {
+            return res.status(400).json({ error: 'Invalid reminder mode' });
+        }
+        if (!Array.isArray(intervals) || intervals.length === 0) {
+            return res.status(400).json({ error: 'At least one reminder interval is required' });
+        }
+        
+        const parsedIntervals = [];
+        for (const item of intervals) {
+            const val = parseInt(item.value, 10);
+            const unit = String(item.unit).toLowerCase();
+            
+            if (isNaN(val) || val <= 0 || !['m', 'h', 'd'].includes(unit)) {
+                return res.status(400).json({ error: `Invalid interval value or unit: ${item.value}${item.unit}` });
+            }
+            
+            let ms = val * 60 * 1000;
+            if (unit === 'h') ms = val * 60 * 60 * 1000;
+            if (unit === 'd') ms = val * 24 * 60 * 60 * 1000;
+            
+            parsedIntervals.push({ value: val, unit, ms });
+        }
+        
+        serverConfig[guild.id] = {
+            channelId,
+            mode,
+            calendarEnabled: !!calendarEnabled,
+            threadsEnabled: !!threadsEnabled,
+            autoDeleteEnabled: !!autoDeleteEnabled,
+            intervals: parsedIntervals
+        };
+        
+        try {
+            await saveConfig();
+            
+            cancelEventRemindersForGuild(guild.id);
+            await syncEventReminders(guild);
+            
+            res.json({ success: true, message: 'Settings saved successfully' });
+        } catch (err) {
+            console.error(`Failed to save settings for guild ${guild.id}:`, err);
+            res.status(500).json({ error: 'Failed to persist settings' });
+        }
+    });
+    
+    app.get('/api/guilds/:guildId/stats', checkAuth, checkGuildAdmin, async (req, res) => {
+        const guild = req.guild;
+        
+        const guildEvents = Object.entries(eventDb)
+            .filter(([_, data]) => data.guildId === guild.id);
+            
+        const activeEventsCount = guildEvents.length;
+        
+        let totalOptIns = 0;
+        const upcomingEventsList = [];
+        
+        const currentGuildEvents = await guild.scheduledEvents.fetch().catch(() => new Map());
+        
+        for (const [eventId, data] of guildEvents) {
+            const optInsCount = data.users ? Object.keys(data.users).length : 0;
+            totalOptIns += optInsCount;
+            
+            const discordEvent = currentGuildEvents.get(eventId);
+            if (discordEvent && (discordEvent.status === GuildScheduledEventStatus.Scheduled || discordEvent.status === GuildScheduledEventStatus.Active)) {
+                upcomingEventsList.push({
+                    id: eventId,
+                    name: discordEvent.name,
+                    startTime: discordEvent.scheduledStartTimestamp,
+                    optInsCount: optInsCount
+                });
+            }
+        }
+        
+        upcomingEventsList.sort((a, b) => a.startTime - b.startTime);
+        
+        res.json({
+            activeEventsCount,
+            totalOptIns,
+            upcomingEvents: upcomingEventsList
+        });
+    });
+    
+    const PORT = process.env.DASHBOARD_PORT || 8080;
+    app.listen(PORT, () => {
+        console.log(`Web dashboard server listening on port ${PORT}`);
+    });
+}
 
 client.login(process.env.DISCORD_TOKEN);
 
