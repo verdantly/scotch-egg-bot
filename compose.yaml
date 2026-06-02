@@ -8,6 +8,8 @@ services:
     volumes:
       - ./events.json:/usr/src/app/events.json
       - ./config.json:/usr/src/app/config.json
+    ports:
+      - "8080:8080"
     logging:
       driver: "json-file"
       options:
