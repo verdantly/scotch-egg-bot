@@ -142,8 +142,9 @@
             </h1>
             <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mb-10 leading-relaxed">
                 Never miss another event again! A completely free Discord bot that hooks into native
-                Discord events and requires no clunky special event commands. Customizable reminders let users choose
-                how they want to be reminded!
+                Discord events and requires no clunky special event commands or web dashboards. Customizable reminders
+                let users choose
+                how they want to be reminded.
             </p>
             <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <a href="documentation.html#setup"
@@ -217,7 +218,8 @@
     <section id="features" class="bg-white dark:bg-gray-800 py-24 transition-colors duration-300">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="text-center mb-24">
-                <h2 class="text-4xl md:text-5xl font-serif font-bold text-charcoal dark:text-white">Everything you need.
+                <h2 class="text-4xl md:text-5xl font-serif font-bold text-charcoal dark:text-white">Easy and
+                    customizable.
                 </h2>
                 <p class="text-xl text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">Powerful features designed to
                     keep your community engaged and on time.</p>
@@ -226,21 +228,15 @@
             <!-- Big Feature 1 -->
             <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div
-                        class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
-                        🔔</div>
-                    <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Native Discord Events</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Stop wrestling with complicated
-                        <code>!create</code> commands. Scotch Egg Bot integrates seamlessly with Discord's native
-                        Scheduled Events feature. Just create an event using Discord's built-in UI, and the bot
-                        instantly posts an interactive announcement with strictly opt-in reminders.
+                    <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Native Discord Events
+                        Integration</h3>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Scotch Egg Bot integrates
+                        seamlessly with Discord's native
+                        Scheduled Events feature so you don't have to learn any special commands or web dashboards. Just
+                        create
+                        an event using Discord's built-in UI, and the bot
+                        instantly posts an interactive announcement with opt-in reminders.
                     </p>
-                    <ul class="space-y-3 text-gray-600 dark:text-gray-300 font-medium">
-                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>Zero
-                                learning curve</span></li>
-                        <li class="flex items-center space-x-3"><span class="text-eggyolk text-xl">✓</span> <span>No
-                                more mass <code>@everyone</code> spam</span></li>
-                    </ul>
                 </div>
                 <div
                     class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700">
@@ -266,14 +262,13 @@
             <!-- Big Feature 2 -->
             <div class="flex flex-col md:flex-row-reverse items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div
-                        class="w-16 h-16 bg-cream border border-breadcrumb/20 dark:border-breadcrumb/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
-                        📅</div>
-                    <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Add to Calendar Button</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Event announcements
-                        automatically generate a smart link button. With a single click, users can add the scheduled
-                        event directly to their personal Google Calendar with the time, location, and description
-                        pre-filled.</p>
+                    <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Users Control Their
+                        Reminders
+                    </h3>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">No one likes being spammed
+                        with messages they don't want. Give users the power to opt into reminders and to add event
+                        details to their personal calendars.
+                    </p>
                 </div>
                 <div
                     class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex items-center justify-center min-h-[250px]">
@@ -291,12 +286,9 @@
             <!-- Big Feature 3 -->
             <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
                 <div class="flex-1 space-y-6">
-                    <div
-                        class="w-16 h-16 bg-cream border border-eggyolk/20 dark:border-eggyolk/30 dark:bg-gray-700 rounded-md flex items-center justify-center text-3xl shadow-sm">
-                        💬</div>
                     <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Auto-Threads</h3>
                     <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Foster community engagement
-                        instantly. Scotch Egg Bot can automatically create a dedicated discussion thread on every new
+                        instantly by automatically creating a dedicated discussion thread for every new
                         event announcement, giving your members a place to chat, plan, and hype up the event without
                         cluttering the main channel.</p>
                 </div>
@@ -346,26 +338,29 @@
                     class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🍓</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Pi & SD-Card Friendly</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses batched disk writes to dramatically extend your Raspberry Pi's MicroSD card lifespan.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses
+                        batched disk writes to dramatically extend your Raspberry Pi's MicroSD card lifespan.</p>
                 </div>
                 <div
                     class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🌍</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Multi-Language Support</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Fully localized in English, Spanish, German, French, and Portuguese at both client slash command and server announcement levels.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Fully localized in English, Spanish, German,
+                        French, and Portuguese at both client slash command and server announcement levels.</p>
                 </div>
                 <div
                     class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
                     <div class="text-2xl mb-3">🗑️</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Auto-Cleanup & Archive</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Keep channels tidy. Choose to completely delete
-                        or gracefully archive event announcements when they end, while public reminder messages are always deleted entirely to reduce clutter.</p>
+                        or gracefully archive event announcements when they end, while public reminder messages are
+                        always deleted entirely to reduce clutter.</p>
                 </div>
                 <div
                     class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
-                    <div class="text-2xl mb-3">💬</div>
-                    <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Smart Auto-Threads</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Foster community engagement instantly by automatically creating dedicated discussion threads on new event announcements.</p>
+                    <div class="text-2xl mb-3">⏰</div>
+                    <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Custom Intervals</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Tailor notification timing. Allow server administrators to configure exact times when reminders are sent (e.g., 24h, 1h, or 15m before start).</p>
                 </div>
             </div>
 
@@ -506,6 +501,11 @@
             </div>
         </div>
     </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
 
     <!-- Scripts -->
     <script src="js/script.js"></script>

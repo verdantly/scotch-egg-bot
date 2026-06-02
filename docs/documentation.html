@@ -306,11 +306,19 @@
 
             <!-- Setup / Quick Start -->
             <section id="setup" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation &
-                    Setup Guide</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">Follow these basic steps to get your bot up and
-                    running. The easiest and recommended way to deploy Scotch Egg Bot is using Docker or Docker Compose.
-                </p>
+                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation & Setup Guide</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch Egg Bot. The setup below details the recommended containerized installation using Docker Compose.</p>
+
+                <!-- Recommendation Callout -->
+                <div class="bg-eggyolk/10 dark:bg-[#fcba03]/10 border-l-4 border-eggyolk p-6 rounded-r-xl mb-8 flex items-start space-x-4">
+                    <span class="text-3xl shrink-0">🐋</span>
+                    <div>
+                        <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended Deployment: Docker Compose</h4>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg Bot. It pre-configures Node.js, database folders, and permission environments inside an isolated container, making installation foolproof and keeping background process monitoring automated.
+                        </p>
+                    </div>
+                </div>
 
                 <div class="space-y-8">
                     <div>
@@ -410,6 +418,53 @@ echo "{}" > config.json</pre>
                             <pre id="register-code"
                                 class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg-bot node deploy-commands.js</pre>
                         </div>
+                    </div>
+
+                    <!-- Collapsible Node.js Alternative -->
+                    <div class="mt-12 pt-8 border-t border-cream-dark dark:border-gray-800">
+                        <details class="no-chevron bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-lg border border-cream-dark/50 dark:border-gray-700/50 group">
+                            <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none flex items-center justify-between">
+                                <span>Alternative: Local Node.js Installation (No Docker)</span>
+                                <span class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline group-open:hidden">Show instructions</span>
+                                <span class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline hidden group-open:inline">Hide instructions</span>
+                            </summary>
+                            <div class="mt-6 text-gray-700 dark:text-gray-300 text-lg space-y-6">
+                                <p>If you prefer not to use Docker, you can run the bot directly on your host system using Node.js. Make sure you have installed <strong>Node.js (v16.14.0 or higher)</strong>.</p>
+                                
+                                <div class="space-y-4">
+                                    <h4 class="font-bold text-charcoal dark:text-white">1. Install Dependencies</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Navigate to the bot's root directory in your terminal and install the required npm packages:</p>
+                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-install-code">Copy</button>
+                                        <pre id="node-install-code" class="text-gray-300 font-mono text-sm overflow-x-auto">npm install</pre>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h4 class="font-bold text-charcoal dark:text-white">2. Initialize Database Files</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Create empty files named <code>events.json</code> and <code>config.json</code> containing just <code>{}</code> in the root directory (similar to step 3 in the main guide).</p>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h4 class="font-bold text-charcoal dark:text-white">3. Register Slash Commands</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Register the bot's commands with Discord by running:</p>
+                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-register-code">Copy</button>
+                                        <pre id="node-register-code" class="text-gray-300 font-mono text-sm overflow-x-auto">node deploy-commands.js</pre>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h4 class="font-bold text-charcoal dark:text-white">4. Start the Bot</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Start the bot process using node:</p>
+                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-start-code">Copy</button>
+                                        <pre id="node-start-code" class="text-gray-300 font-mono text-sm overflow-x-auto">node index.js</pre>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">Note: In a production environment, it is highly recommended to use a process manager like <a href="https://pm2.keymetrics.io/" target="_blank" rel="noopener noreferrer" class="underline text-breadcrumb">PM2</a> to ensure the bot automatically restarts if it crashes or the system reboots.</p>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 </div>
             </section>
@@ -694,6 +749,17 @@ echo "{}" > config.json</pre>
             <!-- Commands Snapshot -->
             <section id="commands" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
+
+                <!-- Commands Search Filter -->
+                <div class="mb-8 max-w-md">
+                    <label for="command-search" class="sr-only">Search commands</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </span>
+                        <input type="text" id="command-search" placeholder="Search commands (e.g. /settings)..." class="w-full bg-cream-dark dark:bg-gray-800 border border-cream-dark dark:border-gray-700 rounded-lg pl-10 pr-4 py-3 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-eggyolk transition-all shadow-inner">
+                    </div>
+                </div>
 
                 <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white mt-8">Administrator Commands</h3>
                 <ul class="space-y-4 mb-10">
@@ -1001,6 +1067,11 @@ echo "{}" > config.json</pre>
             </div>
         </div>
     </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
 
     <!-- Scripts -->
     <script src="js/script.js"></script>

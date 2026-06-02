@@ -94,4 +94,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { threshold: 0.5 });
         observer.observe(statsSection);
     }
+
+    // Command Search Filter
+    const commandSearchInput = document.getElementById('command-search');
+    if (commandSearchInput) {
+        const commandLists = document.querySelectorAll('#commands ul');
+        
+        commandSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            commandLists.forEach(ul => {
+                const listItems = ul.querySelectorAll('li');
+                let visibleCount = 0;
+                
+                listItems.forEach(li => {
+                    const commandName = li.querySelector('code').innerText.toLowerCase();
+                    const commandDesc = li.innerText.toLowerCase();
+                    
+                    if (commandName.includes(query) || commandDesc.includes(query)) {
+                        li.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        li.classList.add('hidden');
+                    }
+                });
+                
+                // Hide/show the corresponding category header
+                const categoryHeader = ul.previousElementSibling;
+                if (categoryHeader && (categoryHeader.tagName === 'H3' || categoryHeader.tagName === 'H4')) {
+                    if (visibleCount === 0 && query !== '') {
+                        categoryHeader.classList.add('hidden');
+                    } else {
+                        categoryHeader.classList.remove('hidden');
+                    }
+                }
+            });
+        });
+    }
+
+    // Back to Top Button
+    const backToTopBtn = document.getElementById('back-to-top');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+                backToTopBtn.classList.add('opacity-100');
+            } else {
+                backToTopBtn.classList.remove('opacity-100');
+                backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+        });
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 });

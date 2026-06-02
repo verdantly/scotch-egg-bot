@@ -24,3 +24,32 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #a36534; 
 }
+
+/* Smooth FAQ/Troubleshooting Details Chevron Rotation */
+details summary::-webkit-details-marker {
+    display: none;
+}
+details summary {
+    list-style: none;
+    position: relative;
+}
+details:not(.no-chevron) summary {
+    padding-right: 2.5rem;
+}
+details:not(.no-chevron) summary::after {
+    content: "›";
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform 0.3s ease;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: #c47c43;
+}
+.dark details:not(.no-chevron) summary::after {
+    color: #fcba03;
+}
+details[open]:not(.no-chevron) summary::after {
+    transform: translateY(-50%) rotate(90deg);
+}
