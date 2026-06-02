@@ -13,6 +13,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 - **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
 - **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
 - **Multi-Language (Localization):** Fully supports 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Features native name and description slash command metadata, client-locale detection for translating slash command interfaces on the fly, and guild-locale preferred language detection for dynamic server announcements.
+- **Sleek Web Dashboard (Optional):** Fully customize configurations, announcement channels, reminder modes (Private, Public, Hybrid), dynamic intervals, and toggles (threads, calendar buttons, auto-delete) from a premium dark-mode glassmorphic browser panel. Fully secured via Discord OAuth2.
 
 ### ⚡ Runtime & Technical Features
 - **SD-Card Friendly:** Specifically designed to run on a Raspberry Pi without wearing out the SD card. It uses a lightweight `events.json` file to store opted-in users, mapping them safely with minimal disk writes.
@@ -52,6 +53,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
    CLIENT_ID=your_bot_client_id_here
    ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
    ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
+   DASHBOARD_PORT=8080 # Optional: The port the web dashboard server will run on (defaults to 8080)
    ```
 
 ## Slash Command Setup
@@ -86,8 +88,9 @@ This bot is designed to be easily containerized and run quietly in the backgroun
    ```
 
 2. **Run the container:**
+   Expose port 8080 (or your custom dashboard port) to access the web panel:
    ```bash
-   docker run -d --name scotch-egg-bot --env-file .env scotch-egg-bot
+   docker run -d --name scotch-egg-bot -p 8080:8080 --env-file .env scotch-egg-bot
    ```
 
 ## Docker Compose Deployment (Recommended)

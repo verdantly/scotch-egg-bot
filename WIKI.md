@@ -32,6 +32,7 @@ DISCORD_TOKEN=your_actual_token_here
 CLIENT_ID=your_bot_client_id_here
 ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
 ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
+DASHBOARD_PORT=8080 # Optional: The port the web dashboard server runs on (defaults to 8080)
 ```
 *(Note: `ANNOUNCEMENT_CHANNEL_ID` acts as a fallback. You will configure the primary channel inside Discord later).*
 
@@ -151,7 +152,34 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 
 ---
 
-## 🔄 Phase 6: Updating the Bot
+## 🌐 Phase 6: Web Dashboard (Optional)
+
+Scotch Egg Bot features an optional, stunning, dark-mode glassmorphic control panel. This allows server administrators to manage reminder modes, change announcement channels, customize reminder intervals, and inspect live server statistics from any web browser.
+
+### 1. Configure Redirect URI
+To permit Discord login on your dashboard, you must register its URL in the Discord Developer Portal:
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications) and select your application.
+2. Navigate to the **OAuth2** tab.
+3. Click **Add Redirect** under the Redirects section.
+4. Enter the redirection URL for your dashboard, e.g.:
+   - Local hosting: `http://localhost:8080/dashboard.html`
+   - External/Pi hosting: `http://<your-pi-ip>:8080/dashboard.html`
+5. Click **Save Changes**.
+
+### 2. Expose the Port
+- **Docker Compose:** The `compose.yaml` file automatically maps port `8080` to the host.
+- **Docker CLI:** Bind the port when running the run command:
+  `docker run -d --name scotch-egg-bot -p 8080:8080 --env-file .env scotch-egg-bot`
+- **Local installation:** Open `http://localhost:8080/` in your browser. (Configure `DASHBOARD_PORT` in your `.env` to change the default port).
+
+### 3. Usage
+- Click **Login with Discord** and authorize the application.
+- Select your server from the sidebar list. Only servers where you have Administrator/Manage Guild permissions and where the bot is added will be displayed.
+- Modify server configurations (channel, delivery mode, toggle flags) or edit the timing intervals list by adding/removing custom pills, then click **Save Configurations**. The bot will immediately reload configurations and reschedule active jobs.
+
+---
+
+## 🔄 Phase 7: Updating the Bot
 
 If you ever edit the code or download an updated version of the bot, applying the changes is simple and won't delete your data.
 

@@ -123,6 +123,9 @@
                 <li><a href="#usage"
                         class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Using
                         the Bot</a></li>
+                <li><a href="#dashboard"
+                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Web
+                        Dashboard</a></li>
                 <li><a href="#updating"
                         class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Updating
                         the Bot</a></li>
@@ -496,6 +499,70 @@ echo "{}" > config.json</pre>
                         <p>Users who want to be notified can click the <strong>⏰ Remind Me!</strong> button on the
                             announcement. Depending on the server's configuration mode, the bot will either DM them or
                             publicly @ ping them in the channel at the configured intervals.</p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-cream-dark dark:border-gray-800">
+
+            <!-- Web Dashboard -->
+            <section id="dashboard" class="scroll-mt-28">
+                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Web Dashboard</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+                    Scotch Egg Bot features an optional, stunning, dark-mode glassmorphic <strong>Web Dashboard</strong>. This allows server administrators to manage reminder modes, change announcement channels, customize reminder intervals, and inspect live server statistics from any web browser.
+                </p>
+
+                <!-- Configuration Callout -->
+                <div class="bg-[#5865F2]/10 border-l-4 border-[#5865F2] p-6 rounded-r-xl mb-8 flex items-start space-x-4">
+                    <span class="text-3xl shrink-0">🔑</span>
+                    <div>
+                        <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">OAuth2 Discord Authentication</h4>
+                        <p class="text-gray-700 dark:text-gray-300">
+                            The web dashboard is fully secured using Discord's official OAuth2 protocol (Implicit Grant flow). It validates that the logging-in user possesses <strong>Administrator</strong> or <strong>Manage Guild</strong> permissions on the target server before permitting edits.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. OAuth2 Redirect Configuration</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">To enable web dashboard login, you must add your dashboard's URL to the Discord Developer Portal:</p>
+                        <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400">
+                            <li>Open the <a href="https://discord.com/developers/applications" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold" target="_blank" rel="noopener noreferrer">Discord Developer Portal</a> and select your application.</li>
+                            <li>Navigate to the <strong>OAuth2</strong> tab on the left.</li>
+                            <li>Under <strong>Redirects</strong>, click <strong>Add Redirect</strong>.</li>
+                            <li>Enter the dashboard redirection URL:
+                                <ul class="list-disc pl-6 mt-1 space-y-1">
+                                    <li>For local hostings: <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/dashboard.html</code></li>
+                                    <li>For self-hostings (e.g. Raspberry Pi): <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://&lt;your-pi-ip&gt;:8080/dashboard.html</code></li>
+                                </ul>
+                            </li>
+                            <li>Click <strong>Save Changes</strong> at the bottom of the page.</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Port Configuration</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            By default, the Express dashboard runs on port <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">8080</code>. You can customize this port by adding the <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DASHBOARD_PORT</code> variable to your <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">.env</code> file:
+                        </p>
+                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                            <pre class="text-gray-300 font-mono text-sm overflow-x-auto">DASHBOARD_PORT=8080</pre>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Accessing the Panel</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Open your web browser and navigate to <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/</code> (or the IP of your hosting machine).
+                        </p>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-600 dark:text-gray-400">
+                            <li>Click <strong>Login with Discord</strong> to authenticate.</li>
+                            <li>Select your server from the sidebar list. Only servers where you are an administrator and where the bot has been invited will show up.</li>
+                            <li>Modify announcement channels, select delivery modes, toggle add-to-calendar, auto-create threads, and auto-delete settings.</li>
+                            <li>Configure reminder intervals dynamically by adding or removing interval pills (e.g. <code>24h before</code>, <code>1h before</code>, <code>15m before</code>).</li>
+                            <li>Click <strong>Save Configurations</strong> to sync setting updates. The bot will automatically reload configurations and reschedule active jobs immediately.</li>
+                        </ul>
                     </div>
                 </div>
             </section>
