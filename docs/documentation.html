@@ -47,7 +47,8 @@
                     },
                     fontFamily: {
                         sans: ['"Merriweather Sans"', 'sans-serif'],
-                        serif: ['Merriweather', 'serif'],
+                        serif: ['Merriweather', 'serif'],,
+                        discord: ['"gg sans"', '"Whitney"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
                     }
                 }
             }
@@ -116,50 +117,64 @@
     <!-- Main Content Layout -->
     <div class="w-full max-w-7xl mx-auto flex flex-col md:flex-row flex-1">
 
-        <!-- Sidebar Navigation -->
+                <!-- Sidebar Navigation -->
         <aside
             class="w-full md:w-64 bg-cream-dark dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent px-6 py-8 border-b md:border-b-0 md:border-r border-cream-dark dark:border-gray-800 md:sticky md:top-[89px] md:h-[calc(100vh-89px)] overflow-y-auto transition-colors duration-300">
             <h3 class="font-serif font-bold text-breadcrumb-dark dark:text-eggyolk text-xl mb-4">Documentation</h3>
-            <ul class="space-y-3 text-gray-700 dark:text-gray-300">
-                <li><a href="#prerequisites"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Prerequisites</a>
-                </li>
-                <li><a href="#features"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Core
-                        Features</a></li>
-                <li><a href="#setup"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Deployment
-                        & Setup</a></li>
-                <li><a href="#usage"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Using
-                        the Bot</a></li>
-                <li><a href="#updating"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Updating
-                        the Bot</a></li>
-                <li><a href="#example"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Example
-                        Messages</a></li>
-                <li><a href="#architecture"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">How
-                        It Works</a></li>
-                <li><a href="#commands"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">All
-                        Commands</a></li>
-                <li><a href="#faq"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">FAQ</a>
-                </li>
-                <li><a href="#troubleshooting"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Troubleshooting</a>
-                </li>
-            </ul>
-        </aside>
+            
+            <div class="space-y-6">
+                <!-- Group 1: How Tos -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">How Tos</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#prerequisites"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Prerequisites</a></li>
+                        <li><a href="#setup"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Deployment & Setup</a></li>
+                        <li><a href="#usage"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Using the Bot</a></li>
+                        <li><a href="#updating"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Updating the Bot</a></li>
+                    </ul>
+                </div>
 
-        <!-- Documentation Content -->
+                <!-- Group 2: Commands -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Commands</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#commands"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">All Commands</a></li>
+                    </ul>
+                </div>
+
+                <!-- Group 3: Miscellaneous -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Miscellaneous</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#features"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Core Features</a></li>
+                        <li><a href="#example"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Example Messages</a></li>
+                        <li><a href="#architecture"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">How It Works</a></li>
+                        <li><a href="#faq"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">FAQ</a></li>
+                        <li><a href="#troubleshooting"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Troubleshooting</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
         <main
             class="flex-1 px-6 md:px-12 py-10 space-y-16 bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
 
-            <!-- Prerequisites -->
-            <section id="prerequisites" class="scroll-mt-28">
+            <!-- ==================== HOW TOS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">How Tos</h1>
+                </div>
+                
+                <section id="prerequisites" class="scroll-mt-28">
                 <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Prerequisites</h2>
                 <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">Before deploying the bot, make sure you have
                     the following ready:</p>
@@ -174,148 +189,8 @@
                         (Recommended)</li>
                 </ul>
             </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Core Features -->
-            <section id="features" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Core Features</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">
-                    Scotch Egg Bot is designed to be highly reliable, private, and fully automated. Below is a detailed
-                    overview of the bot's features, categorized by user-facing Discord capabilities and the robust technical architecture under the hood.
-                </p>
-
-                <!-- Discord Features Section -->
-                <div class="mb-12">
-                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
-                        <span class="text-2xl">💬</span>
-                        <span>Discord & User-Facing Features</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Feature: Native Discord Events -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">✨</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native Discord Events</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using Discord's built-in scheduled event UI, and the bot handles the rest instantly. No need to learn any complicated commands to create events.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Strictly Opt-In Reminders -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🔔</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Strictly Opt-In Reminders</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members click a simple "Remind Me!" button to explicitly choose which events they want to be notified about via Private DMs, Public Mentions, or Hybrid Mode.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Flexible Delivery Modes -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">⚙️</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible Delivery Modes</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Choose between three configuration options: <strong>Public</strong> channel reminders with pings, <strong>Private</strong> DM-only alerts, or <strong>Hybrid</strong> mode (un-pinged public reminders + private DMs).</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Custom Reminder Intervals -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">⏱️</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom Reminder Intervals</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when reminders are sent (e.g., 24h, 1h, 15m before start) to suit the community using interactive slash command settings.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Google Calendar & Link Buttons -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">📅</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Add to Calendar & View Buttons</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Features interactive link buttons. The "Add to Calendar" button populates Google Calendar with event details, while "View Event" links directly to native Discord events.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Automated Discussion Threads -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">💬</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated Discussion Threads</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements to encourage community interaction and keep chatter organized.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Concluded Event Archiving -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🧹</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">High-Contrast Archiving & Cleanups</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Grays out concluded announcements, strikes through obsolete timestamps, and deletes all public pings. Admins can run <code>/settings cleanup</code> to sweep legacy messages.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Native Multi-Language Localization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🌍</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Multi-Language Support (Localization)</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both server announcements and client slash command levels across 5 languages: English, Spanish, German, French, and Portuguese.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Technical & Runtime Features Section -->
-                <div>
-                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
-                        <span class="text-2xl">⚡</span>
-                        <span>Runtime & Technical Features</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Feature: SD-Card Friendly Storage -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">💾</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">SD-Card Friendly Architecture</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Explicitly optimized for single-board computers like the Raspberry Pi. Implements a lightweight JSON storage schema with batched minified disk writes to prevent SD card wear.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Database Self-Healing -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🩹</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automatic Database Self-Healing</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Resilient dual-layer mechanism maintaining atomic <code>.bak</code> copies of configurations. If damaged, a recursive Regex-based JSON salvage parser rebuilds database files automatically.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Offline Startup Synchronization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🔄</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Offline Startup Sync & Garbage Collection</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Syncs live events with Discord upon boot. Schedules reminders for any newly created events and safely archives announcements/deletes reminders of events that concluded while the bot was offline.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Real-time Event Hook Synchronization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🚀</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Real-Time Event Hook Synchronization</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Dynamically reschedules, deletes, or recreates scheduled reminder jobs in response to real-time Discord scheduled event creations, start time updates, or cancellations.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Setup / Quick Start -->
-            <section id="setup" class="scroll-mt-28">
+                
+                <section id="setup" class="scroll-mt-28">
                 <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation & Setup Guide</h2>
                 <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch Egg Bot. The setup below details the recommended containerized installation using Docker Compose.</p>
 
@@ -478,11 +353,8 @@ echo "{}" > config.json</pre>
                     </div>
                 </div>
             </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Using the Bot -->
-            <section id="usage" class="scroll-mt-28">
+                
+                <section id="usage" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Using the Bot</h2>
                 <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
                     <div>
@@ -509,11 +381,8 @@ echo "{}" > config.json</pre>
                     </div>
                 </div>
             </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Updating the Bot -->
-            <section id="updating" class="scroll-mt-28">
+                
+                <section id="updating" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Updating the Bot</h2>
                 <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">If you ever edit the code or download an
                     updated version of the bot, applying the changes is simple and won't delete your data.</p>
@@ -538,226 +407,17 @@ echo "{}" > config.json</pre>
                     </li>
                 </ol>
             </section>
+            </div>
 
             <hr class="border-cream-dark dark:border-gray-800">
 
-            <!-- Example Reminder & Announcement Gallery -->
-            <section id="example" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Announcements &
-                    Reminders</h2>
-                <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">See high-fidelity mockups of how the bot's
-                    dynamic event announcements and opt-in reminders render inside Discord, including the automated
-                    changes when an event concludes.</p>
-
-                <div class="space-y-12">
-                    <!-- SECTION A: ACTIVE EVENTS -->
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🟢 Active
-                            / Upcoming Event Formatting</h3>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                            <!-- Active Embed Announcement -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Server Announcement
-                                    (Rich Embed)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Posted in the configured
-                                    #events channel the moment a Discord Scheduled Event is created. Displays duration,
-                                    time range, and a clickable Host user pill without sending unwanted push pings.</p>
-
-                                <div
-                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
-                                    <div class="border-l-4 border-[#0099ff] pl-4">
-                                        <p class="font-serif font-bold text-charcoal dark:text-white text-lg">New Event:
-                                            Sunday Brunch at Eggcellent Café</p>
-                                        <div class="mt-2 text-sm space-y-1 text-gray-700 dark:text-gray-300">
-                                            <p>🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00 AM to 1:00 PM (in 5
-                                                days)</p>
-                                            <p>📍 <strong>Location:</strong> <span
-                                                    class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent
-                                                    Café (123 Yolk Street)</span></p>
-                                            <p class="mt-3 italic">It's been far too long since we've had eggs benedict,
-                                                french toast, and bottomless mimosas together. Also, we need our yearly
-                                                consumption of Scotch eggs as well!</p>
-                                            <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs italic">*Click the
-                                                button below to receive a DM reminder at: 24h, 1h before the event
-                                                begins!*</p>
-                                        </div>
-
-                                        <!-- Side-by-side Embed Fields -->
-                                        <div
-                                            class="grid grid-cols-2 gap-4 mt-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
-                                            <div>
-                                                <span
-                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">👤
-                                                    Host</span>
-                                                <span
-                                                    class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
-                                            </div>
-                                            <div>
-                                                <span
-                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">⏱️
-                                                    Duration</span>
-                                                <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">2
-                                                    hours</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-6 flex space-x-2">
-                                        <span
-                                            class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>⏰</span><span>Remind
-                                                Me!</span></span>
-                                        <span
-                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>📅</span><span>Add
-                                                to Calendar</span></span>
-                                        <span
-                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>🔗</span><span>View
-                                                Event</span></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Active Reminders (Public, Private, & Hybrid) -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public
-                                    Ping, Private DM, & Hybrid Mode)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for
-                                    high-priority mobile push notifications. Reminders can be sent via public channel
-                                    pings (Public), private DMs (Private), or a mixture of both where public reminders
-                                    have zero mentions while pings are delivered privately via DM (Hybrid).</p>
-
-                                <div class="space-y-6 mt-auto">
-                                    <!-- Public Reminder Alert -->
-                                    <div
-                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (Public
-                                            Mode: with mentions | Hybrid Mode: identical, but zero mentions)</p>
-                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
-                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
-                                        <p>📍 <span
-                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
-                                                Café</span></p>
-                                        <p
-                                            class="mt-3 text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
-                                            @Daniel</p>
-                                        <p
-                                            class="text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
-                                            @Admin</p>
-                                        <div class="mt-4 flex space-x-2">
-                                            <span
-                                                class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>⏰</span><span>Remind
-                                                    Me!</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>📅</span><span>Add
-                                                    to Calendar</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
-                                                    Event</span></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Private DM Alert -->
-                                    <div
-                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Private DM Reminder (Plain Text)
-                                        </p>
-                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
-                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
-                                        <p>📍 <span
-                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
-                                                Café</span></p>
-                                        <div class="mt-4 flex space-x-2">
-                                            <span
-                                                class="bg-[#DA373C] hover:bg-[#A92B2F] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔕</span><span>Cancel
-                                                    Reminders</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
-                                                    Event</span></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- SECTION B: CONCLUDED EVENTS -->
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🔴
-                            Concluded / Concluded Event Archiving</h3>
-                        <div class="max-w-3xl">
-
-                            <!-- Archived Embed Announcement -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Concluded Announcement
-                                    (Archived Embed)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically updated when the
-                                    event completes. Strikes through the title and metadata using clean web styling,
-                                    blockquotes descriptions, removes cover images, and replaces actions with a disabled
-                                    Completed button.</p>
-
-                                <div
-                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
-                                    <div class="border-l-4 border-gray-500 pl-4">
-                                        <p class="font-serif font-bold text-gray-400 dark:text-gray-500 text-lg"><del
-                                                class="opacity-50">New Event: Sunday Brunch at Eggcellent Café</del>
-                                        </p>
-
-                                        <p class="mt-2 text-sm font-bold text-gray-700 dark:text-gray-300">⏹️ This event
-                                            has concluded.</p>
-
-                                        <blockquote
-                                            class="mt-3 text-sm text-gray-500 pl-3 border-l-2 border-gray-300 dark:border-gray-700 italic space-y-1">
-                                            <p><del class="opacity-50">🗓️ <strong>Time:</strong> Sunday, May 31, 2026
-                                                    11:00 AM to 1:00 PM</del></p>
-                                            <p><del class="opacity-50">📍 <strong>Location:</strong> Eggcellent Café
-                                                    (123 Yolk Street)</del></p>
-                                            <p class="mt-2">It's been far too long since we've had eggs benedict, french
-                                                toast, and bottomless mimosas together. Also, we need our yearly
-                                                consumption of Scotch eggs as well!</p>
-                                        </blockquote>
-                                    </div>
-                                    <div class="mt-6">
-                                        <span
-                                            class="bg-[#4e5058] text-gray-300 px-4 py-2 rounded text-sm font-medium shadow opacity-60 flex items-center space-x-1 w-max border border-gray-600 cursor-not-allowed"><span>✅</span><span>Event
-                                                Completed</span></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+            <!-- ==================== COMMANDS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">Commands</h1>
                 </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- How It Works (Architecture) -->
-            <section id="architecture" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">How It Works (Storage
-                    Architecture)</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">To minimize disk wear on single-board computers
-                    (like the Raspberry Pi):</p>
-                <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
-                    <li>When an announcement is posted, it creates a record for that event in a local <code
-                            class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">events.json</code>
-                        file.</li>
-                    <li>When a user clicks "Remind Me!", their Discord User ID is added to an object of opted-in users
-                        associated with that event's record. This object-based storage is highly efficient for lookups.
-                    </li>
-                    <li>When it is time to send a reminder, the bot reads the opted-in users directly from the database
-                        and either DMs them or pings them publicly.</li>
-                    <li>The database is automatically pruned when events are deleted, canceled, or completed to keep it
-                        lightweight.</li>
-                </ul>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Commands Snapshot -->
-            <section id="commands" class="scroll-mt-28">
+                
+                <section id="commands" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
 
                 <!-- Commands Search Filter -->
@@ -882,11 +542,360 @@ echo "{}" > config.json</pre>
                     </li>
                 </ul>
             </section>
+            </div>
 
             <hr class="border-cream-dark dark:border-gray-800">
 
-            <!-- FAQ -->
-            <section id="faq" class="scroll-mt-28">
+            <!-- ==================== MISCELLANEOUS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">Miscellaneous</h1>
+                </div>
+                
+                <section id="features" class="scroll-mt-28">
+                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Core Features</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">
+                    Scotch Egg Bot is designed to be highly reliable, private, and fully automated. Below is a detailed
+                    overview of the bot's features, categorized by user-facing Discord capabilities and the robust technical architecture under the hood.
+                </p>
+
+                <!-- Discord Features Section -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                        <span class="text-2xl">💬</span>
+                        <span>Discord & User-Facing Features</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Feature: Native Discord Events -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">✨</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native Discord Events</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using Discord's built-in scheduled event UI, and the bot handles the rest instantly. No need to learn any complicated commands to create events.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Strictly Opt-In Reminders -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🔔</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Strictly Opt-In Reminders</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members click a simple "Remind Me!" button to explicitly choose which events they want to be notified about via Private DMs, Public Mentions, or Hybrid Mode.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Flexible Delivery Modes -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">⚙️</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible Delivery Modes</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Choose between three configuration options: <strong>Public</strong> channel reminders with pings, <strong>Private</strong> DM-only alerts, or <strong>Hybrid</strong> mode (un-pinged public reminders + private DMs).</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Custom Reminder Intervals -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">⏱️</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom Reminder Intervals</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when reminders are sent (e.g., 24h, 1h, 15m before start) to suit the community using interactive slash command settings.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Google Calendar & Link Buttons -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">📅</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Add to Calendar & View Buttons</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Features interactive link buttons. The "Add to Calendar" button populates Google Calendar with event details, while "View Event" links directly to native Discord events.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Automated Discussion Threads -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">💬</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated Discussion Threads</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements to encourage community interaction and keep chatter organized.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Concluded Event Archiving -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🧹</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">High-Contrast Archiving & Cleanups</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Grays out concluded announcements, strikes through obsolete timestamps, and deletes all public pings. Admins can run <code>/settings cleanup</code> to sweep legacy messages.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Native Multi-Language Localization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🌍</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Multi-Language Support (Localization)</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both server announcements and client slash command levels across 5 languages: English, Spanish, German, French, and Portuguese.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical & Runtime Features Section -->
+                <div>
+                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                        <span class="text-2xl">⚡</span>
+                        <span>Runtime & Technical Features</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Feature: SD-Card Friendly Storage -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">💾</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">SD-Card Friendly Architecture</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Explicitly optimized for single-board computers like the Raspberry Pi. Implements a lightweight JSON storage schema with batched minified disk writes to prevent SD card wear.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Database Self-Healing -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🩹</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automatic Database Self-Healing</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Resilient dual-layer mechanism maintaining atomic <code>.bak</code> copies of configurations. If damaged, a recursive Regex-based JSON salvage parser rebuilds database files automatically.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Offline Startup Synchronization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🔄</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Offline Startup Sync & Garbage Collection</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Syncs live events with Discord upon boot. Schedules reminders for any newly created events and safely archives announcements/deletes reminders of events that concluded while the bot was offline.</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature: Real-time Event Hook Synchronization -->
+                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                            <span class="text-3xl shrink-0">🚀</span>
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Real-Time Event Hook Synchronization</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Dynamically reschedules, deletes, or recreates scheduled reminder jobs in response to real-time Discord scheduled event creations, start time updates, or cancellations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+                
+                <section id="example" class="scroll-mt-28">
+                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Announcements &
+                    Reminders</h2>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">See high-fidelity mockups of how the bot's
+                    dynamic event announcements and opt-in reminders render inside Discord, including the automated
+                    changes when an event concludes.</p>
+
+                <div class="space-y-12">
+                    <!-- SECTION A: ACTIVE EVENTS -->
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🟢 Active
+                            / Upcoming Event Formatting</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                            <!-- Active Embed Announcement -->
+                            <div
+                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Server Announcement
+                                    (Rich Embed)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Posted in the configured
+                                    #events channel the moment a Discord Scheduled Event is created. Displays duration,
+                                    time range, and a clickable Host user pill without sending unwanted push pings.</p>
+
+                                <div
+                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-discord mt-auto">
+                                    <div class="border-l-4 border-[#0099ff] pl-4">
+                                        <p class="font-serif font-bold text-charcoal dark:text-white text-lg">New Event:
+                                            Sunday Brunch at Eggcellent Café</p>
+                                        <div class="mt-2 text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                                            <p>🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00 AM to 1:00 PM (in 5
+                                                days)</p>
+                                            <p>📍 <strong>Location:</strong> <span
+                                                    class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent
+                                                    Café (123 Yolk Street)</span></p>
+                                            <p class="mt-3 italic">It's been far too long since we've had eggs benedict,
+                                                french toast, and bottomless mimosas together. Also, we need our yearly
+                                                consumption of Scotch eggs as well!</p>
+                                            <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs italic">*Click the
+                                                button below to receive a DM reminder at: 24h, 1h before the event
+                                                begins!*</p>
+                                        </div>
+
+                                        <!-- Side-by-side Embed Fields -->
+                                        <div
+                                            class="grid grid-cols-2 gap-4 mt-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
+                                            <div>
+                                                <span
+                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">👤
+                                                    Host</span>
+                                                <span
+                                                    class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
+                                            </div>
+                                            <div>
+                                                <span
+                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">⏱️
+                                                    Duration</span>
+                                                <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">2
+                                                    hours</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 flex space-x-2">
+                                        <span
+                                            class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>⏰</span><span>Remind
+                                                Me!</span></span>
+                                        <span
+                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>📅</span><span>Add
+                                                to Calendar</span></span>
+                                        <span
+                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>🔗</span><span>View
+                                                Event</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Active Reminders (Public, Private, & Hybrid) -->
+                            <div
+                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public
+                                    Ping, Private DM, & Hybrid Mode)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for
+                                    high-priority mobile push notifications. Reminders can be sent via public channel
+                                    pings (Public), private DMs (Private), or a mixture of both where public reminders
+                                    have zero mentions while pings are delivered privately via DM (Hybrid).</p>
+
+                                <div class="space-y-6 mt-auto">
+                                    <!-- Public Reminder Alert -->
+                                    <div
+                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-discord">
+                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (Public
+                                            Mode: with mentions | Hybrid Mode: identical, but zero mentions)</p>
+                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
+                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
+                                        <p>📍 <span
+                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
+                                                Café</span></p>
+                                        <p
+                                            class="mt-3 text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
+                                            @Daniel</p>
+                                        <p
+                                            class="text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
+                                            @Admin</p>
+                                        <div class="mt-4 flex space-x-2">
+                                            <span
+                                                class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>⏰</span><span>Remind
+                                                    Me!</span></span>
+                                            <span
+                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>📅</span><span>Add
+                                                    to Calendar</span></span>
+                                            <span
+                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
+                                                    Event</span></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Private DM Alert -->
+                                    <div
+                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-discord">
+                                        <p class="text-xs font-bold text-gray-500 mb-2">Private DM Reminder (Plain Text)
+                                        </p>
+                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
+                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
+                                        <p>📍 <span
+                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
+                                                Café</span></p>
+                                        <div class="mt-4 flex space-x-2">
+                                            <span
+                                                class="bg-[#DA373C] hover:bg-[#A92B2F] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔕</span><span>Cancel
+                                                    Reminders</span></span>
+                                            <span
+                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
+                                                    Event</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- SECTION B: CONCLUDED EVENTS -->
+                    <div>
+                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🔴
+                            Concluded / Concluded Event Archiving</h3>
+                        <div class="max-w-3xl">
+
+                            <!-- Archived Embed Announcement -->
+                            <div
+                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Concluded Announcement
+                                    (Archived Embed)</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically updated when the
+                                    event completes. Strikes through the title and metadata using clean web styling,
+                                    blockquotes descriptions, removes cover images, and replaces actions with a disabled
+                                    Completed button.</p>
+
+                                <div
+                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-discord mt-auto">
+                                    <div class="border-l-4 border-gray-500 pl-4">
+                                        <p class="font-serif font-bold text-gray-400 dark:text-gray-500 text-lg"><del
+                                                class="opacity-50">New Event: Sunday Brunch at Eggcellent Café</del>
+                                        </p>
+
+                                        <p class="mt-2 text-sm font-bold text-gray-700 dark:text-gray-300">⏹️ This event
+                                            has concluded.</p>
+
+                                        <blockquote
+                                            class="mt-3 text-sm text-gray-500 pl-3 border-l-2 border-gray-300 dark:border-gray-700 italic space-y-1">
+                                            <p><del class="opacity-50">🗓️ <strong>Time:</strong> Sunday, May 31, 2026
+                                                    11:00 AM to 1:00 PM</del></p>
+                                            <p><del class="opacity-50">📍 <strong>Location:</strong> Eggcellent Café
+                                                    (123 Yolk Street)</del></p>
+                                            <p class="mt-2">It's been far too long since we've had eggs benedict, french
+                                                toast, and bottomless mimosas together. Also, we need our yearly
+                                                consumption of Scotch eggs as well!</p>
+                                        </blockquote>
+                                    </div>
+                                    <div class="mt-6">
+                                        <span
+                                            class="bg-[#4e5058] text-gray-300 px-4 py-2 rounded text-sm font-medium shadow opacity-60 flex items-center space-x-1 w-max border border-gray-600 cursor-not-allowed"><span>✅</span><span>Event
+                                                Completed</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+                
+                <section id="architecture" class="scroll-mt-28">
+                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">How It Works (Storage
+                    Architecture)</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">To minimize disk wear on single-board computers
+                    (like the Raspberry Pi):</p>
+                <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
+                    <li>When an announcement is posted, it creates a record for that event in a local <code
+                            class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">events.json</code>
+                        file.</li>
+                    <li>When a user clicks "Remind Me!", their Discord User ID is added to an object of opted-in users
+                        associated with that event's record. This object-based storage is highly efficient for lookups.
+                    </li>
+                    <li>When it is time to send a reminder, the bot reads the opted-in users directly from the database
+                        and either DMs them or pings them publicly.</li>
+                    <li>The database is automatically pruned when events are deleted, canceled, or completed to keep it
+                        lightweight.</li>
+                </ul>
+            </section>
+                
+                <section id="faq" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Frequently Asked Questions
                 </h2>
                 <div class="space-y-4">
@@ -981,11 +990,8 @@ echo "{}" > config.json</pre>
                     </details>
                 </div>
             </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Troubleshooting -->
-            <section id="troubleshooting" class="scroll-mt-28">
+                
+                <section id="troubleshooting" class="scroll-mt-28">
                 <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Troubleshooting</h2>
                 <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
                     <details
@@ -1057,7 +1063,7 @@ echo "{}" > config.json</pre>
                     </details>
                 </div>
             </section>
-
+            </div>
         </main>
     </div>
 
