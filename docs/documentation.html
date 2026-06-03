@@ -271,6 +271,10 @@ ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here</pre>
                             <pre id="init-code" class="text-gray-300 font-mono text-sm overflow-x-auto">echo "{}" > events.json
 echo "{}" > config.json</pre>
                         </div>
+                        <!-- PowerShell Warning Callout -->
+                        <div class="mt-4 bg-eggyolk/10 border-l-4 border-eggyolk p-4 rounded-r-lg text-sm text-gray-700 dark:text-gray-300">
+                            <strong>⚠️ Windows / PowerShell Note:</strong> Using redirection (<code>&gt;</code>) in some versions of PowerShell can create files with UTF-16 LE encoding, which will cause JSON parsing crashes on bot startup. If the bot throws a syntax error, simply recreate the files manually in a text editor (like Notepad or VS Code) containing just <code>{}</code> and save them with <strong>UTF-8</strong> encoding.
+                        </div>
                     </div>
 
                     <div>
