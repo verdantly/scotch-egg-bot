@@ -4,6 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dark Mode Theme Flash Prevention -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     <title>Documentation | Scotch Egg Bot</title>
     <meta name="description" content="Documentation and setup guide for the Scotch Egg Bot.">
 
@@ -1063,7 +1073,6 @@ echo "{}" > config.json</pre>
             <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
                 <p>Open Source under the GPLv3 License. <a href="https://github.com/verdantly/scotch-egg-bot"
                         class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a></p>
-                </p>
             </div>
         </div>
     </footer>
