@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dark Mode Theme Flash Prevention -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <title>Terms of Service | Scotch Egg Bot</title>
+    <meta name="description" content="Read the terms of service for Scotch Egg Bot. Learn about acceptable use and disclaimer of warranties.">
+    
+    <!-- Custom CSS & Fonts -->
+    <link rel="stylesheet" href="css/custom.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            DEFAULT: '#fff8f0', // Off-white/cream background
+                            dark: '#f0e9e1'
+                        },
+                        eggyolk: {
+                            DEFAULT: '#fcba03', // Golden orange yolk
+                            hover: '#e3a702',
+                            light: '#ffe9ad'
+                        },
+                        breadcrumb: {
+                            DEFAULT: '#c47c43', // Crispy brown
+                            dark: '#a36534'
+                        },
+                        charcoal: '#333333', // Deep dark for text
+                    },
+                    fontFamily: {
+                        sans: ['"Merriweather Sans"', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                        discord: ['"gg sans"', '"Whitney"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-8 md:p-12 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors duration-300">
+            <h1 class="text-4xl font-serif font-bold text-charcoal dark:text-white mb-2">Terms of Service</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Last Updated: June 2026</p>
+
+            <div class="space-y-8 text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Acceptance of Terms</h2>
+                    <p>
+                        By adding Scotch Egg Bot ("the Bot") to your Discord server or using its features as a user, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use the Bot.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. License & Open Source</h2>
+                    <p>
+                        Scotch Egg Bot is open-source software licensed under the **GPLv3 License**. You are free to view, download, modify, self-host, and distribute the source code in accordance with the terms of the GPLv3 license.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Acceptable Use</h2>
+                    <p class="mb-4">
+                        You agree to use the Bot in compliance with Discord’s Developer Terms of Service and Community Guidelines. Specifically, you agree not to:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li>Use the Bot to spam, harass, or maliciously ping server members.</li>
+                        <li>Attempt to abuse the Discord API or disrupt services through the Bot's command execution.</li>
+                        <li>Modify and deploy the Bot's code for illicit tracking, data harvesting, or violating user privacy guidelines.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Hosting & Service Uptime</h2>
+                    <p>
+                        Because the Bot is designed to be **self-hosted**, the hosting administrator is entirely responsible for maintaining the hosting machine, keeping database files safe, securing credentials, and maintaining bot connectivity. We provide no guarantee of the Bot's uptime, availability, or operational accuracy.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">5. Disclaimer of Warranties</h2>
+                    <p class="uppercase text-base font-semibold border-l-4 border-breadcrumb pl-4 my-4">
+                        The Bot is provided "as is" and "as available", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">6. Limitation of Liability</h2>
+                    <p>
+                        In no event shall the authors, developers, or copyright holders of the Bot be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the Bot or the use of the Bot.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">7. Changes to Terms</h2>
+                    <p>
+                        We reserve the right to modify these terms at any time. Any changes will be posted on this page with an updated "Last Updated" date. Continued use of the Bot after changes are posted constitutes your acceptance of the new Terms of Service.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">8. Support & Feedback</h2>
+                    <p>
+                        Bug reports, feature requests, and community assistance should be handled through our GitHub repository issues panel:
+                    </p>
+                    <p class="mt-4">
+                        <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold">Open GitHub Issues &rarr;</a>
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cream dark:bg-gray-900 py-8 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
+                <span>🥚</span>
+                <span>Scotch Egg Bot</span>
+            </div>
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                    Open Source under the GPLv3 License. 
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a>
+                </p>
+                <div class="flex space-x-4 text-xs text-gray-400 dark:text-gray-500 font-medium">
+                    <a href="privacy.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="terms.html" class="text-breadcrumb dark:text-eggyolk font-bold">Terms of Service</a>
+                    <span>•</span>
+                    <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Report Bugs</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>
