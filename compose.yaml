@@ -1,7 +1,7 @@
 services:
-  scotch-egg-bot:
+  scotch-egg:
     build: .
-    container_name: scotch-egg-bot
+    container_name: scotch-egg
     restart: unless-stopped
     env_file:
       - .env

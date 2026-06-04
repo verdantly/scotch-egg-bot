@@ -1383,7 +1383,7 @@ client.on(Events.InteractionCreate, async interaction => {
             }
 
             const embed = new EmbedBuilder()
-                .setTitle('🥚 Scotch Egg Bot Help')
+                .setTitle('🥚 Scotch Egg Help')
                 .setDescription(t(userLocale, 'help_description'))
                 .addFields(fields)
                 .setColor('#0099ff');

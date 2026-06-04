@@ -1,6 +1,6 @@
 # Implementation Plan: Lightweight Web Dashboard
 
-This document details the architectural design and implementation plan for adding a secure, premium web dashboard to **Scotch Egg Bot**. 
+This document details the architectural design and implementation plan for adding a secure, premium web dashboard to **Scotch Egg**. 
 
 To ensure the bot remains highly viable for users self-hosting on low-resource hardware like a **Raspberry Pi 3B+** (Quad-Core 1.4GHz, 1GB RAM, MicroSD card storage), the system is optimized for **extreme memory efficiency** and **minimum CPU / Disk I/O impact**.
 
@@ -40,7 +40,7 @@ graph TD
 
 | Component | CPU Idle | CPU Active (Load) | RAM Overhead | I/O Bottlenecks |
 | :--- | :--- | :--- | :--- | :--- |
-| **Scotch Egg Bot (Core)** | ~0.5% | 2 - 5% (pings/DMs) | ~45MB | Minimal (Sync on writes) |
+| **Scotch Egg (Core)** | ~0.5% | 2 - 5% (pings/DMs) | ~45MB | Minimal (Sync on writes) |
 | **Express API Engine** | 0.0% | ~1.5% (per request) | +8MB | None (In-memory reads) |
 | **Static Web Dashboard** | 0.0% | 0.0% | 0MB | MicroSD read on first load |
 | **Total Combined System**| **~0.5%** | **~5%** | **~53MB** | **Safe for slow SD cards** |
