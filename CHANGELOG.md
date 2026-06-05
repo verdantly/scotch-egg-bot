@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Database Overwriting Prevention:** Fixed an edge case where manually announcing an event or updating its details would overwrite the database entry, causing a loss of pre-existing metadata such as the `remindersDisabled` setting, reminder recipient lists, or other event settings.
 - **Recurring Event Automatic Reminder Cleanup:** Concluded recurring event occurrences now automatically delete their associated public reminder messages (e.g. 1 hr/24 hr reminders) upon rollover to the next occurrence, instead of leaving them in the channel.
 - **Upgraded Settings Cleanup Command for Recurring Events:** Enhanced `/settings cleanup` to successfully delete old public reminder messages for active recurring events by comparing the timestamp in the reminder message against the event's current scheduled start time.
 - **Self-Healing Offline Reminder Purge:** Updated startup synchronization to automatically identify and clean up obsolete reminder messages that rolled over or postponed while the bot was offline. Utilizes bit-shifted Discord Snowflake timestamp deconstruction to avoid API query overhead.
