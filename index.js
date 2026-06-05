@@ -1886,24 +1886,61 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
             const locationChanged = oldLocation !== newLocation;
 
             if (timeChanged || locationChanged) {
-                const guildLocale = getNormalizedLocale(n.guild.preferredLocale);
-                let changeMsg = '';
+                // If it's a recurring event rollover, we don't send time change notifications to users
+                const isRecurringRollover = timeChanged && n.recurrenceRule && o.scheduledStartTimestamp <= Date.now();
                 
-                if (timeChanged && locationChanged) {
-                    changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
-                    changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
+                if (isRecurringRollover) {
+                    // Delete old public reminders and clear message IDs
+                    const reminderMessageIds = eventDb[n.id].reminderMessageIds || [];
+                    const channelId = getAnnouncementChannelId(n.guild.id);
+                    const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                    if (channel) {
+                        for (const rMsgId of reminderMessageIds) {
+                            const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
+                            if (rMsg) {
+                                await rMsg.delete().catch(() => {});
+                            }
+                        }
+                    }
+                    eventDb[n.id].reminderMessageIds = [];
+                    await saveDb();
+                } else {
+                    const guildLocale = getNormalizedLocale(n.guild.preferredLocale);
+                    let changeMsg = '';
                     
-                    const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
-                    changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
-                } else if (timeChanged) {
-                    changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
-                    changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
-                } else if (locationChanged) {
-                    changeMsg += t(guildLocale, 'notification_location_changed', { name: n.name });
-                    const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
-                    changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
+                    if (timeChanged && locationChanged) {
+                        changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
+                        changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
+                        
+                        const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                        changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
+                    } else if (timeChanged) {
+                        changeMsg += t(guildLocale, 'notification_time_changed', { name: n.name });
+                        changeMsg += t(guildLocale, 'notification_new_time', { time: `<t:${Math.floor(n.scheduledStartTimestamp / 1000)}:F>` });
+                    } else if (locationChanged) {
+                        changeMsg += t(guildLocale, 'notification_location_changed', { name: n.name });
+                        const locStr = n.entityMetadata?.location || (n.channelId ? `<#${n.channelId}>` : 'Discord');
+                        changeMsg += t(guildLocale, 'notification_new_location', { location: locStr });
+                    }
+                    await notifyUsersOfEventChange(n, changeMsg);
+                    
+                    // If the event was postponed after it already started, clean up old reminders
+                    if (timeChanged && o.scheduledStartTimestamp <= Date.now()) {
+                        const reminderMessageIds = eventDb[n.id].reminderMessageIds || [];
+                        const channelId = getAnnouncementChannelId(n.guild.id);
+                        const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                        if (channel) {
+                            for (const rMsgId of reminderMessageIds) {
+                                const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
+                                if (rMsg) {
+                                    await rMsg.delete().catch(() => {});
+                                }
+                            }
+                        }
+                        eventDb[n.id].reminderMessageIds = [];
+                        await saveDb();
+                    }
                 }
-                await notifyUsersOfEventChange(n, changeMsg);
             }
         }
 
