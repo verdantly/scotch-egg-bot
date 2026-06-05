@@ -141,6 +141,28 @@ async function notifyAdmin(contextMessage, error) {
 setStorageErrorHandler(notifyAdmin);
 
 /**
+ * Checks if an event is silenced either by title/description tags or via database configuration.
+ * @param {GuildScheduledEvent} event - The Discord Scheduled Event object.
+ * @returns {boolean} True if silenced, false otherwise.
+ */
+function isEventSilenced(event) {
+    if (!event) return false;
+    
+    // 1. Tag Check: Check if name or description contains [silent] or [exclude] (case-insensitive)
+    const silentPattern = /\[silent\]|\[exclude\]/i;
+    if (silentPattern.test(event.name || '') || silentPattern.test(event.description || '')) {
+        return true;
+    }
+    
+    // 2. Database Check: Check if remindersDisabled is set to true in eventDb
+    if (eventDb[event.id] && eventDb[event.id].remindersDisabled) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
  * Synchronizes the "Remind Me!" live counter on the original announcement message.
  * @param {string} eventId - The ID of the Discord Scheduled Event.
  */
@@ -306,8 +328,8 @@ async function syncEventReminders(guild) {
  * @param {number} [now=Date.now()] - Current timestamp reference.
  */
 function scheduleRemindersForEvent(event, now = Date.now()) {
-    // Skip events that are already completed or canceled
-    if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
+    // Skip events that are already completed, canceled, or silenced
+    if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled || isEventSilenced(event)) {
         return;
     }
 
@@ -539,6 +561,7 @@ client.on(Events.ClientReady, async c => {
 });
 
 client.on(Events.GuildScheduledEventCreate, async e => {
+    if (isEventSilenced(e)) return;
     scheduleRemindersForEvent(e);
     
     // Post announcement message for the new event
@@ -572,9 +595,15 @@ function buildAnnouncementEmbed(event) {
     const intervals = getReminderIntervals(event.guild.id);
     const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
     const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
-    const reminderText = t(guildLocale, mode === 'public' ? 'announcement_footer_public' : 'announcement_footer_private', {
-        intervals: intervalsStr
-    });
+    
+    let reminderText;
+    if (isEventSilenced(event)) {
+        reminderText = t(guildLocale, 'announcement_footer_silenced');
+    } else {
+        reminderText = t(guildLocale, mode === 'public' ? 'announcement_footer_public' : 'announcement_footer_private', {
+            intervals: intervalsStr
+        });
+    }
 
     let titlePrefix = 'New Event:';
     if (guildLocale === 'es') titlePrefix = 'Nuevo evento:';
@@ -630,9 +659,11 @@ async function postAnnouncement(event, channel) {
     const embed = buildAnnouncementEmbed(event);
     const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
 
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰')
-    );
+    const remindButton = new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰');
+    if (isEventSilenced(event)) {
+        remindButton.setDisabled(true);
+    }
+    const row = new ActionRowBuilder().addComponents(remindButton);
 
     if (getCalendarEnabled(event.guild.id)) {
         row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
@@ -1357,6 +1388,129 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 await interaction.editReply({ content: successMsg });
             }
+
+            if (subcommand === 'silenceevent' || subcommand === 'unsilenceevent') {
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+                const eventIdentifier = interaction.options.getString('event');
+                const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
+                const eventId = match ? match[1] : null;
+
+                if (!eventId) {
+                    return interaction.editReply({ content: t(userLocale, 'announce_invalid_id') });
+                }
+
+                const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
+                if (!event) {
+                    return interaction.editReply({ content: t(userLocale, 'announce_not_found') });
+                }
+
+                if (subcommand === 'silenceevent') {
+                    if (!eventDb[eventId]) {
+                        // Create empty record for it to track silence state
+                        eventDb[eventId] = {
+                            messageId: null,
+                            guildId: interaction.guildId,
+                            users: {},
+                            reminderMessageIds: [],
+                            skippedUsers: {},
+                            remindersDisabled: true
+                        };
+                    } else {
+                        eventDb[eventId].remindersDisabled = true;
+                    }
+                    cancelEventReminders(eventId);
+                    await saveDb();
+
+                    // Update live announcement message (disable remind button and update footer)
+                    if (eventDb[eventId].messageId) {
+                        try {
+                            const channelId = getAnnouncementChannelId(interaction.guildId);
+                            const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
+                            if (channel) {
+                                const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+                                if (msg && msg.embeds.length > 0) {
+                                    const updatedEmbed = buildAnnouncementEmbed(event);
+                                    let components = msg.components;
+                                    if (components && components.length > 0) {
+                                        const guildLocale = getNormalizedLocale(interaction.guild.preferredLocale);
+                                        const currentComponents = components[0].components;
+                                        
+                                        // Disable the remind button
+                                        const remindButton = ButtonBuilder.from(currentComponents[0]).setDisabled(true);
+                                        const updatedRow = new ActionRowBuilder().addComponents(remindButton);
+                                        
+                                        for (let i = 1; i < currentComponents.length; i++) {
+                                            updatedRow.addComponents(ButtonBuilder.from(currentComponents[i]));
+                                        }
+                                        components = [updatedRow];
+                                    }
+                                    await msg.edit({ embeds: [updatedEmbed], components: components }).catch(() => {});
+                                }
+                            }
+                        } catch (err) {
+                            console.error(`Failed to update announcement message on silence:`, err);
+                        }
+                    }
+
+                    await interaction.editReply({ content: t(userLocale, 'settings_silenceevent_success', { name: event.name }) });
+                } else {
+                    // unsilenceevent
+                    if (eventDb[eventId]) {
+                        const silentPattern = /\[silent\]|\[exclude\]/i;
+                        const hasTag = silentPattern.test(event.name || '') || silentPattern.test(event.description || '');
+
+                        eventDb[eventId].remindersDisabled = false;
+                        if (!hasTag) {
+                            scheduleRemindersForEvent(event);
+                        }
+                        await saveDb();
+
+                        // Update live announcement message (re-enable remind button and update footer)
+                        if (eventDb[eventId].messageId) {
+                            try {
+                                const channelId = getAnnouncementChannelId(interaction.guildId);
+                                const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
+                                if (channel) {
+                                    const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
+                                    if (msg && msg.embeds.length > 0) {
+                                        const updatedEmbed = buildAnnouncementEmbed(event);
+                                        let components = msg.components;
+                                        if (components && components.length > 0) {
+                                            const guildLocale = getNormalizedLocale(interaction.guild.preferredLocale);
+                                            const currentComponents = components[0].components;
+                                            
+                                            // Re-enable the remind button (unless tag overrides it)
+                                            const remindButton = ButtonBuilder.from(currentComponents[0]).setDisabled(hasTag);
+                                            const updatedRow = new ActionRowBuilder().addComponents(remindButton);
+                                            
+                                            for (let i = 1; i < currentComponents.length; i++) {
+                                                updatedRow.addComponents(ButtonBuilder.from(currentComponents[i]));
+                                            }
+                                            components = [updatedRow];
+                                        }
+                                        await msg.edit({ embeds: [updatedEmbed], components: components }).catch(() => {});
+                                    }
+                                }
+                            } catch (err) {
+                                console.error(`Failed to update announcement message on unsilence:`, err);
+                            }
+                        }
+
+                        let warningText = '';
+                        if (hasTag) {
+                            if (userLocale === 'es') warningText = '\n\n*(Nota: Este evento todavía contiene una etiqueta de silencio [silent]/[exclude] en Discord. Debes editar los detalles del evento para eliminarla antes de que se reanuden los recordatorios).*';
+                            else if (userLocale === 'de') warningText = '\n\n*(Hinweis: Dieses Event enthält immer noch ein Stummschaltungs-Tag [silent]/[exclude] in Discord. Du musst die Event-Details bearbeiten und es entfernen, bevor die Erinnerungen fortgesetzt werden).*';
+                            else if (userLocale === 'fr') warningText = '\n\n*(Note : Cet événement contient toujours une balise de silence [silent]/[exclude] sur Discord. Vous devez modifier les détails de l\'événement pour la supprimer avant que les rappels ne reprennent).*';
+                            else if (userLocale === 'pt') warningText = '\n\n*(Nota: Este evento ainda contém uma tag de silêncio [silent]/[exclude] no Discord. Você deve editar os detalhes do evento para removê-la antes que os lembretes sejam retomados).*';
+                            else warningText = '\n\n*(Note: This event still contains a silencing tag [silent]/[exclude] in Discord. You must edit the event details to remove it before reminders will resume.)*';
+                        }
+
+                        await interaction.editReply({ content: t(userLocale, 'settings_unsilenceevent_success', { name: event.name }) + warningText });
+                    } else {
+                        await interaction.editReply({ content: t(userLocale, 'settings_silenceevent_error') });
+                    }
+                }
+            }
             return;
         }
 
@@ -1653,6 +1807,11 @@ client.on(Events.InteractionCreate, async interaction => {
         const event = await interaction.guild?.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
             return interaction.editReply({ content: t(userLocale, 'remind_inactive') });
+        }
+
+        // Check if reminders are silenced
+        if ((eventDb[eventId] && eventDb[eventId].remindersDisabled) || isEventSilenced(event)) {
+            return interaction.editReply({ content: t(userLocale, 'reminder_disabled_for_event') });
         }
 
         // Auto-heal database if the event record was somehow lost
@@ -1984,6 +2143,31 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         if (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active) {
             scheduleRemindersForEvent(n);
         }
+
+        // If event is silenced by tag, we handle database/announcement removal
+        if (isEventSilenced(n)) {
+            const isTagSilenced = /\[silent\]|\[exclude\]/i.test(n.name || '') || /\[silent\]|\[exclude\]/i.test(n.description || '');
+            if (isTagSilenced && eventDb[n.id]) {
+                await archiveAnnouncementMessage(n.guild, n.id, 'Deleted');
+                delete eventDb[n.id];
+                await saveDb();
+                return; // Stop update processing as the event is now removed from tracking
+            }
+        } else {
+            // If it is not silenced, but was previously tag-excluded (so not in eventDb),
+            // and it is scheduled/active, we announce it now!
+            if (!eventDb[n.id] && (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active)) {
+                const channelId = getAnnouncementChannelId(n.guild.id);
+                const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                if (channel) {
+                    try {
+                        await postAnnouncement(n, channel);
+                    } catch (err) {
+                        // error logged in postAnnouncement
+                    }
+                }
+            }
+        }
     
     // Clean up if the event was completed or canceled
     if (n.status === GuildScheduledEventStatus.Completed || n.status === GuildScheduledEventStatus.Canceled) {
@@ -2085,7 +2269,9 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                             const countText = match ? ` (${match[1]})` : '';
                             const newRemindLabel = t(guildLocale, 'announcement_button_remind') + countText;
                             
-                            const remindButton = ButtonBuilder.from(currentComponents[0]).setLabel(newRemindLabel);
+                            const remindButton = ButtonBuilder.from(currentComponents[0])
+                                .setLabel(newRemindLabel)
+                                .setDisabled(isEventSilenced(n));
                             const updatedRow = new ActionRowBuilder().addComponents(remindButton);
                             
                             if (getCalendarEnabled(n.guild.id)) {

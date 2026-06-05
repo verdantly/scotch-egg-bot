@@ -96,7 +96,12 @@ const translations = {
         upcoming_btn_prev: "⬅️ Previous",
         upcoming_btn_next: "Next ➡️",
         public_reminders_hidden: "*({count} users opted in, mentions hidden to save space)*",
-        public_reminders_hidden_fallback: "*Could not DM {count} users (mentions hidden to save space).*"
+        public_reminders_hidden_fallback: "*Could not DM {count} users (mentions hidden to save space).*",
+        announcement_footer_silenced: "*📢 Reminders are disabled for this event.*",
+        reminder_disabled_for_event: "Reminders are disabled for this event.",
+        settings_silenceevent_success: "Success! Reminders have been silenced for event **{name}**.",
+        settings_unsilenceevent_success: "Success! Reminders have been re-enabled for event **{name}**.",
+        settings_silenceevent_error: "Error: That event is not currently tracked by the bot or is completed/canceled."
     },
 
     // Spanish
@@ -190,7 +195,12 @@ const translations = {
         upcoming_btn_prev: "⬅️ Anterior",
         upcoming_btn_next: "Siguiente ➡️",
         public_reminders_hidden: "*({count} usuarios inscritos, menciones ocultas para ahorrar espacio)*",
-        public_reminders_hidden_fallback: "*No se pudo enviar MD a {count} usuarios (menciones ocultas para ahorrar espacio).*"
+        public_reminders_hidden_fallback: "*No se pudo enviar MD a {count} usuarios (menciones ocultas para ahorrar espacio).*",
+        announcement_footer_silenced: "*📢 Los recordatorios están desactivados para este evento.*",
+        reminder_disabled_for_event: "Los recordatorios están desactivados para este evento.",
+        settings_silenceevent_success: "¡Éxito! Se han silenciado los recordatorios para el evento **{name}**.",
+        settings_unsilenceevent_success: "¡Éxito! Se han vuelto a activar los recordatorios para el evento **{name}**.",
+        settings_silenceevent_error: "Error: Ese evento no está siendo rastreado actualmente por el bot o ya ha finalizado/sido cancelado."
     },
 
     // German
@@ -284,7 +294,12 @@ const translations = {
         upcoming_btn_prev: "⬅️ Vorherige",
         upcoming_btn_next: "Nächste ➡️",
         public_reminders_hidden: "*({count} Benutzer angemeldet, Erwähnungen aus Platzgründen ausgeblendet)*",
-        public_reminders_hidden_fallback: "*DM an {count} Benutzer fehlgeschlagen (Erwähnungen aus Platzgründen ausgeblendet).*"
+        public_reminders_hidden_fallback: "*DM an {count} Benutzer fehlgeschlagen (Erwähnungen aus Platzgründen ausgeblendet).*",
+        announcement_footer_silenced: "*📢 Erinnerungen sind für dieses Event deaktiviert.*",
+        reminder_disabled_for_event: "Erinnerungen sind für dieses Event deaktiviert.",
+        settings_silenceevent_success: "Erfolg! Erinnerungen für das Event **{name}** wurden stummgeschaltet.",
+        settings_unsilenceevent_success: "Erfolg! Erinnerungen für das Event **{name}** wurden wieder aktiviert.",
+        settings_silenceevent_error: "Fehler: Dieses Event wird derzeit nicht vom Bot verfolgt oder ist bereits beendet/abgesagt."
     },
 
     // French
@@ -378,7 +393,12 @@ const translations = {
         upcoming_btn_prev: "⬅️ Précédent",
         upcoming_btn_next: "Suivant ➡️",
         public_reminders_hidden: "*({count} utilisateurs inscrits, mentions masquées pour gagner de la place)*",
-        public_reminders_hidden_fallback: "*Échec du DM à {count} utilisateurs (mentions masquées pour gagner de la place).*"
+        public_reminders_hidden_fallback: "*Échec du DM à {count} utilisateurs (mentions masquées pour gagner de la place).*",
+        announcement_footer_silenced: "*📢 Les rappels sont désactivés pour cet événement.*",
+        reminder_disabled_for_event: "Les rappels sont désactivés pour cet événement.",
+        settings_silenceevent_success: "Succès ! Les rappels ont été désactivés pour l'événement **{name}**.",
+        settings_unsilenceevent_success: "Succès ! Les rappels ont été réactivés pour l'événement **{name}**.",
+        settings_silenceevent_error: "Erreur : Cet événement n'est pas suivi actuellement par le bot ou est terminé/annulé."
     },
 
     // Portuguese
@@ -472,7 +492,12 @@ const translations = {
         upcoming_btn_prev: "⬅️ Anterior",
         upcoming_btn_next: "Próximo ➡️",
         public_reminders_hidden: "*({count} usuários inscritos, menções ocultadas para economizar espaço)*",
-        public_reminders_hidden_fallback: "*Falha no DM para {count} usuários (menções ocultadas para economizar espaço).*"
+        public_reminders_hidden_fallback: "*Falha no DM para {count} usuários (menções ocultadas para economizar espaço).*",
+        announcement_footer_silenced: "*📢 Os lembretes estão desativados para este evento.*",
+        reminder_disabled_for_event: "Os lembretes estão desativados para este evento.",
+        settings_silenceevent_success: "Sucesso! Os lembretes foram silenciados para o evento **{name}**.",
+        settings_unsilenceevent_success: "Sucesso! Os lembretes foram reativados para o evento **{name}**.",
+        settings_silenceevent_error: "Erro: Esse evento não está sendo rastreado pelo bot ou já foi concluído/cancelado."
     }
 };
 
