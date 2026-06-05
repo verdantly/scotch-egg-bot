@@ -108,6 +108,20 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
    ```
    The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
 
+## Excluding / Silencing Events
+
+Administrators can prevent specific events from being announced or having automatic reminders scheduled in two ways:
+
+1. **Tag-Based Silencing (Title/Description):**
+   When creating or editing an event in Discord, adding the tag `[silent]` or `[exclude]` (case-insensitive) in the event's **Title** or **Description** tells the bot to completely ignore the event. No announcement will be posted, and no reminder jobs will be scheduled.
+   * If an event was already announced, editing its Discord details to include one of these tags will automatically delete/archive the announcement message and cancel all reminders.
+   * If you remove the tag, the bot will dynamically detect the change and post the announcement.
+
+2. **Command/Database Silencing (Slash Commands):**
+   If an event has already been announced, but administrators decide they want to silence reminders for it, they can use:
+   * `/settings silenceevent [event_link_or_id]` - Disables reminder scheduling and pings for that event, updating the announcement embed and disabling the "Remind Me!" button.
+   * `/settings unsilenceevent [event_link_or_id]` - Re-enables reminder scheduling for that event.
+
 ## Commands Reference
 
 ### Administrator Commands
@@ -135,6 +149,12 @@ Using Docker Compose makes it much easier to manage the container and perfectly 
 
 *   `/settings testreminder`
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
+
+*   `/settings silenceevent [event]`
+    -   **Action:** Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
+
+*   `/settings unsilenceevent [event]`
+    -   **Action:** Re-enables reminder scheduling for a stummgeschaltetes/silenced event.
 
 *   `/settings cleanup`
     -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, and performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages and keep the channel clean.

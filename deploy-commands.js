@@ -302,7 +302,71 @@ const commands = [
                     'de': 'Scanne und archiviere unarchivierte beendete Event-Ankündigungen.',
                     'fr': 'Scanner et archiver les annonces d\'événements terminés non archivées.',
                     'pt-BR': 'Escanear e arquivar anúncios de eventos concluídos não arquivados.'
-                })),
+                }))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('silenceevent')
+                .setNameLocalizations({
+                    'es-ES': 'silenciarevento',
+                    'de': 'eventstummschalten',
+                    'fr': 'silenceevenement',
+                    'pt-BR': 'silenciarevento'
+                })
+                .setDescription('Disable reminder scheduling for a specific event (stops DMs and pings).')
+                .setDescriptionLocalizations({
+                    'es-ES': 'Desactiva la programación de recordatorios para un evento específico (detiene MDs y pings).',
+                    'de': 'Deaktiviere die Erinnerungsplanung für ein bestimmtes Event (stoppt DMs und Pings).',
+                    'fr': 'Désactiver la planification des rappels pour un événement spécifique (arrête les DM et les pings).',
+                    'pt-BR': 'Desativa o agendamento de lembretes para um evento específico (para DMs e pings).'
+                })
+                .addStringOption(option =>
+                    option.setName('event')
+                        .setNameLocalizations({
+                            'es-ES': 'evento',
+                            'de': 'event',
+                            'fr': 'evenement',
+                            'pt-BR': 'evento'
+                        })
+                        .setDescription('The event link or ID to silence')
+                        .setDescriptionLocalizations({
+                            'es-ES': 'El enlace o ID del evento a silenciar',
+                            'de': 'Der Event-Link oder die ID zum Stummschalten',
+                            'fr': 'Le lien ou l\'ID de l\'événement à rendre silencieux',
+                            'pt-BR': 'O link ou ID do evento para silenciar'
+                        })
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('unsilenceevent')
+                .setNameLocalizations({
+                    'es-ES': 'desactivarsilencioevento',
+                    'de': 'eventlautschalten',
+                    'fr': 'desactiver-silence-evenement',
+                    'pt-BR': 'desativarsilencioevento'
+                })
+                .setDescription('Re-enable reminder scheduling for a silenced event.')
+                .setDescriptionLocalizations({
+                    'es-ES': 'Vuelve a activar la programación de recordatorios para un evento silenciado.',
+                    'de': 'Aktiviere die Erinnerungsplanung für ein stummgeschaltetes Event wieder.',
+                    'fr': 'Réactiver la planification des rappels pour un événement rendu silencieux.',
+                    'pt-BR': 'Reativa o agendamento de lembretes para um evento silenciado.'
+                })
+                .addStringOption(option =>
+                    option.setName('event')
+                        .setNameLocalizations({
+                            'es-ES': 'evento',
+                            'de': 'event',
+                            'fr': 'evenement',
+                            'pt-BR': 'evento'
+                        })
+                        .setDescription('The event link or ID to unsilence')
+                        .setDescriptionLocalizations({
+                            'es-ES': 'El enlace o ID del evento a activar',
+                            'de': 'Der Event-Link oder die ID zum Aktivieren',
+                            'fr': 'Le lien ou l\'ID de l\'événement à réactiver',
+                            'pt-BR': 'O link ou ID do evento para reativar'
+                        })
+                        .setRequired(true))),
     new SlashCommandBuilder()
         .setName('myreminders')
         .setNameLocalizations({
