@@ -1288,6 +1288,15 @@ echo "{}" > config.json</pre>
                                     bot.</p>
                             </div>
                         </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                I see "Unknown Interaction (10062)" warnings/errors in the bot logs</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Discord requires slash command interactions to be acknowledged within <strong>3 seconds</strong>. If your host machine (e.g. Raspberry Pi) is under heavy CPU load or has high network latency, the acknowledgment may arrive too late, and Discord will discard the interaction. The bot gracefully catches these and prints a diagnostic warning. To prevent this, ensure your hosting server has stable system resources and a low-latency connection to Discord.</p>
+                            </div>
+                        </details>
                     </div>
                 </section>
             </div>
