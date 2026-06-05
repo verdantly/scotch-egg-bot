@@ -2005,6 +2005,10 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
     } catch (error) {
+        if (error.code === 10062) {
+            console.warn(`Discord Interaction Timeout (Unknown interaction 10062) for "${interaction.commandName || interaction.customId}". This is typically caused by temporary network latency or a Discord API hiccup.`);
+            return;
+        }
         console.error('Unhandled error in InteractionCreate:', error);
         try {
             const errorPayload = { content: 'An unexpected error occurred while processing your request.', flags: MessageFlags.Ephemeral };
