@@ -669,7 +669,15 @@ async function postAnnouncement(event, channel) {
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
-        eventDb[event.id] = { messageId: message.id, users: {}, guildId: event.guild.id };
+        const existing = eventDb[event.id] || {};
+        eventDb[event.id] = {
+            messageId: message.id,
+            users: existing.users || {},
+            guildId: event.guild.id,
+            remindersDisabled: !!existing.remindersDisabled,
+            reminderMessageIds: existing.reminderMessageIds || [],
+            skippedUsers: existing.skippedUsers || {}
+        };
         await saveDb();
 
         if (getThreadsEnabled(event.guild.id)) {
