@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.3] - 2026-06-04
 
+### Added
+
+- **Interactive Cancellation Choice for Recurring Series:** When users click "Cancel Reminders" under a DM alert for a recurring event series, the bot now displays a prompt asking if they want to opt out of the next occurrence only or unsubscribe from the entire series.
+
 ### Fixed
 
 - **Recurring Event Automatic Reminder Cleanup:** Concluded recurring event occurrences now automatically delete their associated public reminder messages (e.g. 1 hr/24 hr reminders) upon rollover to the next occurrence, instead of leaving them in the channel.
 - **Upgraded Settings Cleanup Command for Recurring Events:** Enhanced `/settings cleanup` to successfully delete old public reminder messages for active recurring events by comparing the timestamp in the reminder message against the event's current scheduled start time.
+- **Self-Healing Offline Reminder Purge:** Updated startup synchronization to automatically identify and clean up obsolete reminder messages that rolled over or postponed while the bot was offline. Utilizes bit-shifted Discord Snowflake timestamp deconstruction to avoid API query overhead.
 
 ## [1.5.2] - 2026-06-01
 
