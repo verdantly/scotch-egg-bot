@@ -1088,6 +1088,15 @@ client.on(Events.InteractionCreate, async interaction => {
                             const event = activeEventsCollection ? activeEventsCollection.get(eventId) : null;
                             if (!event || event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
                                 isConcluded = true;
+                            } else {
+                                // If the event exists but the reminder is for a past occurrence, it is concluded
+                                const timeMatch = msg.content ? msg.content.match(/<t:(\d+):[a-zA-Z]?>/) : null;
+                                if (timeMatch) {
+                                    const msgStartTimestampMs = parseInt(timeMatch[1], 10) * 1000;
+                                    if (msgStartTimestampMs < event.scheduledStartTimestamp) {
+                                        isConcluded = true;
+                                    }
+                                }
                             }
                         } else if (eventName) {
                             const timeMatch = msg.content ? msg.content.match(/<t:(\d+):[a-zA-Z]?>/) : null;
