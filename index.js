@@ -259,11 +259,44 @@ async function notifyUsersOfEventChange(event, messageText) {
  * @returns {Promise<void>}
  */
 async function syncEventReminders(guild) {
-    const events = await guild.scheduledEvents.fetch();
+    const events = await guild.scheduledEvents.fetch().catch(() => null);
+    if (!events) return;
     const now = Date.now();
-    events.forEach(event => {
+    const channelId = getAnnouncementChannelId(guild.id);
+    const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
+    
+    for (const event of events.values()) {
         scheduleRemindersForEvent(event, now);
-    });
+        
+        // Clean up obsolete reminders that might have rolled over or postponed while offline
+        const eventData = eventDb[event.id];
+        if (eventData && eventData.reminderMessageIds && eventData.reminderMessageIds.length > 0 && channel) {
+            const intervals = getReminderIntervals(guild.id);
+            const maxIntervalMs = intervals.length > 0 ? Math.max(...intervals.map(i => i.ms)) : 0;
+            const thresholdTime = event.scheduledStartTimestamp - maxIntervalMs - 60000; // 1 minute safety buffer
+            
+            const remainingMessageIds = [];
+            for (const rMsgId of eventData.reminderMessageIds) {
+                try {
+                    const msgTimestamp = Number((BigInt(rMsgId) >> 22n) + 1420070400000n);
+                    if (msgTimestamp < thresholdTime) {
+                        const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
+                        if (rMsg) {
+                            await rMsg.delete().catch(() => {});
+                        }
+                    } else {
+                        remainingMessageIds.push(rMsgId);
+                    }
+                } catch (err) {
+                    remainingMessageIds.push(rMsgId);
+                }
+            }
+            if (remainingMessageIds.length !== eventData.reminderMessageIds.length) {
+                eventDb[event.id].reminderMessageIds = remainingMessageIds;
+                await saveDb();
+            }
+        }
+    }
 }
 
 /**
@@ -300,7 +333,9 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                     try {                            
                         const eventData = eventDb[event.id];
                         const mode = getAnnouncementMode(event.guild.id);
-                        const userIds = eventData && eventData.users ? Object.keys(eventData.users) : [];
+                        const rawUserIds = eventData && eventData.users ? Object.keys(eventData.users) : [];
+                        const skippedUsers = eventData && eventData.skippedUsers ? eventData.skippedUsers : {};
+                        const userIds = rawUserIds.filter(id => skippedUsers[id] !== event.scheduledStartTimestamp);
                         
                         // 1. DYNAMIC EVALUATION: Evaluate time string dynamically AT DISPATCH TIME
                         // This guarantees the relative countdown (e.g. "in 1 hour") is always calculated correctly.
@@ -1683,29 +1718,42 @@ client.on(Events.InteractionCreate, async interaction => {
             
             try {
                 if (users[userId]) {
-                    delete eventDb[eventId].users[userId];
-                    await saveDb();
-                    updateLiveCounter(eventId); // Fire asynchronously
+                    // Check if event is recurring
+                    const guildId = eventDb[eventId].guildId;
+                    const guild = guildId ? client.guilds.cache.get(guildId) : null;
+                    const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
                     
-                    let cancelNotice = '*(Reminders cancelled)*';
-                    if (userLocale === 'es') cancelNotice = '*(Recordatorios cancelados)*';
-                    else if (userLocale === 'de') cancelNotice = '*(Erinnerungen abbestellt)*';
-                    else if (userLocale === 'fr') cancelNotice = '*(Rappels annulés)*';
-                    else if (userLocale === 'pt') cancelNotice = '*(Lembretes cancelados)*';
-
-                    // Replaces the button with text confirming the cancellation to avoid spam clicks
-                    let newContent = `${interaction.message.content}\n\n${cancelNotice}`;
-                    if (newContent.length > 2000) {
-                        newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
+                    if (event && event.recurrenceRule && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active)) {
+                        // It is a recurring event series! Show interactive prompt
+                        const row = new ActionRowBuilder().addComponents(
+                            new ButtonBuilder().setCustomId(`cancel_occ_${eventId}`).setLabel(t(userLocale, 'cancel_button_next')).setStyle(ButtonStyle.Danger),
+                            new ButtonBuilder().setCustomId(`cancel_series_${eventId}`).setLabel(t(userLocale, 'cancel_button_series')).setStyle(ButtonStyle.Secondary)
+                        );
+                        
+                        let promptText = `\n\n⚠️ ${t(userLocale, 'cancel_recurring_prompt')}`;
+                        let newContent = `${interaction.message.content}${promptText}`;
+                        if (newContent.length > 2000) {
+                            newContent = `${interaction.message.content.substring(0, 2000 - promptText.length)}...${promptText}`;
+                        }
+                        await interaction.update({ content: newContent, components: [row] });
+                    } else {
+                        // Standard event cancellation (or fallback if event fetch fails)
+                        delete eventDb[eventId].users[userId];
+                        if (eventDb[eventId].skippedUsers) {
+                            delete eventDb[eventId].skippedUsers[userId];
+                        }
+                        await saveDb();
+                        updateLiveCounter(eventId); // Fire asynchronously
+                        
+                        let cancelNotice = `*(${t(userLocale, 'cancel_remind_success')})*`;
+                        let newContent = `${interaction.message.content}\n\n${cancelNotice}`;
+                        if (newContent.length > 2000) {
+                            newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
+                        }
+                        await interaction.update({ content: newContent, components: [] });
                     }
-                    await interaction.update({ content: newContent, components: [] });
                 } else {
-                    let notOptedNotice = '*(You are not receiving reminders for this event)*';
-                    if (userLocale === 'es') notOptedNotice = '*(No estás recibiendo recordatorios para este evento)*';
-                    else if (userLocale === 'de') notOptedNotice = '*(Du erhältst keine Erinnerungen für dieses Event)*';
-                    else if (userLocale === 'fr') notOptedNotice = '*(Vous ne recevez pas de rappels pour cet événement)*';
-                    else if (userLocale === 'pt') notOptedNotice = '*(Você não está recebendo lembretes para este evento)*';
-
+                    let notOptedNotice = `*(${t(userLocale, 'cancel_remind_not_opted')})*`;
                     let newContent = `${interaction.message.content}\n\n${notOptedNotice}`;
                     if (newContent.length > 2000) {
                         newContent = `${interaction.message.content.substring(0, 1930)}...\n\n${notOptedNotice}`;
@@ -1716,17 +1764,77 @@ client.on(Events.InteractionCreate, async interaction => {
                 console.error('Failed to handle cancel_remind interaction:', error);
             }
         } else {
-            let inactiveNotice = '*(This event is no longer active)*';
-            if (userLocale === 'es') inactiveNotice = '*(Este evento ya no está activo)*';
-            else if (userLocale === 'de') inactiveNotice = '*(Dieses Event ist nicht mehr aktiv)*';
-            else if (userLocale === 'fr') inactiveNotice = '*(Cet événement n\'est plus actif)*';
-            else if (userLocale === 'pt') inactiveNotice = '*(Este evento não está mais ativo)*';
-
+            let inactiveNotice = `*(${t(userLocale, 'remind_inactive')})*`;
             let newContent = `${interaction.message.content}\n\n${inactiveNotice}`;
             if (newContent.length > 2000) {
                 newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${inactiveNotice}`;
             }
             await interaction.update({ content: newContent, components: [] });
+        }
+    }
+
+    if (interaction.customId.startsWith('cancel_occ_')) {
+        const eventId = interaction.customId.replace('cancel_occ_', '');
+        if (eventDb[eventId]) {
+            const userId = interaction.user.id;
+            try {
+                const guildId = eventDb[eventId].guildId;
+                const guild = guildId ? client.guilds.cache.get(guildId) : null;
+                const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
+                const startTime = event ? event.scheduledStartTimestamp : Date.now();
+                
+                if (!eventDb[eventId].skippedUsers) {
+                    eventDb[eventId].skippedUsers = {};
+                }
+                eventDb[eventId].skippedUsers[userId] = startTime;
+                await saveDb();
+                
+                const timeString = getFormattedTimeString(startTime, null, 'f');
+                const cancelNotice = t(userLocale, 'cancel_next_success', { time: timeString });
+                
+                // Remove prompt text and append success notice
+                let newContent = interaction.message.content;
+                const promptRegex = /\n\n⚠️.*$/;
+                newContent = newContent.replace(promptRegex, '');
+                newContent = `${newContent}\n\n${cancelNotice}`;
+                if (newContent.length > 2000) {
+                    newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
+                }
+                await interaction.update({ content: newContent, components: [] });
+            } catch (error) {
+                console.error('Failed to handle cancel_occ interaction:', error);
+            }
+        }
+    }
+
+    if (interaction.customId.startsWith('cancel_series_')) {
+        const eventId = interaction.customId.replace('cancel_series_', '');
+        if (eventDb[eventId]) {
+            const userId = interaction.user.id;
+            try {
+                if (eventDb[eventId].users && eventDb[eventId].users[userId]) {
+                    delete eventDb[eventId].users[userId];
+                }
+                if (eventDb[eventId].skippedUsers) {
+                    delete eventDb[eventId].skippedUsers[userId];
+                }
+                await saveDb();
+                updateLiveCounter(eventId); // Fire asynchronously
+                
+                const cancelNotice = t(userLocale, 'cancel_series_success');
+                
+                // Remove prompt text and append success notice
+                let newContent = interaction.message.content;
+                const promptRegex = /\n\n⚠️.*$/;
+                newContent = newContent.replace(promptRegex, '');
+                newContent = `${newContent}\n\n${cancelNotice}`;
+                if (newContent.length > 2000) {
+                    newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
+                }
+                await interaction.update({ content: newContent, components: [] });
+            } catch (error) {
+                console.error('Failed to handle cancel_series interaction:', error);
+            }
         }
     }
     } catch (error) {
