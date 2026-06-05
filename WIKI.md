@@ -1,8 +1,8 @@
-# 🥚 Scotch Egg Bot: Installation & Usage Guide
+# 🥚 Scotch Egg: Installation & Usage Guide
 
-Welcome to the official setup guide for the **Scotch Egg Bot**! This lightweight, highly-resilient, and localized Discord bot automatically announces server events and sends opt-in reminders (via private DM, public channel @ mentions, or a hybrid configuration) to your community exactly when you need them.
+Welcome to the official setup guide for **Scotch Egg**! This lightweight, highly-resilient, and localized Discord bot automatically announces server events and sends opt-in reminders (via private DM, public channel @ mentions, or a hybrid configuration) to your community exactly when you need them.
 
-Scotch Egg Bot features robust **Multi-Language Support** (fully localized in English, Spanish, German, French, and Portuguese) and **Automatic Database Self-Healing** (to prevent database corruption on low-end hardware like Raspberry Pis during sudden power losses).
+Scotch Egg features robust **Multi-Language Support** (fully localized in English, Spanish, German, French, and Portuguese) and **Automatic Database Self-Healing** (to prevent database corruption on low-end hardware like Raspberry Pis during sudden power losses).
 
 This guide will walk you through the setup process step-by-step.
 
@@ -94,7 +94,7 @@ If you are running the bot purely through Docker and don't have Node.js installe
 1. Ensure your container is running by deploying with `docker compose up -d`.
 2. Run the following command in your host terminal:
    ```bash
-   docker exec -it scotch-egg-bot node deploy-commands.js
+   docker exec -it scotch-egg node deploy-commands.js
    ```
 
 If successful, you should see a message saying: *Successfully reloaded application (/) commands.*
@@ -186,19 +186,19 @@ If you ever edit the code or download an updated version of the bot, applying th
 1. Run the following command to rebuild the container with the new code:
    `docker compose up -d --build`
 2. If your update includes changes to slash commands, register them by running:
-   `docker exec -it scotch-egg-bot node deploy-commands.js`
+   `docker exec -it scotch-egg node deploy-commands.js`
 
 ---
 
 ## ❓ Frequently Asked Questions (FAQ)
 
 **Q: How does the Multi-Language support work?**  
-A: Scotch Egg Bot automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly!
+A: Scotch Egg automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly!
 
 **Q: How does Database Self-Healing protect my data?**  
-A: If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg Bot automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.
+A: If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.
 
 ---
 
 ### 🎉 You're All Set!
-Your Scotch Egg Bot is now actively monitoring your server, ready to keep your community engaged and on time. If you ever restart the bot, don't worry—your `events.json` and `config.json` files safely preserve all opted-in users and settings!
+Your Scotch Egg is now actively monitoring your server, ready to keep your community engaged and on time. If you ever restart the bot, don't worry—your `events.json` and `config.json` files safely preserve all opted-in users and settings!

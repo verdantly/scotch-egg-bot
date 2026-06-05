@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dark Mode Theme Flash Prevention -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <title>Privacy Policy | Scotch Egg</title>
+    <meta name="description" content="Read the privacy policy for Scotch Egg. Learn what data is collected and how it is protected.">
+    
+    <!-- Custom CSS & Fonts -->
+    <link rel="stylesheet" href="css/custom.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            DEFAULT: '#fff8f0', // Off-white/cream background
+                            dark: '#f0e9e1'
+                        },
+                        eggyolk: {
+                            DEFAULT: '#fcba03', // Golden orange yolk
+                            hover: '#e3a702',
+                            light: '#ffe9ad'
+                        },
+                        breadcrumb: {
+                            DEFAULT: '#c47c43', // Crispy brown
+                            dark: '#a36534'
+                        },
+                        charcoal: '#333333', // Deep dark for text
+                    },
+                    fontFamily: {
+                        sans: ['"Merriweather Sans"', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                        discord: ['"gg sans"', '"Whitney"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
+                <span>🥚</span>
+                <span>Scotch Egg</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Docs</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Dark Mode">
+                    <span class="dark:hidden text-xl">🌙</span>
+                    <span class="hidden dark:inline text-xl">☀️</span>
+                </button>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
+                    GitHub Repo
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Mobile Menu">
+                    <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 px-6 py-4 absolute w-full shadow-lg transition-colors duration-300">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#features" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Features</a>
+                <a href="download.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Download</a>
+                <a href="documentation.html" class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium text-lg mobile-link">Docs</a>
+                <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk font-bold text-lg mobile-link">GitHub Repo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-8 md:p-12 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors duration-300">
+            <h1 class="text-4xl font-serif font-bold text-charcoal dark:text-white mb-2">Privacy Policy</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Last Updated: June 2026</p>
+
+            <div class="space-y-8 text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Introduction</h2>
+                    <p>
+                        Scotch Egg ("the Bot") is committed to respecting and protecting the privacy of its users. This Privacy Policy describes how the Bot collects, stores, processes, and manages data when you use the Bot or invite it to your Discord server.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Data We Collect</h2>
+                    <p class="mb-4">
+                        To perform its core functions (scheduling and sending event reminders), the Bot collects and processes limited operational parameters, including:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Guild (Server) IDs and Channel IDs:</strong> To identify which Discord server has configured the Bot and where event announcements should be posted.</li>
+                        <li><strong>Discord User IDs:</strong> When server members click the <strong>⏰ Remind Me!</strong> button to opt in to a scheduled reminder, their unique Discord User ID is saved so the Bot can notify them at the appropriate time.</li>
+                        <li><strong>Discord Scheduled Event Data:</strong> Event names, links, start times, and duration data to create announcements and calculate scheduled notifications.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. How We Use Data</h2>
+                    <p>
+                        Data is used **exclusively** to facilitate the core reminder features of the Bot:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-2 mt-4">
+                        <li>Posting event announcements in your server's configured channel.</li>
+                        <li>Sending direct messages (DMs) or posting public @ pings to users who opted in.</li>
+                        <li>Syncing and updating schedules in real-time when event times change.</li>
+                    </ul>
+                    <p class="mt-4">
+                        The Bot **never** reads, logs, or processes general server message history, chat contents, user profile data, or membership lists.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Data Storage and Security</h2>
+                    <p class="mb-4">
+                        We prioritize data security by keeping storage minimal, isolated, and decentralized:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Self-Hosted Isolation:</strong> All data is stored directly on the machine running/hosting the Bot (e.g., your local server or Docker container) within two local files: <code>config.json</code> and <code>events.json</code>.</li>
+                        <li><strong>No External Databases:</strong> The Bot does not transmit, query, or sync data to any external third-party database servers, tracking services, or remote APIs (except standard Discord API endpoints).</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">5. Data Retention and Deletion</h2>
+                    <p class="mb-4">
+                        Data is held only as long as necessary for operational reminders:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Automatic Cleanup:</strong> When a Discord event ends, the Bot automatically performs garbage collection to remove that event and all associated opted-in User IDs from the local files.</li>
+                        <li><strong>Manual Opt-Out:</strong> Users can click "Cancel Reminders" or click the "Remind Me!" toggle button again to immediately delete their User ID from the database file.</li>
+                        <li><strong>Full Server Deletion:</strong> Uninstalling (kicking) the Bot from a server stops all data processing. Administrators can also run <code>/settings cleanup</code> to wipe legacy channel data.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">6. Sharing Data</h2>
+                    <p>
+                        We do not share, sell, distribute, or lease any collected information to third parties, advertising agencies, or external entities. Data remains strictly private to your server hosting environment and the Discord client API.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">7. Contact & Support</h2>
+                    <p>
+                        Because Scotch Egg is an open-source, community-driven project, if you have questions about this policy or the Bot's data handling, you can open an issue or start a discussion on our official repository:
+                    </p>
+                    <p class="mt-4">
+                        <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold">Report Issues on GitHub &rarr;</a>
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cream dark:bg-gray-900 py-8 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
+                <span>🥚</span>
+                <span>Scotch Egg</span>
+            </div>
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                    Open Source under the GPLv3 License. 
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a>
+                </p>
+                <div class="flex space-x-4 text-xs text-gray-400 dark:text-gray-500 font-medium">
+                    <a href="privacy.html" class="text-breadcrumb dark:text-eggyolk font-bold">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="terms.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Terms of Service</a>
+                    <span>•</span>
+                    <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Report Bugs</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+</html>

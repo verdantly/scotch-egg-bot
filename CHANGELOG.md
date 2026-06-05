@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-06-04
+
+### Fixed
+
+- **Recurring Event Automatic Reminder Cleanup:** Concluded recurring event occurrences now automatically delete their associated public reminder messages (e.g. 1 hr/24 hr reminders) upon rollover to the next occurrence, instead of leaving them in the channel.
+- **Upgraded Settings Cleanup Command for Recurring Events:** Enhanced `/settings cleanup` to successfully delete old public reminder messages for active recurring events by comparing the timestamp in the reminder message against the event's current scheduled start time.
+
 ## [1.5.2] - 2026-06-01
 
 ### Fixed
@@ -129,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-05-13
 
-This marks the first stable, production-ready release of the Scotch Egg Bot!
+This marks the first stable, production-ready release of Scotch Egg!
 
 ### Added
 

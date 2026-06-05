@@ -1,4 +1,4 @@
-# Scotch Egg Bot - Discord Event Reminder Bot
+# Scotch Egg - Discord Event Reminder Bot
 
 A completely free Discord bot that hooks seamlessly into native Discord events. No clunky special event commands. End `@everyone` spam and send automated event reminders only to the users who actually want them. Optimized for Raspberry Pi.
 
@@ -84,13 +84,13 @@ This bot is designed to be easily containerized and run quietly in the backgroun
 
 1. **Build the image:**
    ```bash
-   docker build -t scotch-egg-bot .
+   docker build -t scotch-egg .
    ```
 
 2. **Run the container:**
    Expose port 8080 (or your custom dashboard port) to access the web panel:
    ```bash
-   docker run -d --name scotch-egg-bot -p 8080:8080 --env-file .env scotch-egg-bot
+   docker run -d --name scotch-egg -p 8080:8080 --env-file .env scotch-egg
    ```
 
 ## Docker Compose Deployment (Recommended)
@@ -172,7 +172,7 @@ To minimize disk wear on single-board computers (like the Raspberry Pi):
 ```mermaid
 graph TD
     Admin[Discord Admin] -->|Creates Event| DiscordAPI((Discord API))
-    DiscordAPI -->|EventCreate| Bot[Scotch Egg Bot]
+    DiscordAPI -->|EventCreate| Bot[Scotch Egg]
     Bot -->|Reads Channel config| Config[(config.json)]
     Bot -->|Posts Announcement| Channel[Discord Channel]
     
@@ -212,7 +212,7 @@ A: This is intentional. When an event URL is sent in a DM, Discord automatically
 A: Yes! Users can either click the "Remind Me!" button on the announcement again, click the "Cancel Reminders" button at the bottom of a DM reminder, or use the `/myreminders` command to see a list of their events and opt out from there.
 
 **Q: How does the Multi-Language support work?**
-A: Scotch Egg Bot automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly!
+A: Scotch Egg automatically detects the preferred language of your Discord server to translate public event announcements. It also dynamically detects each user's specific Discord client language to instantly translate interactive slash commands, options, select menus, confirmation replies, and DM reminder alerts on the fly!
 
 **Q: How does Database Self-Healing protect my data?**
-A: If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg Bot automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.
+A: If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk write, the active database file can get truncated or corrupted. On startup, Scotch Egg automatically attempts to load the database, falling back to a `.bak` copy if the primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan the damaged file, extract all intact records, and rebuild the database structure automatically.

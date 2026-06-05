@@ -128,7 +128,8 @@ function loadEventsDb() {
                 messageId: value.messageId, 
                 users: usersObj,
                 guildId: value.guildId,
-                reminderMessageIds: value.reminderMessageIds || []
+                reminderMessageIds: value.reminderMessageIds || [],
+                skippedUsers: value.skippedUsers || {}
             };
         }
     }

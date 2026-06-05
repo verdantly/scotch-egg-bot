@@ -4,8 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation | Scotch Egg Bot</title>
-    <meta name="description" content="Documentation and setup guide for the Scotch Egg Bot.">
+
+    <!-- Dark Mode Theme Flash Prevention -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <title>Documentation | Scotch Egg</title>
+    <meta name="description" content="Documentation and setup guide for Scotch Egg.">
 
     <!-- Custom CSS & Fonts -->
     <link rel="stylesheet" href="css/custom.css">
@@ -38,6 +48,7 @@
                     fontFamily: {
                         sans: ['"Merriweather Sans"', 'sans-serif'],
                         serif: ['Merriweather', 'serif'],
+                        discord: ['"gg sans"', '"Whitney"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
                     }
                 }
             }
@@ -55,7 +66,7 @@
             <a href="index.html"
                 class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
                 <span>🥚</span>
-                <span>Scotch Egg Bot</span>
+                <span>Scotch Egg</span>
             </a>
             <div class="hidden md:flex space-x-6">
                 <a href="index.html#features"
@@ -110,1011 +121,1230 @@
         <aside
             class="w-full md:w-64 bg-cream-dark dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent px-6 py-8 border-b md:border-b-0 md:border-r border-cream-dark dark:border-gray-800 md:sticky md:top-[89px] md:h-[calc(100vh-89px)] overflow-y-auto transition-colors duration-300">
             <h3 class="font-serif font-bold text-breadcrumb-dark dark:text-eggyolk text-xl mb-4">Documentation</h3>
-            <ul class="space-y-3 text-gray-700 dark:text-gray-300">
-                <li><a href="#prerequisites"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Prerequisites</a>
-                </li>
-                <li><a href="#features"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Core
-                        Features</a></li>
-                <li><a href="#setup"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Deployment
-                        & Setup</a></li>
-                <li><a href="#usage"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Using
-                        the Bot</a></li>
-                <li><a href="#dashboard"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Web
-                        Dashboard</a></li>
-                <li><a href="#updating"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Updating
-                        the Bot</a></li>
-                <li><a href="#example"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Example
-                        Messages</a></li>
-                <li><a href="#architecture"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">How
-                        It Works</a></li>
-                <li><a href="#commands"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">All
-                        Commands</a></li>
-                <li><a href="#faq"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">FAQ</a>
-                </li>
-                <li><a href="#troubleshooting"
-                        class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block transition-colors">Troubleshooting</a>
-                </li>
-            </ul>
-        </aside>
+            <div class="space-y-6">
+                <!-- Group 1: How Tos -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">How Tos</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#prerequisites"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Prerequisites</a>
+                        </li>
+                        <li><a href="#setup"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Deployment
+                                & Setup</a></li>
+                        <li><a href="#usage"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Using
+                                the Bot</a></li>
+                        <li><a href="#dashboard"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Web
+                                Dashboard</a></li>
+                        <li><a href="#updating"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Updating
+                                the Bot</a></li>
+                    </ul>
+                </div>
 
-        <!-- Documentation Content -->
+                <!-- Group 2: Commands -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Commands</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#commands"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">All
+                                Commands</a></li>
+                    </ul>
+                </div>
+
+                <!-- Group 3: Miscellaneous -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Miscellaneous</h4>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><a href="#features"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Core
+                                Features</a></li>
+                        <li><a href="#example"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Example
+                                Messages</a></li>
+                        <li><a href="#architecture"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">How
+                                It Works</a></li>
+                        <li><a href="#faq"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">FAQ</a>
+                        </li>
+                        <li><a href="#troubleshooting"
+                                class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Troubleshooting</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
         <main
             class="flex-1 px-6 md:px-12 py-10 space-y-16 bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
 
-            <!-- Prerequisites -->
-            <section id="prerequisites" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Prerequisites</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">Before deploying the bot, make sure you have
-                    the following ready:</p>
-                <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
-                    <li>A <strong>Bot Token</strong> and <strong>Client ID</strong> from the <a
-                            href="https://discord.com/developers/applications" class="text-breadcrumb hover:underline"
-                            target="_blank" rel="noopener noreferrer">Discord Developer Portal</a>.</li>
-                    <li><strong>No Privileged Intents</strong> are required! The bot relies entirely on modern slash
-                        commands.</li>
-                    <li>If running locally: <strong>Node.js (v16.14.0 or higher)</strong></li>
-                    <li>If running via containers: <strong>Docker</strong> and <strong>Docker Compose</strong>
-                        (Recommended)</li>
-                </ul>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Core Features -->
-            <section id="features" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Core Features</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">
-                    Scotch Egg Bot is designed to be highly reliable, private, and fully automated. Below is a detailed
-                    overview of the bot's features, categorized by user-facing Discord capabilities and the robust technical architecture under the hood.
-                </p>
-
-                <!-- Discord Features Section -->
-                <div class="mb-12">
-                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
-                        <span class="text-2xl">💬</span>
-                        <span>Discord & User-Facing Features</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Feature: Native Discord Events -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">✨</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native Discord Events</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using Discord's built-in scheduled event UI, and the bot handles the rest instantly. No need to learn any complicated commands to create events.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Strictly Opt-In Reminders -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🔔</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Strictly Opt-In Reminders</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members click a simple "Remind Me!" button to explicitly choose which events they want to be notified about via Private DMs, Public Mentions, or Hybrid Mode.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Flexible Delivery Modes -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">⚙️</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible Delivery Modes</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Choose between three configuration options: <strong>Public</strong> channel reminders with pings, <strong>Private</strong> DM-only alerts, or <strong>Hybrid</strong> mode (un-pinged public reminders + private DMs).</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Custom Reminder Intervals -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">⏱️</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom Reminder Intervals</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when reminders are sent (e.g., 24h, 1h, 15m before start) to suit the community using interactive slash command settings.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Google Calendar & Link Buttons -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">📅</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Add to Calendar & View Buttons</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Features interactive link buttons. The "Add to Calendar" button populates Google Calendar with event details, while "View Event" links directly to native Discord events.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Automated Discussion Threads -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">💬</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automated Discussion Threads</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements to encourage community interaction and keep chatter organized.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Concluded Event Archiving -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🧹</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">High-Contrast Archiving & Cleanups</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Grays out concluded announcements, strikes through obsolete timestamps, and deletes all public pings. Admins can run <code>/settings cleanup</code> to sweep legacy messages.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Native Multi-Language Localization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🌍</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Multi-Language Support (Localization)</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both server announcements and client slash command levels across 5 languages: English, Spanish, German, French, and Portuguese.</p>
-                            </div>
-                        </div>
-                    </div>
+            <!-- ==================== HOW TOS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">
+                        How Tos</h1>
                 </div>
 
-                <!-- Technical & Runtime Features Section -->
-                <div>
-                    <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
-                        <span class="text-2xl">⚡</span>
-                        <span>Runtime & Technical Features</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Feature: SD-Card Friendly Storage -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">💾</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">SD-Card Friendly Architecture</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Explicitly optimized for single-board computers like the Raspberry Pi. Implements a lightweight JSON storage schema with batched minified disk writes to prevent SD card wear.</p>
-                            </div>
-                        </div>
+                <section id="prerequisites" class="scroll-mt-28">
+                    <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Prerequisites
+                    </h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">Before deploying the bot, make sure you
+                        have
+                        the following ready:</p>
+                    <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
+                        <li>A <strong>Bot Token</strong> and <strong>Client ID</strong> from the <a
+                                href="https://discord.com/developers/applications"
+                                class="text-breadcrumb hover:underline" target="_blank"
+                                rel="noopener noreferrer">Discord Developer Portal</a>.</li>
+                        <li><strong>No Privileged Intents</strong> are required! The bot relies entirely on modern slash
+                            commands.</li>
+                        <li>If running locally: <strong>Node.js (v16.14.0 or higher)</strong></li>
+                        <li>If running via containers: <strong>Docker</strong> and <strong>Docker Compose</strong>
+                            (Recommended)</li>
+                    </ul>
+                </section>
 
-                        <!-- Feature: Database Self-Healing -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🩹</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Automatic Database Self-Healing</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Resilient dual-layer mechanism maintaining atomic <code>.bak</code> copies of configurations. If damaged, a recursive Regex-based JSON salvage parser rebuilds database files automatically.</p>
-                            </div>
-                        </div>
+                <section id="setup" class="scroll-mt-28">
+                    <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Deployment &
+                        Setup Guide</h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch
+                        Egg Bot. The setup below details the recommended containerized installation using Docker
+                        Compose.</p>
 
-                        <!-- Feature: Offline Startup Synchronization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🔄</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Offline Startup Sync & Garbage Collection</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Syncs live events with Discord upon boot. Schedules reminders for any newly created events and safely archives announcements/deletes reminders of events that concluded while the bot was offline.</p>
-                            </div>
-                        </div>
-
-                        <!-- Feature: Real-time Event Hook Synchronization -->
-                        <div class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
-                            <span class="text-3xl shrink-0">🚀</span>
-                            <div>
-                                <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Real-Time Event Hook Synchronization</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Dynamically reschedules, deletes, or recreates scheduled reminder jobs in response to real-time Discord scheduled event creations, start time updates, or cancellations.</p>
-                            </div>
+                    <!-- Recommendation Callout -->
+                    <div
+                        class="bg-eggyolk/10 dark:bg-[#fcba03]/10 border-l-4 border-eggyolk p-6 rounded-r-xl mb-8 flex items-start space-x-4">
+                        <span class="text-3xl shrink-0">🐋</span>
+                        <div>
+                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended
+                                Deployment: Docker Compose</h4>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg
+                                Bot. It pre-configures Node.js, database folders, and permission environments inside an
+                                isolated container, making installation foolproof and keeping background process
+                                monitoring automated.
+                            </p>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <hr class="border-cream-dark dark:border-gray-800">
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Download the
+                                Bot
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">First, <a href="download.html"
+                                    class="text-breadcrumb hover:text-breadcrumb-dark dark:text-eggyolk dark:hover:text-eggyolk-hover font-bold transition-colors">download
+                                    the bot's files</a> and extract the ZIP file into a folder on your computer.</p>
+                        </div>
 
-            <!-- Setup / Quick Start -->
-            <section id="setup" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Installation & Setup Guide</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch Egg Bot. The setup below details the recommended containerized installation using Docker Compose.</p>
-
-                <!-- Recommendation Callout -->
-                <div class="bg-eggyolk/10 dark:bg-[#fcba03]/10 border-l-4 border-eggyolk p-6 rounded-r-xl mb-8 flex items-start space-x-4">
-                    <span class="text-3xl shrink-0">🐋</span>
-                    <div>
-                        <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended Deployment: Docker Compose</h4>
-                        <p class="text-gray-700 dark:text-gray-300">
-                            Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg Bot. It pre-configures Node.js, database folders, and permission environments inside an isolated container, making installation foolproof and keeping background process monitoring automated.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. Download the Bot
-                        </h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">First, <a href="download.html"
-                                class="text-breadcrumb hover:text-breadcrumb-dark dark:text-eggyolk dark:hover:text-eggyolk-hover font-bold transition-colors">download
-                                the bot's files</a> and extract the ZIP file into a folder on your computer.</p>
-                    </div>
-
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Discord
-                            Credentials & Environment Setup</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Before configuring the bot, you need to grab a
-                            few credentials from Discord:</p>
-                        <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400 mb-6">
-                            <li>Go to the <a href="https://discord.com/developers/applications"
-                                    class="text-breadcrumb dark:text-eggyolk hover:underline font-bold" target="_blank"
-                                    rel="noopener noreferrer">Discord Developer Portal</a> and click <strong>New
-                                    Application</strong>.</li>
-                            <li>On the "General Information" page, copy your <strong>Application ID</strong> (this will
-                                be your <code
-                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">CLIENT_ID</code>).
-                            </li>
-                            <li>Navigate to the "Bot" tab on the left, click <strong>Reset Token</strong>, and copy the
-                                new password token (this will be your <code
-                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DISCORD_TOKEN</code>).
-                            </li>
-                            <li>Go to "OAuth2" &gt; "OAuth2 URL Generator". Check the <code
-                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">bot</code> and
-                                <code
-                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">applications.commands</code>
-                                scopes. Copy the generated URL at the bottom and open it in your browser to invite the
-                                bot to your server.
-                            </li>
-                        </ol>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Now, create a new text file named <code
-                                class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">.env</code> inside your bot's
-                            folder and paste those credentials in like so:</p>
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="env-code">Copy</button>
-                            <pre id="env-code" class="text-gray-300 font-mono text-sm overflow-x-auto">DISCORD_TOKEN=your_actual_token_here
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Discord
+                                Credentials & Environment Setup</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Before configuring the bot, you need to
+                                grab a
+                                few credentials from Discord:</p>
+                            <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400 mb-6">
+                                <li>Go to the <a href="https://discord.com/developers/applications"
+                                        class="text-breadcrumb dark:text-eggyolk hover:underline font-bold"
+                                        target="_blank" rel="noopener noreferrer">Discord Developer Portal</a> and click
+                                    <strong>New
+                                        Application</strong>.</li>
+                                <li>On the "General Information" page, copy your <strong>Application ID</strong> (this
+                                    will
+                                    be your <code
+                                        class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">CLIENT_ID</code>).
+                                </li>
+                                <li>Navigate to the "Bot" tab on the left, click <strong>Reset Token</strong>, and copy
+                                    the
+                                    new password token (this will be your <code
+                                        class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DISCORD_TOKEN</code>).
+                                </li>
+                                <li>Go to "OAuth2" &gt; "OAuth2 URL Generator". Check the <code
+                                        class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">bot</code>
+                                    and
+                                    <code
+                                        class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">applications.commands</code>
+                                    scopes. Copy the generated URL at the bottom and open it in your browser to invite
+                                    the
+                                    bot to your server.
+                                </li>
+                            </ol>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Now, create a new text file named <code
+                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">.env</code> inside your
+                                bot's
+                                folder and paste those credentials in like so:</p>
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="env-code">Copy</button>
+                                <pre id="env-code" class="text-gray-300 font-mono text-sm overflow-x-auto">DISCORD_TOKEN=your_actual_token_here
 CLIENT_ID=your_bot_client_id_here
 ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
 ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here</pre>
+                            </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Initialize
-                            Database Files</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Before starting Docker, create two new text
-                            files named <code
-                                class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">events.json</code> and <code
-                                class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">config.json</code> in your
-                            bot's folder. Add simply <code
-                                class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">{}</code> inside each file
-                            and save them. Or use the terminal:</p>
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="init-code">Copy</button>
-                            <pre id="init-code" class="text-gray-300 font-mono text-sm overflow-x-auto">echo "{}" > events.json
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Initialize
+                                Database Files</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Before starting Docker, create two new text
+                                files named <code
+                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">events.json</code> and
+                                <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">config.json</code> in
+                                your
+                                bot's folder. Add simply <code
+                                    class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">{}</code> inside each
+                                file
+                                and save them. Or use the terminal:</p>
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="init-code">Copy</button>
+                                <pre id="init-code" class="text-gray-300 font-mono text-sm overflow-x-auto">echo "{}" > events.json
 echo "{}" > config.json</pre>
+                            </div>
+                            <!-- PowerShell Warning Callout -->
+                            <div
+                                class="mt-4 bg-eggyolk/10 border-l-4 border-eggyolk p-4 rounded-r-lg text-sm text-gray-700 dark:text-gray-300">
+                                <strong>⚠️ Windows / PowerShell Note:</strong> Using redirection (<code>&gt;</code>) in
+                                some versions of PowerShell can create files with UTF-16 LE encoding, which will cause
+                                JSON parsing crashes on bot startup. If the bot throws a syntax error, simply recreate
+                                the files manually in a text editor (like Notepad or VS Code) containing just
+                                <code>{}</code> and save them with <strong>UTF-8</strong> encoding.
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Start the
+                                Bot
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Make sure <strong>Docker</strong> is open
+                                and
+                                running on your computer. Then, open your terminal (Command Prompt, PowerShell, or
+                                Terminal), navigate to the bot's folder, and run:</p>
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="run-code">Copy</button>
+                                <pre id="run-code"
+                                    class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 mt-4">You can now see the bot running smoothly
+                                inside
+                                Docker!</p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">5. Register
+                                Slash
+                                Commands (Once)</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">After the bot is running, you must register
+                                its
+                                commands with Discord. You only need to do this once. Run the following command in your
+                                terminal:</p>
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="register-code">Copy</button>
+                                <pre id="register-code"
+                                    class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg node deploy-commands.js</pre>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Node.js Alternative -->
+                        <div class="mt-12 pt-8 border-t border-cream-dark dark:border-gray-800">
+                            <details
+                                class="no-chevron bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-lg border border-cream-dark/50 dark:border-gray-700/50 group">
+                                <summary
+                                    class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none flex items-center justify-between">
+                                    <span>Alternative: Local Node.js Installation (No Docker)</span>
+                                    <span
+                                        class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline group-open:hidden">Show
+                                        instructions</span>
+                                    <span
+                                        class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline hidden group-open:inline">Hide
+                                        instructions</span>
+                                </summary>
+                                <div class="mt-6 text-gray-700 dark:text-gray-300 text-lg space-y-6">
+                                    <p>If you prefer not to use Docker, you can run the bot directly on your host system
+                                        using Node.js. Make sure you have installed <strong>Node.js (v16.14.0 or
+                                            higher)</strong>.</p>
+
+                                    <div class="space-y-4">
+                                        <h4 class="font-bold text-charcoal dark:text-white">1. Install Dependencies</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Navigate to the bot's root
+                                            directory in your terminal and install the required npm packages:</p>
+                                        <div
+                                            class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                            <button
+                                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                                data-target="node-install-code">Copy</button>
+                                            <pre id="node-install-code"
+                                                class="text-gray-300 font-mono text-sm overflow-x-auto">npm install</pre>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <h4 class="font-bold text-charcoal dark:text-white">2. Initialize Database Files
+                                        </h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Create empty files named
+                                            <code>events.json</code> and <code>config.json</code> containing just
+                                            <code>{}</code> in the root directory (similar to step 3 in the main guide).
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <h4 class="font-bold text-charcoal dark:text-white">3. Register Slash Commands
+                                        </h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Register the bot's commands
+                                            with Discord by running:</p>
+                                        <div
+                                            class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                            <button
+                                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                                data-target="node-register-code">Copy</button>
+                                            <pre id="node-register-code"
+                                                class="text-gray-300 font-mono text-sm overflow-x-auto">node deploy-commands.js</pre>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <h4 class="font-bold text-charcoal dark:text-white">4. Start the Bot</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Start the bot process using
+                                            node:</p>
+                                        <div
+                                            class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
+                                            <button
+                                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                                data-target="node-start-code">Copy</button>
+                                            <pre id="node-start-code"
+                                                class="text-gray-300 font-mono text-sm overflow-x-auto">node index.js</pre>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 italic">Note: In a production
+                                            environment, it is highly recommended to use a process manager like <a
+                                                href="https://pm2.keymetrics.io/" target="_blank"
+                                                rel="noopener noreferrer" class="underline text-breadcrumb">PM2</a> to
+                                            ensure the bot automatically restarts if it crashes or the system reboots.
+                                        </p>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="usage" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Using the Bot</h2>
+                    <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
+                        <div>
+                            <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">1. Set the Announcement
+                                Channel
+                            </h3>
+                            <p>Administrators must tell the bot which text channel to use for event announcements. Type
+                                the
+                                following command in any channel:</p>
+                            <blockquote
+                                class="bg-cream-dark dark:bg-gray-800 border-l-4 border-breadcrumb pl-4 py-2 mt-2">
+                                <code class="text-breadcrumb-dark dark:text-breadcrumb">/settings channel</code>
+                            </blockquote>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">2. Creating Events</h3>
+                            <p>Simply use Discord's native <strong>Create Event</strong> button at the top of your
+                                channel
+                                list. The moment you create an event, the bot will instantly post a rich-embed
+                                announcement
+                                in your configured channel.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">3. Opting In (The "Remind
+                                Me!"
+                                Button)</h3>
+                            <p>Users who want to be notified can click the <strong>⏰ Remind Me!</strong> button on the
+                                announcement. Depending on the server's configuration mode, the bot will either DM them
+                                or
+                                publicly @ ping them in the channel at the configured intervals.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Web Dashboard -->
+                <section id="dashboard" class="scroll-mt-28">
+                    <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Web Dashboard</h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+                        Scotch Egg features an optional, stunning, dark-mode glassmorphic <strong>Web Dashboard</strong>. This allows server administrators to manage reminder modes, change announcement channels, customize reminder intervals, and inspect live server statistics from any web browser.
+                    </p>
+
+                    <!-- Configuration Callout -->
+                    <div class="bg-[#5865F2]/10 border-l-4 border-[#5865F2] p-6 rounded-r-xl mb-8 flex items-start space-x-4">
+                        <span class="text-3xl shrink-0">🔑</span>
+                        <div>
+                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">OAuth2 Discord Authentication</h4>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                The web dashboard is fully secured using Discord's official OAuth2 protocol (Implicit Grant flow). It validates that the logging-in user possesses <strong>Administrator</strong> or <strong>Manage Guild</strong> permissions on the target server before permitting edits.
+                            </p>
                         </div>
                     </div>
 
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">4. Start the Bot
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. OAuth2 Redirect Configuration</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">To enable web dashboard login, you must add your dashboard's URL to the Discord Developer Portal:</p>
+                            <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400">
+                                <li>Open the <a href="https://discord.com/developers/applications" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold" target="_blank" rel="noopener noreferrer">Discord Developer Portal</a> and select your application.</li>
+                                <li>Navigate to the <strong>OAuth2</strong> tab on the left.</li>
+                                <li>Under <strong>Redirects</strong>, click <strong>Add Redirect</strong>.</li>
+                                <li>Enter the dashboard redirection URL:
+                                    <ul class="list-disc pl-6 mt-1 space-y-1">
+                                        <li>For local hostings: <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/dashboard.html</code></li>
+                                        <li>For self-hostings (e.g. Raspberry Pi): <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://&lt;your-pi-ip&gt;:8080/dashboard.html</code></li>
+                                    </ul>
+                                </li>
+                                <li>Click <strong>Save Changes</strong> at the bottom of the page.</li>
+                            </ol>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Port Configuration</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                                By default, the Express dashboard runs on port <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">8080</code>. You can customize this port by adding the <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DASHBOARD_PORT</code> variable to your <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">.env</code> file:
+                            </p>
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
+                                <pre class="text-gray-300 font-mono text-sm overflow-x-auto">DASHBOARD_PORT=8080</pre>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Accessing the Panel</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                                Open your web browser and navigate to <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/</code> (or the IP of your hosting machine).
+                            </p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-600 dark:text-gray-400">
+                                <li>Click <strong>Login with Discord</strong> to authenticate.</li>
+                                <li>Select your server from the sidebar list. Only servers where you are an administrator and where the bot has been invited will show up.</li>
+                                <li>Modify announcement channels, select delivery modes, toggle add-to-calendar, auto-create threads, and auto-delete settings.</li>
+                                <li>Configure reminder intervals dynamically by adding or removing interval pills (e.g. <code>24h before</code>, <code>1h before</code>, <code>15m before</code>).</li>
+                                <li>Click <strong>Save Configurations</strong> to sync setting updates. The bot will automatically reload configurations and reschedule active jobs immediately.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="border-cream-dark dark:border-gray-800">
+
+                <section id="updating" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Updating the Bot</h2>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">If you ever edit the code or download an
+                        updated version of the bot, applying the changes is simple and won't delete your data.</p>
+                    <ol class="list-decimal pl-6 space-y-4 text-gray-700 dark:text-gray-300 text-lg">
+                        <li>Run the following command to rebuild the container with the new code:
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 mt-2">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="update-code-1">Copy</button>
+                                <pre id="update-code-1"
+                                    class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
+                            </div>
+                        </li>
+                        <li>If your update includes changes to slash commands, register them by running:
+                            <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 mt-2">
+                                <button
+                                    class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
+                                    data-target="update-code-2">Copy</button>
+                                <pre id="update-code-2"
+                                    class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg node deploy-commands.js</pre>
+                            </div>
+                        </li>
+                    </ol>
+                </section>
+            </div>
+
+            <hr class="border-cream-dark dark:border-gray-800">
+
+            <!-- ==================== COMMANDS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">
+                        Commands</h1>
+                </div>
+
+                <section id="commands" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
+
+                    <!-- Commands Search Filter -->
+                    <div class="mb-8 max-w-md">
+                        <label for="command-search" class="sr-only">Search commands</label>
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </span>
+                            <input type="text" id="command-search" placeholder="Search commands (e.g. /settings)..."
+                                class="w-full bg-cream-dark dark:bg-gray-800 border border-cream-dark dark:border-gray-700 rounded-lg pl-10 pr-4 py-3 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-eggyolk transition-all shadow-inner">
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white mt-8">Administrator Commands</h3>
+                    <ul class="space-y-4 mb-10">
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings channel</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets or changes the server's
+                                announcement channel.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings mode</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets the reminder delivery mode:
+                                <code>Public</code> (channel posts + @ mentions), <code>Private</code> (DM-only alerts),
+                                or
+                                <code>Hybrid</code> (channel posts with zero mentions + private DMs).</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings view</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command that shows current bot
+                                configurations.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings calendar</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the "Add to Calendar" button
+                                on
+                                announcements.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings threads</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the automatic creation of
+                                discussion threads.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings autodelete</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event announcements
+                                are
+                                completely deleted when the event ends, rather than just being gracefully
+                                archived.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings intervals</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets custom reminder intervals using
+                                a
+                                comma-separated list.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings testreminder</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays a mock preview of what a
+                                reminder message will look like with the server's current settings.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings cleanup</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Scans the announcement channel's
+                                recent
+                                messages, automatically archives (or deletes) concluded event announcements, and
+                                performs a
+                                deep fail-safe scan (matching event links and event names) to delete
+                                <strong>all</strong>
+                                matching public event reminder messages to reduce channel clutter.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/announceevent</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an
+                                announcement for an existing event (useful if the bot was offline when the event was
+                                originally created).</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/stats</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command to view opt-in
+                                statistics
+                                for upcoming events in this server.</span>
+                        </li>
+                    </ul>
+
+                    <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white">Public Commands</h3>
+                    <ul class="space-y-4">
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/upcoming</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Public command to view a paginated
+                                list
+                                of upcoming events and quickly opt in to reminders.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/myreminders</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Lists a paginated view of all
+                                upcoming
+                                events you are currently receiving reminders for.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/help</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays information on how to use
+                                the
+                                bot and a list of available commands (dynamically filtered to only show Administrator
+                                commands to server administrators).</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+
+            <hr class="border-cream-dark dark:border-gray-800">
+
+            <!-- ==================== MISCELLANEOUS CATEGORY ==================== -->
+            <div class="space-y-16 text-left">
+                <div class="border-b-4 border-eggyolk pb-2">
+                    <h1 class="text-4xl font-serif font-black text-charcoal dark:text-white uppercase tracking-wider">
+                        Miscellaneous</h1>
+                </div>
+
+                <section id="features" class="scroll-mt-28">
+                    <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Core Features
+                    </h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-8 text-lg">
+                        Scotch Egg is designed to be highly reliable, private, and fully automated. Below is a
+                        detailed
+                        overview of the bot's features, categorized by user-facing Discord capabilities and the robust
+                        technical architecture under the hood.
+                    </p>
+
+                    <!-- Discord Features Section -->
+                    <div class="mb-12">
+                        <h3
+                            class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                            <span class="text-2xl">💬</span>
+                            <span>Discord & User-Facing Features</span>
                         </h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">Make sure <strong>Docker</strong> is open and
-                            running on your computer. Then, open your terminal (Command Prompt, PowerShell, or
-                            Terminal), navigate to the bot's folder, and run:</p>
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="run-code">Copy</button>
-                            <pre id="run-code"
-                                class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Feature: Native Discord Events -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">✨</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Native
+                                        Discord Events</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Just create an event using
+                                        Discord's built-in scheduled event UI, and the bot handles the rest instantly.
+                                        No need to learn any complicated commands to create events.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Strictly Opt-In Reminders -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🔔</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Strictly
+                                        Opt-In Reminders</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">No mass @everyone spam. Members
+                                        click a simple "Remind Me!" button to explicitly choose which events they want
+                                        to be notified about via Private DMs, Public Mentions, or Hybrid Mode.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Flexible Delivery Modes -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">⚙️</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Flexible
+                                        Delivery Modes</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Choose between three
+                                        configuration options: <strong>Public</strong> channel reminders with pings,
+                                        <strong>Private</strong> DM-only alerts, or <strong>Hybrid</strong> mode
+                                        (un-pinged public reminders + private DMs).</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Custom Reminder Intervals -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">⏱️</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Custom
+                                        Reminder Intervals</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Admins can fully customize when
+                                        reminders are sent (e.g., 24h, 1h, 15m before start) to suit the community using
+                                        interactive slash command settings.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Google Calendar & Link Buttons -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">📅</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Add to
+                                        Calendar & View Buttons</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Features interactive link
+                                        buttons. The "Add to Calendar" button populates Google Calendar with event
+                                        details, while "View Event" links directly to native Discord events.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Automated Discussion Threads -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">💬</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
+                                        Automated Discussion Threads</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated
+                                        discussion threads under server event announcements to encourage community
+                                        interaction and keep chatter organized.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Concluded Event Archiving -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🧹</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
+                                        High-Contrast Archiving & Cleanups</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Grays out concluded
+                                        announcements, strikes through obsolete timestamps, and deletes all public
+                                        pings. Admins can run <code>/settings cleanup</code> to sweep legacy messages.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Native Multi-Language Localization -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🌍</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
+                                        Multi-Language Support (Localization)</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Fully translated at both server
+                                        announcements and client slash command levels across 5 languages: English,
+                                        Spanish, German, French, and Portuguese.</p>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-gray-600 dark:text-gray-400 mt-4">You can now see the bot running smoothly inside
-                            Docker!</p>
                     </div>
 
+                    <!-- Technical & Runtime Features Section -->
                     <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">5. Register Slash
-                            Commands (Once)</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">After the bot is running, you must register its
-                            commands with Discord. You only need to do this once. Run the following command in your
-                            terminal:</p>
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="register-code">Copy</button>
-                            <pre id="register-code"
-                                class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg-bot node deploy-commands.js</pre>
+                        <h3
+                            class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-6 flex items-center space-x-2 border-b border-cream-dark dark:border-gray-800 pb-3">
+                            <span class="text-2xl">⚡</span>
+                            <span>Runtime & Technical Features</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Feature: SD-Card Friendly Storage -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">💾</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">SD-Card
+                                        Friendly Architecture</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Explicitly optimized for
+                                        single-board computers like the Raspberry Pi. Implements a lightweight JSON
+                                        storage schema with batched minified disk writes to prevent SD card wear.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Database Self-Healing -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🩹</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
+                                        Automatic Database Self-Healing</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Resilient dual-layer mechanism
+                                        maintaining atomic <code>.bak</code> copies of configurations. If damaged, a
+                                        recursive Regex-based JSON salvage parser rebuilds database files automatically.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Offline Startup Synchronization -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🔄</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">Offline
+                                        Startup Sync & Garbage Collection</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Syncs live events with Discord
+                                        upon boot. Schedules reminders for any newly created events and safely archives
+                                        announcements/deletes reminders of events that concluded while the bot was
+                                        offline.</p>
+                                </div>
+                            </div>
+
+                            <!-- Feature: Real-time Event Hook Synchronization -->
+                            <div
+                                class="bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-xl border border-cream-dark/50 dark:border-gray-700 flex space-x-4 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:hover:border-gray-600 dark:hover:bg-gray-800/60 transition-all duration-300">
+                                <span class="text-3xl shrink-0">🚀</span>
+                                <div>
+                                    <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
+                                        Real-Time Event Hook Synchronization</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Dynamically reschedules,
+                                        deletes, or recreates scheduled reminder jobs in response to real-time Discord
+                                        scheduled event creations, start time updates, or cancellations.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Collapsible Node.js Alternative -->
-                    <div class="mt-12 pt-8 border-t border-cream-dark dark:border-gray-800">
-                        <details class="no-chevron bg-cream-dark/30 dark:bg-gray-800/40 p-6 rounded-lg border border-cream-dark/50 dark:border-gray-700/50 group">
-                            <summary class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none flex items-center justify-between">
-                                <span>Alternative: Local Node.js Installation (No Docker)</span>
-                                <span class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline group-open:hidden">Show instructions</span>
-                                <span class="text-sm font-medium text-breadcrumb dark:text-eggyolk hover:underline hidden group-open:inline">Hide instructions</span>
-                            </summary>
-                            <div class="mt-6 text-gray-700 dark:text-gray-300 text-lg space-y-6">
-                                <p>If you prefer not to use Docker, you can run the bot directly on your host system using Node.js. Make sure you have installed <strong>Node.js (v16.14.0 or higher)</strong>.</p>
-                                
-                                <div class="space-y-4">
-                                    <h4 class="font-bold text-charcoal dark:text-white">1. Install Dependencies</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Navigate to the bot's root directory in your terminal and install the required npm packages:</p>
-                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
-                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-install-code">Copy</button>
-                                        <pre id="node-install-code" class="text-gray-300 font-mono text-sm overflow-x-auto">npm install</pre>
+                <section id="example" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Announcements &
+                        Reminders</h2>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">See high-fidelity mockups of how the bot's
+                        dynamic event announcements and opt-in reminders render inside Discord, including the automated
+                        changes when an event concludes.</p>
+
+                    <div class="space-y-12">
+                        <!-- SECTION A: ACTIVE EVENTS -->
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🟢
+                                Active
+                                / Upcoming Event Formatting</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                                <!-- Active Embed Announcement -->
+                                <div
+                                    class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                    <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Server Announcement
+                                        (Rich Embed)</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Posted in the configured
+                                        #events channel the moment a Discord Scheduled Event is created. Displays
+                                        duration,
+                                        time range, and a clickable Host user pill without sending unwanted push pings.
+                                    </p>
+
+                                    <div
+                                        class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-discord mt-auto">
+                                        <div class="border-l-4 border-[#0099ff] pl-4">
+                                            <p class="font-serif font-bold text-charcoal dark:text-white text-lg">New
+                                                Event:
+                                                Sunday Brunch at Eggcellent Café</p>
+                                            <div class="mt-2 text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                                                <p>🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00 AM to 1:00 PM
+                                                    (in 5
+                                                    days)</p>
+                                                <p>📍 <strong>Location:</strong> <span
+                                                        class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent
+                                                        Café (123 Yolk Street)</span></p>
+                                                <p class="mt-3 italic">It's been far too long since we've had eggs
+                                                    benedict,
+                                                    french toast, and bottomless mimosas together. Also, we need our
+                                                    yearly
+                                                    consumption of Scotch eggs as well!</p>
+                                                <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs italic">*Click
+                                                    the
+                                                    button below to receive a DM reminder at: 24h, 1h before the event
+                                                    begins!*</p>
+                                            </div>
+
+                                            <!-- Side-by-side Embed Fields -->
+                                            <div
+                                                class="grid grid-cols-2 gap-4 mt-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
+                                                <div>
+                                                    <span
+                                                        class="text-xs font-bold text-gray-500 uppercase tracking-wider block">👤
+                                                        Host</span>
+                                                    <span
+                                                        class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
+                                                </div>
+                                                <div>
+                                                    <span
+                                                        class="text-xs font-bold text-gray-500 uppercase tracking-wider block">⏱️
+                                                        Duration</span>
+                                                    <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">2
+                                                        hours</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-6 flex space-x-2">
+                                            <span
+                                                class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>⏰</span><span>Remind
+                                                    Me!</span></span>
+                                            <span
+                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>📅</span><span>Add
+                                                    to Calendar</span></span>
+                                            <span
+                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>🔗</span><span>View
+                                                    Event</span></span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="space-y-4">
-                                    <h4 class="font-bold text-charcoal dark:text-white">2. Initialize Database Files</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Create empty files named <code>events.json</code> and <code>config.json</code> containing just <code>{}</code> in the root directory (similar to step 3 in the main guide).</p>
-                                </div>
+                                <!-- Active Reminders (Public, Private, & Hybrid) -->
+                                <div
+                                    class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                    <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts
+                                        (Public
+                                        Ping, Private DM, & Hybrid Mode)</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text
+                                        for
+                                        high-priority mobile push notifications. Reminders can be sent via public
+                                        channel
+                                        pings (Public), private DMs (Private), or a mixture of both where public
+                                        reminders
+                                        have zero mentions while pings are delivered privately via DM (Hybrid).</p>
 
-                                <div class="space-y-4">
-                                    <h4 class="font-bold text-charcoal dark:text-white">3. Register Slash Commands</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Register the bot's commands with Discord by running:</p>
-                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
-                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-register-code">Copy</button>
-                                        <pre id="node-register-code" class="text-gray-300 font-mono text-sm overflow-x-auto">node deploy-commands.js</pre>
+                                    <div class="space-y-6 mt-auto">
+                                        <!-- Public Reminder Alert -->
+                                        <div
+                                            class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-discord">
+                                            <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder
+                                                (Public
+                                                Mode: with mentions | Hybrid Mode: identical, but zero mentions)</p>
+                                            <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
+                                            <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
+                                            <p>📍 <span
+                                                    class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
+                                                    Café</span></p>
+                                            <p
+                                                class="mt-3 text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
+                                                @Daniel</p>
+                                            <p
+                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
+                                                @Admin</p>
+                                            <div class="mt-4 flex space-x-2">
+                                                <span
+                                                    class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>⏰</span><span>Remind
+                                                        Me!</span></span>
+                                                <span
+                                                    class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>📅</span><span>Add
+                                                        to Calendar</span></span>
+                                                <span
+                                                    class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
+                                                        Event</span></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Private DM Alert -->
+                                        <div
+                                            class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-discord">
+                                            <p class="text-xs font-bold text-gray-500 mb-2">Private DM Reminder (Plain
+                                                Text)
+                                            </p>
+                                            <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
+                                            <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
+                                            <p>📍 <span
+                                                    class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
+                                                    Café</span></p>
+                                            <div class="mt-4 flex space-x-2">
+                                                <span
+                                                    class="bg-[#DA373C] hover:bg-[#A92B2F] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔕</span><span>Cancel
+                                                        Reminders</span></span>
+                                                <span
+                                                    class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
+                                                        Event</span></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="space-y-4">
-                                    <h4 class="font-bold text-charcoal dark:text-white">4. Start the Bot</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Start the bot process using node:</p>
-                                    <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 text-base">
-                                        <button class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors" data-target="node-start-code">Copy</button>
-                                        <pre id="node-start-code" class="text-gray-300 font-mono text-sm overflow-x-auto">node index.js</pre>
+                            </div>
+                        </div>
+
+                        <!-- SECTION B: CONCLUDED EVENTS -->
+                        <div>
+                            <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🔴
+                                Concluded / Concluded Event Archiving</h3>
+                            <div class="max-w-3xl">
+
+                                <!-- Archived Embed Announcement -->
+                                <div
+                                    class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
+                                    <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Concluded
+                                        Announcement
+                                        (Archived Embed)</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically updated when
+                                        the
+                                        event completes. Strikes through the title and metadata using clean web styling,
+                                        blockquotes descriptions, removes cover images, and replaces actions with a
+                                        disabled
+                                        Completed button.</p>
+
+                                    <div
+                                        class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-discord mt-auto">
+                                        <div class="border-l-4 border-gray-500 pl-4">
+                                            <p class="font-serif font-bold text-gray-400 dark:text-gray-500 text-lg">
+                                                <del class="opacity-50">New Event: Sunday Brunch at Eggcellent
+                                                    Café</del>
+                                            </p>
+
+                                            <p class="mt-2 text-sm font-bold text-gray-700 dark:text-gray-300">⏹️ This
+                                                event
+                                                has concluded.</p>
+
+                                            <blockquote
+                                                class="mt-3 text-sm text-gray-500 pl-3 border-l-2 border-gray-300 dark:border-gray-700 italic space-y-1">
+                                                <p><del class="opacity-50">🗓️ <strong>Time:</strong> Sunday, May 31,
+                                                        2026
+                                                        11:00 AM to 1:00 PM</del></p>
+                                                <p><del class="opacity-50">📍 <strong>Location:</strong> Eggcellent Café
+                                                        (123 Yolk Street)</del></p>
+                                                <p class="mt-2">It's been far too long since we've had eggs benedict,
+                                                    french
+                                                    toast, and bottomless mimosas together. Also, we need our yearly
+                                                    consumption of Scotch eggs as well!</p>
+                                            </blockquote>
+                                        </div>
+                                        <div class="mt-6">
+                                            <span
+                                                class="bg-[#4e5058] text-gray-300 px-4 py-2 rounded text-sm font-medium shadow opacity-60 flex items-center space-x-1 w-max border border-gray-600 cursor-not-allowed"><span>✅</span><span>Event
+                                                    Completed</span></span>
+                                        </div>
                                     </div>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">Note: In a production environment, it is highly recommended to use a process manager like <a href="https://pm2.keymetrics.io/" target="_blank" rel="noopener noreferrer" class="underline text-breadcrumb">PM2</a> to ensure the bot automatically restarts if it crashes or the system reboots.</p>
                                 </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="architecture" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">How It Works (Storage
+                        Architecture)</h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">To minimize disk wear on single-board
+                        computers
+                        (like the Raspberry Pi):</p>
+                    <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
+                        <li>When an announcement is posted, it creates a record for that event in a local <code
+                                class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">events.json</code>
+                            file.</li>
+                        <li>When a user clicks "Remind Me!", their Discord User ID is added to an object of opted-in
+                            users
+                            associated with that event's record. This object-based storage is highly efficient for
+                            lookups.
+                        </li>
+                        <li>When it is time to send a reminder, the bot reads the opted-in users directly from the
+                            database
+                            and either DMs them or pings them publicly.</li>
+                        <li>The database is automatically pruned when events are deleted, canceled, or completed to keep
+                            it
+                            lightweight.</li>
+                    </ul>
+                </section>
+
+                <section id="faq" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Frequently Asked
+                        Questions
+                    </h2>
+                    <div class="space-y-4">
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Does the bot support multiple servers (Guilds)?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Yes! You can invite the bot to as many servers as you want. Just use <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings channel</code>
+                                    in each server to configure where announcements should be posted.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                What happens if the bot goes offline?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Every time the bot starts up, it performs "Offline Garbage Collection." It
+                                    automatically
+                                    syncs with Discord, schedules reminders for any new events it missed, deletes data
+                                    for
+                                    canceled events, and automatically archives or deletes announcements for events that
+                                    concluded while it was offline. Additionally, administrators can run the <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings cleanup</code>
+                                    command at any time to scan the channel and clean up any legacy concluded events.
+                                </p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Why are the DM reminders plain text instead of Rich Embeds?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>This is intentional. When an event URL is sent in a DM, Discord automatically
+                                    generates a
+                                    Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered
+                                    "double-embed" in the user's DM.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                What is the Hybrid delivery mode and when should I use it?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Hybrid mode is the best of both worlds! It posts all event reminders in your public
+                                    announcement channel (providing a gorgeous, searchable, and clean chronological
+                                    stream
+                                    of events) but with <strong>zero pings or user mentions</strong> to avoid public
+                                    chat
+                                    disruption. Simultaneously, the bot delivers private, custom-localized direct
+                                    messages
+                                    directly to each opted-in member. Use this to keep channels tidy while guaranteeing
+                                    that
+                                    interested users never miss a notification.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Can users opt out of reminders?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM,
+                                    or
+                                    use the <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/myreminders</code>
+                                    command to opt out.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                How does the Multi-Language support work?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Scotch Egg automatically detects the preferred language of your Discord server to
+                                    translate public event announcements. It also dynamically detects each user's
+                                    specific
+                                    Discord client language to instantly translate interactive slash commands, options,
+                                    select menus, confirmation replies, and DM reminder alerts on the fly! The bot is
+                                    fully
+                                    localized in <strong>English, Spanish, German, French, and Portuguese</strong>.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                How does Database Self-Healing protect my data?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>If your host device (like a Raspberry Pi) experiences a sudden power outage during a
+                                    disk
+                                    write, the active database file can get truncated or corrupted. On startup, Scotch
+                                    Egg
+                                    Bot automatically attempts to load the database, falling back to a `.bak` copy if
+                                    the
+                                    primary is damaged. If both are corrupted, it executes a Regex salvage parser to
+                                    scan
+                                    the damaged file, extract all intact records, and rebuild the database structure
+                                    automatically.</p>
                             </div>
                         </details>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Using the Bot -->
-            <section id="usage" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Using the Bot</h2>
-                <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
-                    <div>
-                        <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">1. Set the Announcement Channel
-                        </h3>
-                        <p>Administrators must tell the bot which text channel to use for event announcements. Type the
-                            following command in any channel:</p>
-                        <blockquote class="bg-cream-dark dark:bg-gray-800 border-l-4 border-breadcrumb pl-4 py-2 mt-2">
-                            <code class="text-breadcrumb-dark dark:text-breadcrumb">/settings channel</code>
-                        </blockquote>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">2. Creating Events</h3>
-                        <p>Simply use Discord's native <strong>Create Event</strong> button at the top of your channel
-                            list. The moment you create an event, the bot will instantly post a rich-embed announcement
-                            in your configured channel.</p>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-xl text-charcoal dark:text-white mb-2">3. Opting In (The "Remind Me!"
-                            Button)</h3>
-                        <p>Users who want to be notified can click the <strong>⏰ Remind Me!</strong> button on the
-                            announcement. Depending on the server's configuration mode, the bot will either DM them or
-                            publicly @ ping them in the channel at the configured intervals.</p>
-                    </div>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Web Dashboard -->
-            <section id="dashboard" class="scroll-mt-28">
-                <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Web Dashboard</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-                    Scotch Egg Bot features an optional, stunning, dark-mode glassmorphic <strong>Web Dashboard</strong>. This allows server administrators to manage reminder modes, change announcement channels, customize reminder intervals, and inspect live server statistics from any web browser.
-                </p>
-
-                <!-- Configuration Callout -->
-                <div class="bg-[#5865F2]/10 border-l-4 border-[#5865F2] p-6 rounded-r-xl mb-8 flex items-start space-x-4">
-                    <span class="text-3xl shrink-0">🔑</span>
-                    <div>
-                        <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">OAuth2 Discord Authentication</h4>
-                        <p class="text-gray-700 dark:text-gray-300">
-                            The web dashboard is fully secured using Discord's official OAuth2 protocol (Implicit Grant flow). It validates that the logging-in user possesses <strong>Administrator</strong> or <strong>Manage Guild</strong> permissions on the target server before permitting edits.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">1. OAuth2 Redirect Configuration</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">To enable web dashboard login, you must add your dashboard's URL to the Discord Developer Portal:</p>
-                        <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400">
-                            <li>Open the <a href="https://discord.com/developers/applications" class="text-breadcrumb dark:text-eggyolk hover:underline font-bold" target="_blank" rel="noopener noreferrer">Discord Developer Portal</a> and select your application.</li>
-                            <li>Navigate to the <strong>OAuth2</strong> tab on the left.</li>
-                            <li>Under <strong>Redirects</strong>, click <strong>Add Redirect</strong>.</li>
-                            <li>Enter the dashboard redirection URL:
-                                <ul class="list-disc pl-6 mt-1 space-y-1">
-                                    <li>For local hostings: <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/dashboard.html</code></li>
-                                    <li>For self-hostings (e.g. Raspberry Pi): <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://&lt;your-pi-ip&gt;:8080/dashboard.html</code></li>
-                                </ul>
-                            </li>
-                            <li>Click <strong>Save Changes</strong> at the bottom of the page.</li>
-                        </ol>
-                    </div>
-
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">2. Port Configuration</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">
-                            By default, the Express dashboard runs on port <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">8080</code>. You can customize this port by adding the <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">DASHBOARD_PORT</code> variable to your <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">.env</code> file:
-                        </p>
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800">
-                            <pre class="text-gray-300 font-mono text-sm overflow-x-auto">DASHBOARD_PORT=8080</pre>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">3. Accessing the Panel</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">
-                            Open your web browser and navigate to <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm">http://localhost:8080/</code> (or the IP of your hosting machine).
-                        </p>
-                        <ul class="list-disc pl-6 space-y-2 text-gray-600 dark:text-gray-400">
-                            <li>Click <strong>Login with Discord</strong> to authenticate.</li>
-                            <li>Select your server from the sidebar list. Only servers where you are an administrator and where the bot has been invited will show up.</li>
-                            <li>Modify announcement channels, select delivery modes, toggle add-to-calendar, auto-create threads, and auto-delete settings.</li>
-                            <li>Configure reminder intervals dynamically by adding or removing interval pills (e.g. <code>24h before</code>, <code>1h before</code>, <code>15m before</code>).</li>
-                            <li>Click <strong>Save Configurations</strong> to sync setting updates. The bot will automatically reload configurations and reschedule active jobs immediately.</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Updating the Bot -->
-            <section id="updating" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Updating the Bot</h2>
-                <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">If you ever edit the code or download an
-                    updated version of the bot, applying the changes is simple and won't delete your data.</p>
-                <ol class="list-decimal pl-6 space-y-4 text-gray-700 dark:text-gray-300 text-lg">
-                    <li>Run the following command to rebuild the container with the new code:
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 mt-2">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="update-code-1">Copy</button>
-                            <pre id="update-code-1"
-                                class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
-                        </div>
-                    </li>
-                    <li>If your update includes changes to slash commands, register them by running:
-                        <div class="relative bg-gray-900 rounded-lg p-4 shadow-md border border-gray-800 mt-2">
-                            <button
-                                class="copy-btn absolute top-3 right-3 text-xs text-gray-400 hover:text-white transition-colors"
-                                data-target="update-code-2">Copy</button>
-                            <pre id="update-code-2"
-                                class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg-bot node deploy-commands.js</pre>
-                        </div>
-                    </li>
-                </ol>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Example Reminder & Announcement Gallery -->
-            <section id="example" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">Example Announcements &
-                    Reminders</h2>
-                <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">See high-fidelity mockups of how the bot's
-                    dynamic event announcements and opt-in reminders render inside Discord, including the automated
-                    changes when an event concludes.</p>
-
-                <div class="space-y-12">
-                    <!-- SECTION A: ACTIVE EVENTS -->
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🟢 Active
-                            / Upcoming Event Formatting</h3>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                            <!-- Active Embed Announcement -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Server Announcement
-                                    (Rich Embed)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Posted in the configured
-                                    #events channel the moment a Discord Scheduled Event is created. Displays duration,
-                                    time range, and a clickable Host user pill without sending unwanted push pings.</p>
-
-                                <div
-                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
-                                    <div class="border-l-4 border-[#0099ff] pl-4">
-                                        <p class="font-serif font-bold text-charcoal dark:text-white text-lg">New Event:
-                                            Sunday Brunch at Eggcellent Café</p>
-                                        <div class="mt-2 text-sm space-y-1 text-gray-700 dark:text-gray-300">
-                                            <p>🗓️ <strong>Time:</strong> Sunday, May 31, 2026 11:00 AM to 1:00 PM (in 5
-                                                days)</p>
-                                            <p>📍 <strong>Location:</strong> <span
-                                                    class="text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1 rounded cursor-pointer">Eggcellent
-                                                    Café (123 Yolk Street)</span></p>
-                                            <p class="mt-3 italic">It's been far too long since we've had eggs benedict,
-                                                french toast, and bottomless mimosas together. Also, we need our yearly
-                                                consumption of Scotch eggs as well!</p>
-                                            <p class="mt-3 text-gray-500 dark:text-gray-400 text-xs italic">*Click the
-                                                button below to receive a DM reminder at: 24h, 1h before the event
-                                                begins!*</p>
-                                        </div>
-
-                                        <!-- Side-by-side Embed Fields -->
-                                        <div
-                                            class="grid grid-cols-2 gap-4 mt-4 border-t border-gray-100 dark:border-gray-700/50 pt-3">
-                                            <div>
-                                                <span
-                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">👤
-                                                    Host</span>
-                                                <span
-                                                    class="text-sm text-[#5865F2] hover:underline bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium cursor-pointer">@Daniel</span>
-                                            </div>
-                                            <div>
-                                                <span
-                                                    class="text-xs font-bold text-gray-500 uppercase tracking-wider block">⏱️
-                                                    Duration</span>
-                                                <span class="text-sm text-gray-700 dark:text-gray-300 font-medium">2
-                                                    hours</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-6 flex space-x-2">
-                                        <span
-                                            class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>⏰</span><span>Remind
-                                                Me!</span></span>
-                                        <span
-                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>📅</span><span>Add
-                                                to Calendar</span></span>
-                                        <span
-                                            class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-sm font-medium shadow cursor-pointer flex items-center space-x-1"><span>🔗</span><span>View
-                                                Event</span></span>
-                                    </div>
-                                </div>
+                <section id="troubleshooting" class="scroll-mt-28">
+                    <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Troubleshooting</h2>
+                    <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
+                        <details
+                            class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-6 rounded-lg group">
+                            <summary
+                                class="font-bold text-xl text-red-700 dark:text-red-400 cursor-pointer select-none outline-none">
+                                Bot shows as online, but slash commands don't work / don't appear</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>You likely forgot to run the command registration script! Make sure your bot is
+                                    running,
+                                    then execute the command from Step 5 of the setup guide. You might need to restart
+                                    your
+                                    Discord client afterwards to see the commands.</p>
                             </div>
-
-                            <!-- Active Reminders (Public, Private, & Hybrid) -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Reminder Alerts (Public
-                                    Ping, Private DM, & Hybrid Mode)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">DMs are sent in plain text for
-                                    high-priority mobile push notifications. Reminders can be sent via public channel
-                                    pings (Public), private DMs (Private), or a mixture of both where public reminders
-                                    have zero mentions while pings are delivered privately via DM (Hybrid).</p>
-
-                                <div class="space-y-6 mt-auto">
-                                    <!-- Public Reminder Alert -->
-                                    <div
-                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Public Channel Reminder (Public
-                                            Mode: with mentions | Hybrid Mode: identical, but zero mentions)</p>
-                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
-                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
-                                        <p>📍 <span
-                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
-                                                Café</span></p>
-                                        <p
-                                            class="mt-3 text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
-                                            @Daniel</p>
-                                        <p
-                                            class="text-[#5865F2] bg-[#5865f2]/10 px-1.5 py-0.5 rounded font-medium inline-block cursor-pointer">
-                                            @Admin</p>
-                                        <div class="mt-4 flex space-x-2">
-                                            <span
-                                                class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>⏰</span><span>Remind
-                                                    Me!</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>📅</span><span>Add
-                                                    to Calendar</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
-                                                    Event</span></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Private DM Alert -->
-                                    <div
-                                        class="bg-white dark:bg-[#313338] p-5 rounded border border-gray-200 dark:border-gray-700 text-sm font-sans">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Private DM Reminder (Plain Text)
-                                        </p>
-                                        <p>📢 1h until <strong>Sunday Brunch at Eggcellent Café</strong>!</p>
-                                        <p>🗓️ Sunday, May 31, 2026 11:00 AM (in 1 hour)</p>
-                                        <p>📍 <span
-                                                class="text-[#5865F2] bg-[#5865f2]/10 px-1 rounded font-medium">Eggcellent
-                                                Café</span></p>
-                                        <div class="mt-4 flex space-x-2">
-                                            <span
-                                                class="bg-[#DA373C] hover:bg-[#A92B2F] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔕</span><span>Cancel
-                                                    Reminders</span></span>
-                                            <span
-                                                class="bg-[#4e5058] hover:bg-[#6d6f78] text-white px-3 py-1.5 rounded text-xs font-bold shadow cursor-pointer flex items-center space-x-1 w-max"><span>🔗</span><span>View
-                                                    Event</span></span>
-                                        </div>
-                                    </div>
-                                </div>
+                        </details>
+                        <details
+                            class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-6 rounded-lg group">
+                            <summary
+                                class="font-bold text-xl text-red-700 dark:text-red-400 cursor-pointer select-none outline-none">
+                                The bot is not posting announcements or shows permission errors in the channel</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>The bot requires explicit role permissions in your configured announcement channel to
+                                    operate. Make sure that the bot's integration role (or the bot itself) is granted
+                                    the
+                                    following permissions in the target channel's settings: <strong>View
+                                        Channel</strong>,
+                                    <strong>Send Messages</strong>, and <strong>Embed Links</strong>. If the bot is
+                                    missing
+                                    any of these, it will fail to post announcements or return descriptive permission
+                                    warning responses.
+                                </p>
                             </div>
-
-                        </div>
-                    </div>
-
-                    <!-- SECTION B: CONCLUDED EVENTS -->
-                    <div>
-                        <h3 class="text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4">🔴
-                            Concluded / Concluded Event Archiving</h3>
-                        <div class="max-w-3xl">
-
-                            <!-- Archived Embed Announcement -->
-                            <div
-                                class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-cream-dark dark:border-gray-700 flex flex-col">
-                                <h4 class="font-bold text-charcoal dark:text-white mb-3 text-lg">Concluded Announcement
-                                    (Archived Embed)</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Automatically updated when the
-                                    event completes. Strikes through the title and metadata using clean web styling,
-                                    blockquotes descriptions, removes cover images, and replaces actions with a disabled
-                                    Completed button.</p>
-
-                                <div
-                                    class="bg-white dark:bg-[#313338] p-6 rounded border border-gray-200 dark:border-gray-700 font-sans mt-auto">
-                                    <div class="border-l-4 border-gray-500 pl-4">
-                                        <p class="font-serif font-bold text-gray-400 dark:text-gray-500 text-lg"><del
-                                                class="opacity-50">New Event: Sunday Brunch at Eggcellent Café</del>
-                                        </p>
-
-                                        <p class="mt-2 text-sm font-bold text-gray-700 dark:text-gray-300">⏹️ This event
-                                            has concluded.</p>
-
-                                        <blockquote
-                                            class="mt-3 text-sm text-gray-500 pl-3 border-l-2 border-gray-300 dark:border-gray-700 italic space-y-1">
-                                            <p><del class="opacity-50">🗓️ <strong>Time:</strong> Sunday, May 31, 2026
-                                                    11:00 AM to 1:00 PM</del></p>
-                                            <p><del class="opacity-50">📍 <strong>Location:</strong> Eggcellent Café
-                                                    (123 Yolk Street)</del></p>
-                                            <p class="mt-2">It's been far too long since we've had eggs benedict, french
-                                                toast, and bottomless mimosas together. Also, we need our yearly
-                                                consumption of Scotch eggs as well!</p>
-                                        </blockquote>
-                                    </div>
-                                    <div class="mt-6">
-                                        <span
-                                            class="bg-[#4e5058] text-gray-300 px-4 py-2 rounded text-sm font-medium shadow opacity-60 flex items-center space-x-1 w-max border border-gray-600 cursor-not-allowed"><span>✅</span><span>Event
-                                                Completed</span></span>
-                                    </div>
-                                </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Why aren't some users receiving their private DM reminders?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>This is almost always due to Discord direct message privacy settings. If a user
+                                    blocks
+                                    DMs from server members, the bot is blocked from messaging them. To fix this, the
+                                    user
+                                    must go to their <strong>Server Privacy Settings</strong> in Discord and toggle
+                                    <strong>"Allow direct messages from server members"</strong> to <strong>On</strong>.
+                                    Alternatively, server admins can switch the server's mode to <code>Public</code> so
+                                    reminders are posted directly in the channel with pings.
+                                </p>
                             </div>
-
-                        </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Docker created folders named "events.json" and "config.json"</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>If you don't manually create the <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">events.json</code>
+                                    and <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">config.json</code>
+                                    files on your computer <em>before</em> running <code
+                                        class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">docker compose up</code>,
+                                    Docker assumes you meant to map folders. Delete those folders, create the text files
+                                    with <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">{}</code>
+                                    inside, and restart the container.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                I see "Interaction Failed" when clicking buttons</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>This usually means the bot is offline or has crashed. Check your Docker logs to see
+                                    what
+                                    happened. If you are not using Docker, check the terminal window where you started
+                                    the
+                                    bot.</p>
+                            </div>
+                        </details>
                     </div>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- How It Works (Architecture) -->
-            <section id="architecture" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">How It Works (Storage
-                    Architecture)</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-4 text-lg">To minimize disk wear on single-board computers
-                    (like the Raspberry Pi):</p>
-                <ul class="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300 text-lg">
-                    <li>When an announcement is posted, it creates a record for that event in a local <code
-                            class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-base">events.json</code>
-                        file.</li>
-                    <li>When a user clicks "Remind Me!", their Discord User ID is added to an object of opted-in users
-                        associated with that event's record. This object-based storage is highly efficient for lookups.
-                    </li>
-                    <li>When it is time to send a reminder, the bot reads the opted-in users directly from the database
-                        and either DMs them or pings them publicly.</li>
-                    <li>The database is automatically pruned when events are deleted, canceled, or completed to keep it
-                        lightweight.</li>
-                </ul>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Commands Snapshot -->
-            <section id="commands" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-6 text-charcoal dark:text-white">All Commands</h2>
-
-                <!-- Commands Search Filter -->
-                <div class="mb-8 max-w-md">
-                    <label for="command-search" class="sr-only">Search commands</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </span>
-                        <input type="text" id="command-search" placeholder="Search commands (e.g. /settings)..." class="w-full bg-cream-dark dark:bg-gray-800 border border-cream-dark dark:border-gray-700 rounded-lg pl-10 pr-4 py-3 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-eggyolk transition-all shadow-inner">
-                    </div>
-                </div>
-
-                <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white mt-8">Administrator Commands</h3>
-                <ul class="space-y-4 mb-10">
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings channel</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets or changes the server's
-                            announcement channel.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings mode</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets the reminder delivery mode:
-                            <code>Public</code> (channel posts + @ mentions), <code>Private</code> (DM-only alerts), or
-                            <code>Hybrid</code> (channel posts with zero mentions + private DMs).</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings view</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command that shows current bot
-                            configurations.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings calendar</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the "Add to Calendar" button on
-                            announcements.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings threads</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the automatic creation of
-                            discussion threads.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings autodelete</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether event announcements are
-                            completely deleted when the event ends, rather than just being gracefully archived.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings intervals</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets custom reminder intervals using a
-                            comma-separated list.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings testreminder</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays a mock preview of what a
-                            reminder message will look like with the server's current settings.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings cleanup</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Scans the announcement channel's recent
-                            messages, automatically archives (or deletes) concluded event announcements, and performs a
-                            deep fail-safe scan (matching event links and event names) to delete <strong>all</strong>
-                            matching public event reminder messages to reduce channel clutter.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/announceevent</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an
-                            announcement for an existing event (useful if the bot was offline when the event was
-                            originally created).</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/stats</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command to view opt-in statistics
-                            for upcoming events in this server.</span>
-                    </li>
-                </ul>
-
-                <h3 class="text-2xl font-bold mb-4 text-charcoal dark:text-white">Public Commands</h3>
-                <ul class="space-y-4">
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/upcoming</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Public command to view a paginated list
-                            of upcoming events and quickly opt in to reminders.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/myreminders</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Lists a paginated view of all upcoming
-                            events you are currently receiving reminders for.</span>
-                    </li>
-                    <li
-                        class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
-                        <code
-                            class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/help</code>
-                        <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Displays information on how to use the
-                            bot and a list of available commands (dynamically filtered to only show Administrator
-                            commands to server administrators).</span>
-                    </li>
-                </ul>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- FAQ -->
-            <section id="faq" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Frequently Asked Questions
-                </h2>
-                <div class="space-y-4">
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            Does the bot support multiple servers (Guilds)?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Yes! You can invite the bot to as many servers as you want. Just use <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings channel</code>
-                                in each server to configure where announcements should be posted.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            What happens if the bot goes offline?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Every time the bot starts up, it performs "Offline Garbage Collection." It automatically
-                                syncs with Discord, schedules reminders for any new events it missed, deletes data for
-                                canceled events, and automatically archives or deletes announcements for events that
-                                concluded while it was offline. Additionally, administrators can run the <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings cleanup</code>
-                                command at any time to scan the channel and clean up any legacy concluded events.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            Why are the DM reminders plain text instead of Rich Embeds?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>This is intentional. When an event URL is sent in a DM, Discord automatically generates a
-                                Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered
-                                "double-embed" in the user's DM.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            What is the Hybrid delivery mode and when should I use it?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Hybrid mode is the best of both worlds! It posts all event reminders in your public
-                                announcement channel (providing a gorgeous, searchable, and clean chronological stream
-                                of events) but with <strong>zero pings or user mentions</strong> to avoid public chat
-                                disruption. Simultaneously, the bot delivers private, custom-localized direct messages
-                                directly to each opted-in member. Use this to keep channels tidy while guaranteeing that
-                                interested users never miss a notification.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            Can users opt out of reminders?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Yes! Users can click the "Remind Me!" button again, click "Cancel Reminders" in a DM, or
-                                use the <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/myreminders</code>
-                                command to opt out.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            How does the Multi-Language support work?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>Scotch Egg Bot automatically detects the preferred language of your Discord server to
-                                translate public event announcements. It also dynamically detects each user's specific
-                                Discord client language to instantly translate interactive slash commands, options,
-                                select menus, confirmation replies, and DM reminder alerts on the fly! The bot is fully
-                                localized in <strong>English, Spanish, German, French, and Portuguese</strong>.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            How does Database Self-Healing protect my data?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>If your host device (like a Raspberry Pi) experiences a sudden power outage during a disk
-                                write, the active database file can get truncated or corrupted. On startup, Scotch Egg
-                                Bot automatically attempts to load the database, falling back to a `.bak` copy if the
-                                primary is damaged. If both are corrupted, it executes a Regex salvage parser to scan
-                                the damaged file, extract all intact records, and rebuild the database structure
-                                automatically.</p>
-                        </div>
-                    </details>
-                </div>
-            </section>
-
-            <hr class="border-cream-dark dark:border-gray-800">
-
-            <!-- Troubleshooting -->
-            <section id="troubleshooting" class="scroll-mt-28">
-                <h2 class="text-3xl font-serif font-bold mb-8 text-charcoal dark:text-white">Troubleshooting</h2>
-                <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
-                    <details
-                        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-6 rounded-lg group">
-                        <summary
-                            class="font-bold text-xl text-red-700 dark:text-red-400 cursor-pointer select-none outline-none">
-                            Bot shows as online, but slash commands don't work / don't appear</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>You likely forgot to run the command registration script! Make sure your bot is running,
-                                then execute the command from Step 5 of the setup guide. You might need to restart your
-                                Discord client afterwards to see the commands.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-6 rounded-lg group">
-                        <summary
-                            class="font-bold text-xl text-red-700 dark:text-red-400 cursor-pointer select-none outline-none">
-                            The bot is not posting announcements or shows permission errors in the channel</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>The bot requires explicit role permissions in your configured announcement channel to
-                                operate. Make sure that the bot's integration role (or the bot itself) is granted the
-                                following permissions in the target channel's settings: <strong>View Channel</strong>,
-                                <strong>Send Messages</strong>, and <strong>Embed Links</strong>. If the bot is missing
-                                any of these, it will fail to post announcements or return descriptive permission
-                                warning responses.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            Why aren't some users receiving their private DM reminders?</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>This is almost always due to Discord direct message privacy settings. If a user blocks
-                                DMs from server members, the bot is blocked from messaging them. To fix this, the user
-                                must go to their <strong>Server Privacy Settings</strong> in Discord and toggle
-                                <strong>"Allow direct messages from server members"</strong> to <strong>On</strong>.
-                                Alternatively, server admins can switch the server's mode to <code>Public</code> so
-                                reminders are posted directly in the channel with pings.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            Docker created folders named "events.json" and "config.json"</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>If you don't manually create the <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">events.json</code>
-                                and <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">config.json</code>
-                                files on your computer <em>before</em> running <code
-                                    class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">docker compose up</code>,
-                                Docker assumes you meant to map folders. Delete those folders, create the text files
-                                with <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">{}</code>
-                                inside, and restart the container.</p>
-                        </div>
-                    </details>
-                    <details
-                        class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
-                        <summary
-                            class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
-                            I see "Interaction Failed" when clicking buttons</summary>
-                        <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                            <p>This usually means the bot is offline or has crashed. Check your Docker logs to see what
-                                happened. If you are not using Docker, check the terminal window where you started the
-                                bot.</p>
-                        </div>
-                    </details>
-                </div>
-            </section>
-
+                </section>
+            </div>
         </main>
     </div>
 
@@ -1125,19 +1355,32 @@ echo "{}" > config.json</pre>
             <div
                 class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
                 <span>🥚</span>
-                <span>Scotch Egg Bot</span>
+                <span>Scotch Egg</span>
             </div>
-            <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
-                <p>Open Source under the GPLv3 License. <a href="https://github.com/verdantly/scotch-egg-bot"
-                        class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a></p>
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                    Open Source under the GPLv3 License. 
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a>
                 </p>
+                <div class="flex space-x-4 text-xs text-gray-400 dark:text-gray-500 font-medium">
+                    <a href="privacy.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="terms.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Terms of Service</a>
+                    <span>•</span>
+                    <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Report Bugs</a>
+                </div>
             </div>
         </div>
     </footer>
 
     <!-- Back to Top Button -->
-    <button id="back-to-top" class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    <button id="back-to-top"
+        class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center"
+        aria-label="Back to Top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18">
+            </path>
+        </svg>
     </button>
 
     <!-- Scripts -->

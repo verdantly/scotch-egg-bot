@@ -4,7 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scotch Egg Bot | Discord Event Reminders</title>
+    
+    <!-- Dark Mode Theme Flash Prevention -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <title>Scotch Egg | Discord Event Reminders</title>
     <meta name="description"
         content="A free Discord bot that uses native Discord events to send automated, opt-in reminders without clunky bot commands.">
 
@@ -38,7 +48,8 @@
                     },
                     fontFamily: {
                         sans: ['"Merriweather Sans"', 'sans-serif'],
-                        serif: ['Merriweather', 'serif']
+                        serif: ['Merriweather', 'serif'],
+                        discord: ['"gg sans"', '"Whitney"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
                     },
                     animation: {
                         'blob': 'blob 7s infinite',
@@ -62,12 +73,12 @@
 
     <!-- Header & Navigation -->
     <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
-        <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
-            <div
-                class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="#"
+                class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
                 <span>🥚</span>
-                <span>Scotch Egg Bot</span>
-            </div>
+                <span>Scotch Egg</span>
+            </a>
             <div class="hidden md:flex space-x-6">
                 <a href="#features"
                     class="hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors font-medium">Features</a>
@@ -158,14 +169,14 @@
 
             <!-- Discord Message Mockup (Visual Preview) -->
             <div
-                class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-2xl text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22]">
+                class="mt-16 max-w-2xl w-full mx-auto bg-[#313338] rounded-md shadow-2xl text-left text-gray-200 p-4 sm:p-5 border border-[#1e1f22] font-discord">
                 <div class="flex items-start space-x-4">
                     <div
                         class="w-10 h-10 rounded-full bg-eggyolk flex items-center justify-center text-xl shrink-0 shadow-inner">
                         🥚</div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span class="font-medium text-white">Scotch Egg Bot</span>
+                            <span class="font-medium text-white">Scotch Egg</span>
                             <span
                                 class="bg-[#5865F2] text-[10px] px-1.5 py-0.5 rounded text-white font-medium flex items-center"><span>APP</span></span>
                             <span class="text-xs text-gray-400">Today at 8:00 PM</span>
@@ -229,7 +240,7 @@
                 <div class="flex-1 space-y-6">
                     <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">Native Discord Events
                         Integration</h3>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Scotch Egg Bot integrates
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">Scotch Egg integrates
                         seamlessly with Discord's native
                         Scheduled Events feature so you don't have to learn any special commands. Just create
                         an event using Discord's built-in UI, and the bot
@@ -238,7 +249,7 @@
                 </div>
                 <div
                     class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700">
-                    <div class="bg-[#313338] rounded-md p-4 shadow-md border border-[#1e1f22]">
+                    <div class="bg-[#313338] rounded-md p-4 shadow-md border border-[#1e1f22] font-discord">
                         <div class="flex items-center space-x-3 mb-3">
                             <div
                                 class="w-8 h-8 rounded-full bg-breadcrumb flex items-center justify-center text-white text-xs font-bold">
@@ -293,7 +304,7 @@
                 <div
                     class="flex-1 w-full bg-cream dark:bg-gray-900 rounded-md p-8 shadow-xl border border-cream-dark dark:border-gray-700 flex flex-col justify-center">
                     <div class="flex flex-col gap-3">
-                        <div class="bg-[#313338] rounded-md p-4 border border-[#1e1f22]">
+                        <div class="bg-[#313338] rounded-md p-4 border border-[#1e1f22] font-discord">
                             <div class="h-4 w-48 bg-[#5865F2] rounded mb-2"></div>
                             <div class="h-3 w-64 bg-[#2b2d31] rounded"></div>
                         </div>
@@ -403,7 +414,7 @@
                             <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg">Feature</th>
                             <th
                                 class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center bg-breadcrumb-dark dark:bg-gray-900/50">
-                                🥚 Scotch Egg Bot</th>
+                                🥚 Scotch Egg</th>
                             <th class="p-3 md:p-5 font-serif font-bold text-sm md:text-lg text-center">Other Event Bots
                             </th>
                         </tr>
@@ -472,7 +483,7 @@
         class="bg-white dark:bg-gray-800 py-20 border-t-2 border-cream-dark dark:border-gray-700 transition-colors duration-300">
         <div class="w-full max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-4xl font-serif font-bold text-charcoal dark:text-white mb-6">Ready to get started?</h2>
-            <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Deploying Scotch Egg Bot takes just a few minutes
+            <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Deploying Scotch Egg takes just a few minutes
                 using Docker.</p>
             <a href="documentation.html#setup"
                 class="bg-breadcrumb text-white text-lg font-bold px-8 py-3 rounded-full hover:bg-breadcrumb-dark hover:scale-105 hover:shadow-lg transform transition-all shadow-md inline-block">
@@ -483,19 +494,25 @@
 
     <!-- Footer -->
     <footer
-        class="bg-cream dark:bg-gray-900 py-10 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
-        <div class="w-full max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+        class="bg-cream dark:bg-gray-900 py-8 border-t border-cream-dark dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
             <div
                 class="flex items-center space-x-2 text-xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-4 md:mb-0">
                 <span>🥚</span>
-                <span>Scotch Egg Bot</span>
+                <span>Scotch Egg</span>
             </div>
-            <div class="text-gray-500 dark:text-gray-400 text-sm text-center md:text-right">
-                <p>Open Source under the GPLv3 License.</p>
-                <p class="mt-1">
-                    <a href="https://github.com/verdantly/scotch-egg-bot"
-                        class="hover:text-breadcrumb transition-colors">GitHub</a>
+            <div class="flex flex-col items-center md:items-end space-y-2">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                    Open Source under the GPLv3 License. 
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a>
                 </p>
+                <div class="flex space-x-4 text-xs text-gray-400 dark:text-gray-500 font-medium">
+                    <a href="privacy.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="terms.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Terms of Service</a>
+                    <span>•</span>
+                    <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Report Bugs</a>
+                </div>
             </div>
         </div>
     </footer>
