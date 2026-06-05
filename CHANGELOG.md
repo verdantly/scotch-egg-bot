@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Reminder Silencing and Tag-Based Exclusions:** Added ability to exclude or silence automatic reminders for specific events or recurring series. Administrators can use new slash commands `/settings silenceevent` and `/settings unsilenceevent` to toggle reminders, which disables the announcement's "Remind Me!" button and displays a silenced notice. Additionally, adding `[silent]` or `[exclude]` in the event's title or description on Discord will completely exclude the event from automatic announcement and reminder scheduling.
 - **Interactive Cancellation Choice for Recurring Series:** When users click "Cancel Reminders" under a DM alert for a recurring event series, the bot now displays a prompt asking if they want to opt out of the next occurrence only or unsubscribe from the entire series.
 
 ### Fixed
