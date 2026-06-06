@@ -1132,6 +1132,15 @@ echo "{}" > config.json</pre>
                             class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
                             <summary
                                 class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                What happens if a scheduled event is rescheduled (time changed)?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>When an event's start time is updated in Discord, the bot automatically archives the old announcement in the channel with a disabled button labeled "Rescheduled" and strikes through the outdated details. It then posts a new, active announcement message with the updated time. This ensures all server members see a fresh notification, while the new announcement's "Remind Me!" button automatically carries over the count and list of already registered users.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
                                 Why are the DM reminders plain text instead of Rich Embeds?</summary>
                             <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
                                 <p>This is intentional. When an event URL is sent in a DM, Discord automatically

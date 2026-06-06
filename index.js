@@ -680,6 +680,10 @@ async function postAnnouncement(event, channel) {
         };
         await saveDb();
 
+        if (Object.keys(existing.users || {}).length > 0) {
+            await updateLiveCounter(event.id);
+        }
+
         if (getThreadsEnabled(event.guild.id)) {
             try {
                 await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
@@ -2064,6 +2068,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                 if (statusText === 'Completed') statusLabel = t(guildLocale, 'announcement_button_completed');
                 else if (statusText === 'Deleted') statusLabel = t(guildLocale, 'announcement_button_deleted');
                 else if (statusText === 'Canceled') statusLabel = t(guildLocale, 'announcement_button_canceled');
+                else if (statusText === 'Rescheduled') statusLabel = t(guildLocale, 'announcement_button_rescheduled');
 
                 // Format the title with a premium strike-through
                 const cleanTitle = (originalEmbed.data.title || '')
@@ -2079,7 +2084,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                 originalEmbed.setColor('#808080'); // Gray out the sidebar
                 originalEmbed.setImage(null); // Remove cover image to shrink visibility
                 
-                const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : statusText === 'Deleted' ? 'deleted_banner' : 'canceled_banner') + '\n\n';
+                const statusBanner = t(guildLocale, statusText === 'Completed' ? 'concluded_banner' : statusText === 'Deleted' ? 'deleted_banner' : statusText === 'Canceled' ? 'canceled_banner' : 'rescheduled_banner') + '\n\n';
                 
                 let newDesc = originalEmbed.data.description || '';
                 newDesc = newDesc
@@ -2107,7 +2112,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                         .setLabel(statusLabel)
                         .setStyle(ButtonStyle.Secondary)
                         .setDisabled(true)
-                        .setEmoji(statusText === 'Completed' ? '✅' : '❌')
+                        .setEmoji(statusText === 'Completed' ? '✅' : statusText === 'Rescheduled' ? '📅' : '❌')
                 );
                 
                 await msg.edit({ embeds: [originalEmbed], components: [disabledRow] });
@@ -2146,6 +2151,7 @@ client.on(Events.GuildScheduledEventDelete, async e => {
 
 client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
     try {
+        let rescheduled = false;
         // Always reschedule reminders on update to ensure time, location, and description are fresh
         cancelEventReminders(n.id);
         if (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active) {
@@ -2253,12 +2259,26 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                         eventDb[n.id].reminderMessageIds = [];
                         await saveDb();
                     }
+
+                    if (timeChanged) {
+                        const channelId = getAnnouncementChannelId(n.guild.id);
+                        const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
+                        if (channel) {
+                            await archiveAnnouncementMessage(n.guild, n.id, 'Rescheduled');
+                            try {
+                                await postAnnouncement(n, channel);
+                                rescheduled = true;
+                            } catch (err) {
+                                // error logged in postAnnouncement
+                            }
+                        }
+                    }
                 }
             }
         }
 
         // The event was updated (e.g., name, description, time changed), so we update the original announcement message
-        if (eventDb[n.id] && eventDb[n.id].messageId) {
+        if (!rescheduled && eventDb[n.id] && eventDb[n.id].messageId) {
             try {
                 const channelId = getAnnouncementChannelId(n.guild.id);
                 const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;

@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0] - 2026-06-04
+## [1.6.0] - 2026-06-06
 
 ### Added
 
+- **Rescheduled Event Announcements:** When a scheduled event's start time is updated, the bot now archives the old announcement as "Rescheduled" (disabling buttons and striking through the outdated description) and posts a new, active announcement message in the channel. This ensures high visibility for rescheduled events while automatically carrying over the "Remind Me!" count and registration metadata to the new announcement.
 - **Reminder Silencing and Tag-Based Exclusions:** Added ability to exclude or silence automatic reminders for specific events or recurring series. Administrators can use new slash commands `/settings silenceevent` and `/settings unsilenceevent` to toggle reminders, which disables the announcement's "Remind Me!" button and displays a silenced notice. Additionally, adding `[silent]` or `[exclude]` in the event's title or description on Discord will completely exclude the event from automatic announcement and reminder scheduling.
 - **Interactive Cancellation Choice for Recurring Series:** When users click "Cancel Reminders" under a DM alert for a recurring event series, the bot now displays a prompt asking if they want to opt out of the next occurrence only or unsubscribe from the entire series.
 
