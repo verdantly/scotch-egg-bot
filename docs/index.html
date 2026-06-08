@@ -18,6 +18,12 @@
     <meta name="description"
         content="A free Discord bot that uses native Discord events to send automated, opt-in reminders without clunky bot commands.">
 
+    <!-- Open Graph / Social Meta Tags -->
+    <meta property="og:title" content="Scotch Egg | Discord Event Reminders">
+    <meta property="og:description" content="A free Discord bot that uses native Discord events to send automated, opt-in reminders without clunky bot commands.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/verdantly/scotch-egg-bot/main/docs/assets/hero-mockup.png">
+    <meta property="og:type" content="website">
+
     <!-- Custom CSS & Fonts -->
     <link rel="stylesheet" href="css/custom.css">
 
@@ -72,7 +78,7 @@
     class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Header & Navigation -->
-    <header class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
+    <header class="sticky top-0 z-50 bg-transparent transition-all duration-300 border-b border-transparent">
         <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
             <a href="#"
                 class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
@@ -282,35 +288,35 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">💸</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">100% Free</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">No paywalls, no premium tiers, and no locked
                         features. Completely free and open-source forever.</p>
                 </div>
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">🛡️</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">No Privileged Intents</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Modern and secure. The bot relies entirely on
                         modern slash commands and interactions.</p>
                 </div>
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">🍓</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Pi & SD-Card Friendly</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Optimized for single-board computers. Uses
                         batched disk writes to dramatically extend your Raspberry Pi's MicroSD card lifespan.</p>
                 </div>
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">🌍</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Multi-Language Support</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Fully localized in English, Spanish, German,
                         French, and Portuguese at both client slash command and server announcement levels.</p>
                 </div>
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">🗑️</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Auto-Cleanup & Archive</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Keep channels tidy. Choose to completely delete
@@ -318,7 +324,7 @@
                         always deleted entirely to reduce clutter.</p>
                 </div>
                 <div
-                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm">
+                    class="bg-cream dark:bg-gray-700 p-6 rounded-md border border-cream-dark dark:border-gray-600 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
                     <div class="text-2xl mb-3">⏰</div>
                     <h4 class="text-lg font-bold text-charcoal dark:text-white mb-2">Custom Intervals</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Tailor notification timing. Allow server administrators to configure exact times when reminders are sent (e.g., 24h, 1h, or 15m before start).</p>
@@ -470,7 +476,7 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button id="back-to-top" class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top">
+    <button id="back-to-top" class="lg:hidden fixed bottom-6 right-6 p-3 rounded-full bg-breadcrumb text-white dark:bg-eggyolk dark:text-charcoal shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-all opacity-0 pointer-events-none z-50 flex items-center justify-center" aria-label="Back to Top" aria-hidden="true" tabindex="-1">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
     </button>
 
