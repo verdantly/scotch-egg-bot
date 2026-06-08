@@ -161,11 +161,28 @@ function isEventSilenced(event) {
     return false;
 }
 
+const liveCounterTimeouts = new Map();
+
 /**
  * Synchronizes the "Remind Me!" live counter on the original announcement message.
  * @param {string} eventId - The ID of the Discord Scheduled Event.
  */
-async function updateLiveCounter(eventId) {
+function updateLiveCounter(eventId) {
+    if (liveCounterTimeouts.has(eventId)) {
+        clearTimeout(liveCounterTimeouts.get(eventId));
+    }
+    const timeout = setTimeout(() => {
+        executeLiveCounterUpdate(eventId);
+        liveCounterTimeouts.delete(eventId);
+    }, 5000); // 5-second debounce
+    liveCounterTimeouts.set(eventId, timeout);
+}
+
+/**
+ * Core execution for synchronizing the "Remind Me!" live counter.
+ * @param {string} eventId - The ID of the Discord Scheduled Event.
+ */
+async function executeLiveCounterUpdate(eventId) {
     try {
         const eventData = eventDb[eventId];
         if (!eventData || !eventData.messageId) return;
@@ -530,12 +547,32 @@ client.on(Events.ClientReady, async c => {
     });
     await Promise.all(syncPromises);
 
-    // Offline Garbage Collection: Remove events deleted while bot was offline
+    // Offline Garbage Collection: Remove events deleted while bot was offline or leaked from kicked guilds
     let dbModified = false;
     for (const eventId in eventDb) {
         const eventData = eventDb[eventId];
-        // Only garbage collect if we successfully synced the guild the event belongs to,
-        // and the event is no longer active in that guild.
+        
+        // 1. Purge events from guilds the bot is no longer in (Leak Prevention)
+        if (eventData && eventData.guildId && !c.guilds.cache.has(eventData.guildId)) {
+            delete eventDb[eventId];
+            dbModified = true;
+            continue;
+        }
+
+        // 2. 30-Day Auto Purge (Requested feature to enforce strictly bounded DB size)
+        // Extracts the creation timestamp from the Discord Snowflake ID
+        const eventTimestamp = Number((BigInt(eventId) >> 22n) + 1420070400000n);
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - eventTimestamp > THIRTY_DAYS_MS) {
+            // Only purge if the event is not actively scheduled/running
+            if (!activeEventIds.has(eventId)) {
+                delete eventDb[eventId];
+                dbModified = true;
+                continue;
+            }
+        }
+
+        // 3. Normal garbage collection for active guilds
         if (eventData && eventData.guildId && successfulGuildIds.has(eventData.guildId)) {
             if (!activeEventIds.has(eventId)) {
                 try {
@@ -2009,7 +2046,8 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
     } catch (error) {
-        if (error.code === 10062) {
+        const errorCode = error.code || (error.rawError && error.rawError.code);
+        if (errorCode === 10062 || errorCode === '10062') {
             console.warn(`Discord Interaction Timeout (Unknown interaction 10062) for "${interaction.commandName || interaction.customId}". This is typically caused by temporary network latency or a Discord API hiccup.`);
             return;
         }
