@@ -273,6 +273,38 @@ const commands = [
                         .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('mentions')
+                .setNameLocalizations({
+                    'es-ES': 'menciones',
+                    'de': 'erwaehnungen',
+                    'fr': 'mentions',
+                    'pt-BR': 'mencoes'
+                })
+                .setDescription('Toggle whether public reminders mention/ping opted-in users.')
+                .setDescriptionLocalizations({
+                    'es-ES': 'Alternar si los recordatorios públicos mencionan a los usuarios inscritos.',
+                    'de': 'Schalte um, ob öffentliche Erinnerungen angemeldete Benutzer erwähnen/pingen.',
+                    'fr': 'Choisir si les rappels publics mentionnent/pingent les utilisateurs inscrits.',
+                    'pt-BR': 'Alternar se os lembretes públicos mencionam/pingam os usuários inscritos.'
+                })
+                .addBooleanOption(option =>
+                    option.setName('enabled')
+                        .setNameLocalizations({
+                            'es-ES': 'activado',
+                            'de': 'aktiviert',
+                            'fr': 'active',
+                            'pt-BR': 'ativado'
+                        })
+                        .setDescription('Enable to ping users, disable for silent reminders')
+                        .setDescriptionLocalizations({
+                            'es-ES': 'Activar para hacer ping, desactivar para silencioso',
+                            'de': 'Aktivieren zum Pingen, Deaktivieren für lautlos',
+                            'fr': 'Activer pour pinger, désactiver pour silencieux',
+                            'pt-BR': 'Ativar para pingar, desativar para silencioso'
+                        })
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('testreminder')
                 .setNameLocalizations({
                     'es-ES': 'recordatoriodeprueba',

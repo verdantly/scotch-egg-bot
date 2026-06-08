@@ -49,7 +49,8 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
    Create a `.env` file in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/setchannel` command has not been used in a server.
    ```env
    DISCORD_TOKEN=your_actual_token_here
-   CLIENT_ID=your_bot_client_id_here
+   CLIENT_ID=your_actual_client_id_here
+   DEFAULT_INTERVALS="24h, 1h" # Optional: Set global default reminder intervals
    ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
    ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
    ```

@@ -78,7 +78,11 @@ function getReminderIntervals(guildId) {
     if (typeof config === 'object' && config !== null && Array.isArray(config.intervals) && config.intervals.length > 0) {
         return config.intervals;
     }
-    // Default fallback if not configured
+    // Default fallback if not configured, checking global .env first
+    if (process.env.DEFAULT_INTERVALS) {
+        const parsed = parseIntervals(process.env.DEFAULT_INTERVALS);
+        if (parsed && parsed.length > 0) return parsed;
+    }
     return [{ value: 24, unit: 'h', ms: 24 * 60 * 60 * 1000 }, { value: 1, unit: 'h', ms: 1 * 60 * 60 * 1000 }];
 }
 
@@ -101,6 +105,17 @@ function getCalendarEnabled(guildId) {
 function getThreadsEnabled(guildId) {
     const config = serverConfig[guildId];
     if (typeof config === 'object' && config !== null && config.threadsEnabled !== undefined) return config.threadsEnabled;
+    return true; // Default to true
+}
+
+/**
+ * Checks if public reminders should ping opted-in users for a specific guild.
+ * @param {string} guildId - The Discord Guild ID.
+ * @returns {boolean} True if enabled, false otherwise (defaults to true).
+ */
+function getPingsEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.pingsEnabled !== undefined) return config.pingsEnabled;
     return true; // Default to true
 }
 
@@ -415,7 +430,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                         // 1. Send public channel reminder if mode is 'public' or 'hybrid'
                         if (mode === 'public' || mode === 'hybrid') {
                             let mentions = '';
-                            if (mode === 'public' && userIds.length > 0) {
+                            if (mode === 'public' && userIds.length > 0 && getPingsEnabled(event.guild.id)) {
                                 mentions = '\n\n' + userIds.map(id => `<@${id}>`).join(' ');
                             }
                             const publicMsg = `${alertMsg}${mentions}`;
@@ -1037,6 +1052,24 @@ client.on(Events.InteractionCreate, async interaction => {
                 
                 const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
                 await interaction.reply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }), flags: MessageFlags.Ephemeral });
+            }
+
+            if (subcommand === 'mentions') {
+                const enabled = interaction.options.getBoolean('enabled');
+                if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                    serverConfig[interaction.guildId].pingsEnabled = enabled;
+                } else {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private', pingsEnabled: enabled };
+                }
+                await saveConfig();
+                
+                let statusText = enabled ? 'Enabled' : 'Disabled';
+                if (userLocale === 'es') statusText = enabled ? 'Activado' : 'Desactivado';
+                else if (userLocale === 'de') statusText = enabled ? 'Aktiviert' : 'Deaktiviert';
+                else if (userLocale === 'fr') statusText = enabled ? 'Activé' : 'Désactivé';
+                else if (userLocale === 'pt') statusText = enabled ? 'Ativado' : 'Desativado';
+
+                await interaction.reply({ content: t(userLocale, 'settings_mentions_success', { status: statusText }), flags: MessageFlags.Ephemeral });
             }
 
             if (subcommand === 'testreminder') {
