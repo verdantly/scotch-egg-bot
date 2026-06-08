@@ -29,7 +29,8 @@ Clone this repository to your host machine (e.g., your Raspberry Pi, VPS, or loc
 Create a new file named `.env` in the root directory of the project and add your credentials:
 ```env
 DISCORD_TOKEN=your_actual_token_here
-CLIENT_ID=your_bot_client_id_here
+CLIENT_ID=your_actual_client_id_here
+DEFAULT_INTERVALS="24h, 1h" # Optional: Set global default reminder intervals
 ADMIN_USER_ID=your_discord_user_id_here # Optional: Receives DM on errors
 ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
 ```
