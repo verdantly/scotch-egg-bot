@@ -2428,8 +2428,6 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
     }
 });
 
-client.login(process.env.DISCORD_TOKEN);
-
 /**
  * Graceful Shutdown handler for catching Docker stop signals or Ctrl+C.
  */
@@ -2447,17 +2445,36 @@ async function shutdown() {
     }
 }
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+if (process.env.NODE_ENV !== 'test') {
+    client.login(process.env.DISCORD_TOKEN);
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    notifyAdmin('Unhandled Promise Rejection', reason);
-});
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
 
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    notifyAdmin('Uncaught Exception (Bot restarting)', error).finally(() => {
-        process.exit(1);
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+        notifyAdmin('Unhandled Promise Rejection', reason);
     });
-});
+
+    process.on('uncaughtException', (error) => {
+        console.error('Uncaught Exception:', error);
+        notifyAdmin('Uncaught Exception (Bot restarting)', error).finally(() => {
+            process.exit(1);
+        });
+    });
+}
+
+if (process.env.NODE_ENV === 'test') {
+    module.exports = {
+        client,
+        isEventSilenced,
+        cancelEventReminders,
+        scheduleRemindersForEvent,
+        updateLiveCounter,
+        executeLiveCounterUpdate,
+        syncEventReminders,
+        getAnnouncementChannelId,
+        getPingsEnabled,
+        shutdown
+    };
+}
