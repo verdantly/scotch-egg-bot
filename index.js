@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Events, EmbedBuilder, GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits, ActivityType, StringSelectMenuBuilder, MessageFlags, Collection, Routes } = require('discord.js');
 const schedule = require('node-schedule');
 require('dotenv').config();
 const { parseIntervals, getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('./utils.js');
@@ -385,6 +385,39 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                 const channel = channelId ? await event.guild.channels.fetch(channelId).catch(() => null) : null;
                 if (channel) {
                     try {                            
+                        // Fetch the latest event details to check for single-occurrence cancellation exceptions
+                        const rawEvent = await event.client.rest.get(Routes.guildScheduledEvent(event.guild.id, event.id)).catch(() => null);
+                        if (!rawEvent) {
+                            console.log(`Reminder skipped for event ${event.id} because it could not be fetched (possibly deleted).`);
+                            return;
+                        }
+
+                        // Check if the overall event is completed or canceled
+                        if (rawEvent.status === GuildScheduledEventStatus.Completed || rawEvent.status === GuildScheduledEventStatus.Canceled) {
+                            console.log(`Reminder skipped for event ${event.id} because the event status is ${rawEvent.status}.`);
+                            return;
+                        }
+
+                        const currentStartTimestamp = Date.parse(rawEvent.scheduled_start_time);
+                        if (currentStartTimestamp !== event.scheduledStartTimestamp) {
+                            console.log(`Reminder skipped for event ${event.id} because the scheduled start time has changed from ${event.scheduledStartTimestamp} to ${currentStartTimestamp}.`);
+                            return;
+                        }
+
+                        // Check if this specific occurrence is canceled via exceptions
+                        if (rawEvent.guild_scheduled_event_exceptions && Array.isArray(rawEvent.guild_scheduled_event_exceptions)) {
+                            const isOccurrenceCanceled = rawEvent.guild_scheduled_event_exceptions.some(exception => {
+                                if (!exception.is_canceled) return false;
+                                const exceptionTimestamp = Number((BigInt(exception.event_exception_id) >> 22n) + 1420070400000n);
+                                return exceptionTimestamp === currentStartTimestamp;
+                            });
+
+                            if (isOccurrenceCanceled) {
+                                console.log(`Reminder skipped for event ${event.id} because the occurrence at ${rawEvent.scheduled_start_time} is canceled.`);
+                                return;
+                            }
+                        }
+
                         const eventData = eventDb[event.id];
                         const mode = getAnnouncementMode(event.guild.id);
                         const rawUserIds = eventData && eventData.users ? Object.keys(eventData.users) : [];

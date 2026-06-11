@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-06-10
+
+### Fixed
+
+- **Canceled Occurrence Reminders for Recurring Events:** Fixed a bug where reminder notifications (both public channel and direct messages) were still dispatched for individual occurrences of a recurring event series that had been canceled by the host on Discord. The bot now dynamically fetches the event's raw exceptions from the Discord API at dispatch time and skips sending the reminder if the next occurrence has a canceled exception.
+
 ## [1.6.0] - 2026-06-06
 
 ### Added
