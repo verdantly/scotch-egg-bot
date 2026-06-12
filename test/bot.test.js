@@ -919,5 +919,295 @@ describe('Bot Logic Unit Tests', () => {
             // 3. Old reminders are deleted and cleared from database
             assert.strictEqual(storage.eventDb[eventId].reminderMessageIds.length, 0);
         });
+
+        it('should handle partial update event where old event state is null', async () => {
+            const eventId = 'evt_partial';
+            const { channel, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            const o = null; // old event is null
+
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780426800000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Updated Name',
+                description: 'Updated Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // Verify message was edited in-place despite o being null
+            assert.ok(mockMessage.editedPayload);
+            // Verify name update in title
+            const editedEmbed = mockMessage.editedPayload.embeds[0];
+            const editedTitle = editedEmbed.data ? editedEmbed.data.title : editedEmbed.title;
+            assert.ok(editedTitle.includes('Updated Name'));
+        });
+
+        it('should handle update gracefully when the announcement message has been deleted', async () => {
+            const eventId = 'evt_deleted_msg';
+            const { channel } = makeMockChannel();
+
+            // Force fetch to fail/return null
+            channel.messages.fetch = async () => {
+                throw new Error('DiscordAPIError: Unknown Message');
+            };
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            // Should not throw and crash the bot
+            await updateListeners[0](o, n);
+        });
+
+        it('should handle update gracefully when the announcement channel is missing or inaccessible', async () => {
+            const eventId = 'evt_missing_channel';
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => null // missing channel
+                }
+            };
+
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            // Should not throw and crash the bot
+            await updateListeners[0](o, n);
+        });
+
+        it('should archive and delete event from DB when updated to silenced status via tag', async () => {
+            const eventId = 'evt_transition_silenced';
+            const { channel, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            const o = {
+                id: eventId,
+                name: 'Test Event',
+                status: 1
+            };
+
+            // n contains [silent] in name
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                status: 1,
+                name: 'Test Event [silent]',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // Old announcement should be archived as Deleted (which edits the message)
+            assert.ok(mockMessage.editedPayload);
+            // Event should be deleted from eventDb
+            assert.strictEqual(storage.eventDb[eventId], undefined);
+        });
+
+        it('should announce event when updated from silenced status to unsilenced', async () => {
+            const eventId = 'evt_transition_unsilenced';
+            const { channel, sentMessages } = makeMockChannel();
+
+            // Not in eventDb because it was previously silenced
+            assert.strictEqual(storage.eventDb[eventId], undefined);
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            const o = {
+                id: eventId,
+                name: 'Test Event [silent]',
+                status: 1,
+                scheduledStartTimestamp: 1780340400000
+            };
+
+            // n does not contain [silent] tag anymore
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                scheduledStartTimestamp: 1780340400000,
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // New announcement should be posted
+            assert.strictEqual(sentMessages.length, 1);
+            // Event should be registered in eventDb
+            assert.ok(storage.eventDb[eventId]);
+            assert.strictEqual(storage.eventDb[eventId].messageId, 'new_msg_announcement');
+        });
+
+        it('should reflect changed guild config settings (like Google Calendar toggle) on embed components', async () => {
+            const eventId = 'evt_config_changed';
+            const { channel, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+
+            // 1. Enable calendar link in config
+            storage.serverConfig['guild_123'] = { calendarEnabled: true };
+            await updateListeners[0](o, n);
+
+            // Components should include calendar button (which has emoji 📅)
+            assert.ok(mockMessage.editedPayload);
+            const rowComponents = mockMessage.editedPayload.components[0].components;
+            const hasCalendarButton = rowComponents.some(btn => {
+                const data = btn.data || btn;
+                return (data.label && data.label.includes('Calendar')) || (data.emoji && (data.emoji === '📅' || data.emoji.name === '📅'));
+            });
+            assert.ok(hasCalendarButton);
+
+            // 2. Disable calendar link in config
+            storage.serverConfig['guild_123'] = { calendarEnabled: false };
+            mockMessage.editedPayload = null;
+            await updateListeners[0](o, n);
+
+            // Components should NOT include calendar button
+            assert.ok(mockMessage.editedPayload);
+            const rowComponentsNew = mockMessage.editedPayload.components[0].components;
+            const hasCalendarButtonNew = rowComponentsNew.some(btn => {
+                const data = btn.data || btn;
+                return (data.label && data.label.includes('Calendar')) || (data.emoji && (data.emoji === '📅' || data.emoji.name === '📅'));
+            });
+            assert.strictEqual(hasCalendarButtonNew, false);
+        });
     });
 });
