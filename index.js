@@ -2310,7 +2310,25 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
 
             if (timeChanged || locationChanged) {
                 // If it's a recurring event rollover, we don't send time change notifications to users
-                const isRecurringRollover = timeChanged && n.recurrenceRule && o.scheduledStartTimestamp <= Date.now();
+                let isRecurringRollover = timeChanged && n.recurrenceRule && o.scheduledStartTimestamp <= Date.now();
+
+                if (timeChanged && n.recurrenceRule && !isRecurringRollover) {
+                    try {
+                        const rawEvent = await n.client.rest.get(Routes.guildScheduledEvent(n.guild.id, n.id)).catch(() => null);
+                        if (rawEvent && rawEvent.guild_scheduled_event_exceptions && Array.isArray(rawEvent.guild_scheduled_event_exceptions)) {
+                            const isOccurrenceCanceled = rawEvent.guild_scheduled_event_exceptions.some(exception => {
+                                if (!exception.is_canceled) return false;
+                                const exceptionTimestamp = Number((BigInt(exception.event_exception_id) >> 22n) + 1420070400000n);
+                                return exceptionTimestamp === o.scheduledStartTimestamp;
+                            });
+                            if (isOccurrenceCanceled) {
+                                isRecurringRollover = true;
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Error checking event exceptions for rollover in event ${n.id}:`, err);
+                    }
+                }
                 
                 if (isRecurringRollover) {
                     // Delete old public reminders and clear message IDs

@@ -657,4 +657,267 @@ describe('Bot Logic Unit Tests', () => {
             assert.ok(updatedPayload.content.includes('Unsubscribed') || updatedPayload.content.includes('serie') || updatedPayload.content.includes('série'));
         });
     });
+
+    describe('Guild Scheduled Event Update Handling', () => {
+        const { Events } = require('discord.js');
+        let originalDateNow;
+        let originalRest;
+
+        beforeEach(() => {
+            originalDateNow = Date.now;
+            originalRest = client.rest;
+        });
+
+        afterEach(() => {
+            Date.now = originalDateNow;
+            client.rest = originalRest;
+        });
+
+        const makeMockChannel = () => {
+            const sentMessages = [];
+            const deletedMessageIds = [];
+
+            const mockMessage = {
+                id: 'msg_announcement',
+                embeds: [{
+                    data: { title: 'Original Title', description: '🗓️ **Date** ...\n📍 **Location** ...' },
+                    title: 'Original Title',
+                    description: '🗓️ **Date** ...\n📍 **Location** ...',
+                    setTitle(t) { this.title = t; this.data.title = t; return this; },
+                    setColor(c) { this.color = c; this.data.color = c; return this; },
+                    setImage(i) { this.image = i; this.data.image = i; return this; }
+                }],
+                components: [
+                    {
+                        components: [
+                            { label: '⏰ Remind Me!', customId: 'remind_evt_id', style: 1 }
+                        ]
+                    }
+                ],
+                delete: async () => {
+                    deletedMessageIds.push('msg_announcement');
+                },
+                editedPayload: null,
+                edit: async function(payload) {
+                    this.editedPayload = payload;
+                    return this;
+                },
+                startThread: async () => {}
+            };
+
+            const channel = {
+                id: 'channel_123',
+                send: async (payload) => {
+                    sentMessages.push(payload);
+                    return {
+                        id: 'new_msg_announcement',
+                        embeds: payload.embeds,
+                        components: payload.components,
+                        delete: async () => {},
+                        edit: async () => {},
+                        startThread: async () => {}
+                    };
+                },
+                messages: {
+                    fetch: async (id) => {
+                        if (id === 'msg_announcement') return mockMessage;
+                        return null;
+                    }
+                },
+                permissionsFor: () => ({
+                    has: () => true
+                })
+            };
+
+            return { channel, sentMessages, deletedMessageIds, mockMessage };
+        };
+
+        it('should treat standard reschedule as non-rollover (archive and post new announcement)', async () => {
+            const eventId = 'evt_resched';
+            const { channel, sentMessages, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            // o (old event) - Friday 7 PM
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Old voice' },
+                channelId: null
+            };
+
+            // n (new event) - Saturday 7 PM (rescheduled, no recurrence rule)
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780426800000,
+                entityMetadata: { location: 'Old voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            // Mock Date.now() to Wednesday (well before the event)
+            Date.now = () => 1780167600000;
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            assert.ok(updateListeners.length > 0);
+
+            await updateListeners[0](o, n);
+
+            // Verify:
+            // 1. Old announcement was archived (title has strike-through or is changed)
+            assert.ok(mockMessage.editedPayload);
+            const editedEmbed = mockMessage.editedPayload.embeds[0];
+            const editedTitle = editedEmbed.data ? editedEmbed.data.title : editedEmbed.title;
+            assert.ok(editedTitle !== 'Original Title');
+            // 2. New announcement was posted
+            assert.strictEqual(sentMessages.length, 1);
+            // 3. New message ID is stored in DB
+            assert.strictEqual(storage.eventDb[eventId].messageId, 'new_msg_announcement');
+        });
+
+        it('should treat standard recurring rollover as rollover (edit in-place)', async () => {
+            const eventId = 'evt_rollover';
+            const { channel, sentMessages, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                reminderMessageIds: ['rem_1', 'rem_2'],
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            // o (old event) - Friday 7 PM (1780340400000)
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            // n (new event) - next Friday 7 PM (1780945200000) with recurrence rule
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780945200000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                recurrenceRule: {},
+                client,
+                coverImageURL: () => null
+            };
+
+            // Mock Date.now() to Friday 7:05 PM (after old start time, standard rollover scenario)
+            Date.now = () => 1780340700000;
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // Verify:
+            // 1. No new announcement was posted
+            assert.strictEqual(sentMessages.length, 0);
+            // 2. Existing message was edited in-place
+            assert.ok(mockMessage.editedPayload);
+            // 3. Old reminders are deleted and cleared from database
+            assert.strictEqual(storage.eventDb[eventId].reminderMessageIds.length, 0);
+        });
+
+        it('should treat cancelled occurrence of recurring event as rollover (edit in-place, check exceptions)', async () => {
+            const eventId = 'evt_cancel_rollover';
+            const { channel, sentMessages, mockMessage } = makeMockChannel();
+
+            storage.eventDb[eventId] = {
+                messageId: 'msg_announcement',
+                guildId: 'guild_123',
+                reminderMessageIds: ['rem_1', 'rem_2'],
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                channels: {
+                    fetch: async () => channel
+                }
+            };
+
+            // o (old event) - Friday 7 PM (1780340400000)
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            // n (new event) - next Friday 7 PM (1780945200000) with recurrence rule
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780945200000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                recurrenceRule: {},
+                client,
+                coverImageURL: () => null
+            };
+
+            // Mock Date.now() to Wednesday (before the event starts)
+            Date.now = () => 1780167600000;
+
+            // Mock REST call to return exception for old Friday 7 PM occurrence
+            const exceptionId = (BigInt(1780340400000 - 1420070400000) << 22n).toString();
+            client.rest = {
+                get: async (route) => {
+                    return {
+                        id: eventId,
+                        scheduled_start_time: '2026-06-08T19:00:00.000Z',
+                        guild_scheduled_event_exceptions: [
+                            { event_exception_id: exceptionId, is_canceled: true }
+                        ]
+                    };
+                }
+            };
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // Verify:
+            // 1. No new announcement was posted (because rollover was detected from exception)
+            assert.strictEqual(sentMessages.length, 0);
+            // 2. Existing message was edited in-place
+            assert.ok(mockMessage.editedPayload);
+            // 3. Old reminders are deleted and cleared from database
+            assert.strictEqual(storage.eventDb[eventId].reminderMessageIds.length, 0);
+        });
+    });
 });

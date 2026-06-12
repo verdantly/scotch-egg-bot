@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-06-11
+
+### Fixed
+
+- **Recurring Event Canceled Occurrence Rollover:** Fixed a bug where canceling a single occurrence of a recurring scheduled event series caused the bot to incorrectly announce the next week's occurrence as a "new event" (archiving the old announcement as "Rescheduled" and posting a brand new announcement). The bot now dynamically fetches the event's raw exceptions list from the Discord API and treats canceled occurrences as recurring event rollovers, updating the original announcement message in-place and cleaning up the canceled occurrence's reminders.
+
 ## [1.6.1] - 2026-06-10
 
 ### Fixed
