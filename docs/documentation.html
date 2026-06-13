@@ -1217,6 +1217,55 @@ echo "{}" > config.json</pre>
                                     automatically.</p>
                             </div>
                         </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                How does the bot handle a single canceled occurrence in a recurring event series?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Scotch Egg handles this seamlessly! When you cancel a single occurrence of a recurring series on Discord, the bot automatically detects the cancellation via the API. It updates the original announcement message in-place to clean up the canceled date, purges the scheduled reminders for that specific occurrence, and safely rolls over to the next upcoming occurrence in the series—all without posting a new announcement message.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Can I prevent the bot from announcing certain events, or disable reminders for specific events?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Yes! You have two ways to do this:</p>
+                                <ul class="list-disc pl-6 mt-2 space-y-1">
+                                    <li><strong>Title/Description Tags:</strong> Adding <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">[exclude]</code> in your Discord event title or description will prevent the bot from posting an announcement entirely. Adding <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">[silent]</code> will announce the event but prevent users from opting into reminders.</li>
+                                    <li><strong>Slash Commands:</strong> Administrators can use the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings silenceevent</code> and <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings unsilenceevent</code> commands to dynamically toggle whether users can register for reminders on a specific event's announcement message.</li>
+                                </ul>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                How does canceling reminders via DM work for recurring event series?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>When you click the <strong>"Cancel Reminders"</strong> button on a direct message alert for a recurring event series, the bot will display an interactive choice. You can choose to opt out of the <strong>next occurrence only</strong> (leaving your reminders active for future weeks) or completely <strong>unsubscribe from the entire series</strong>.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Can we disable pings/mentions on public channel reminders to avoid chat spam?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Yes! Administrators can run the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings mentions</code> command to toggle public reminder mentions. When disabled, public channel reminders will still post at your configured intervals (updating the opt-in counter) but will not ping any users.</p>
+                            </div>
+                        </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                Can I set global default reminder intervals for all servers hosting my bot?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Yes! If you are hosting the bot, you can define a <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">DEFAULT_INTERVALS</code> variable in your <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">.env</code> file (for example, <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">DEFAULT_INTERVALS="24h, 1h"</code>). Any Discord server that hasn't explicitly set their own intervals using the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings intervals</code> command will automatically inherit these global defaults.</p>
+                            </div>
+                        </details>
                     </div>
                 </section>
 
