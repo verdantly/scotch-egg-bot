@@ -1266,6 +1266,15 @@ echo "{}" > config.json</pre>
                                 <p>Yes! If you are hosting the bot, you can define a <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">DEFAULT_INTERVALS</code> variable in your <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">.env</code> file (for example, <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">DEFAULT_INTERVALS="24h, 1h"</code>). Any Discord server that hasn't explicitly set their own intervals using the <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">/settings intervals</code> command will automatically inherit these global defaults.</p>
                             </div>
                         </details>
+                        <details
+                            class="bg-cream-dark dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 group">
+                            <summary
+                                class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
+                                How does the bot handle timezone differences?</summary>
+                            <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
+                                <p>Scotch Egg relies on Discord's dynamic timestamp tag formatting (e.g., <code class="bg-cream dark:bg-gray-900 px-1 py-0.5 rounded text-base">&lt;t:TIMESTAMP:F&gt;</code>). Epoch timestamps are computed in Unix time (which is timezone-independent), and the Discord client renders the dates and relative countdowns dynamically in the viewing user's local timezone. You do not need to configure timezones on your host machine or within the bot!</p>
+                            </div>
+                        </details>
                     </div>
                 </section>
 

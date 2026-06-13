@@ -94,6 +94,9 @@ describe('Bot Logic Unit Tests', () => {
         // Reset scheduled jobs
         for (const key in scheduledJobs) delete scheduledJobs[key];
         for (const key in schedule.scheduledJobs) delete schedule.scheduledJobs[key];
+        
+        // Mock client user
+        client.user = { id: 'mock_bot_user' };
     });
 
     after(() => {
@@ -1208,6 +1211,429 @@ describe('Bot Logic Unit Tests', () => {
                 return (data.label && data.label.includes('Calendar')) || (data.emoji && (data.emoji === '📅' || data.emoji.name === '📅'));
             });
             assert.strictEqual(hasCalendarButtonNew, false);
+        });
+    });
+
+    describe('Slash Command Interaction Handling', () => {
+        it('should execute /help command correctly for admin and non-admin users', async () => {
+            let replyPayload = null;
+            const makeMockInteraction = (isAdmin, userId) => ({
+                commandName: 'help',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: userId },
+                member: {
+                    permissions: {
+                        has: (perm) => isAdmin
+                    }
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            });
+
+            const interactionListeners = client.listeners('interactionCreate');
+
+            // 1. Test as non-admin
+            await interactionListeners[0](makeMockInteraction(false, 'mock_user_help_nonadmin'));
+            assert.ok(replyPayload);
+            assert.ok(replyPayload.embeds);
+            assert.ok(replyPayload.flags & 64);
+            const nonAdminEmbed = replyPayload.embeds[0].data || replyPayload.embeds[0];
+            assert.ok(nonAdminEmbed.title.includes('Scotch Egg'));
+            assert.strictEqual(nonAdminEmbed.fields.length, 1);
+
+            // 2. Test as admin
+            replyPayload = null;
+            await interactionListeners[0](makeMockInteraction(true, 'mock_user_help_admin'));
+            assert.ok(replyPayload);
+            assert.ok(replyPayload.embeds);
+            const adminEmbed = replyPayload.embeds[0].data || replyPayload.embeds[0];
+            assert.ok(adminEmbed.title.includes('Scotch Egg'));
+            assert.strictEqual(adminEmbed.fields.length, 2);
+        });
+
+        it('should execute /stats command correctly', async () => {
+            let editReplyPayload = null;
+            let deferred = false;
+
+            const { Collection } = require('discord.js');
+            const mockEvents = new Collection([
+                ['evt_1', { id: 'evt_1', name: 'Event One', status: 1 }],
+                ['evt_2', { id: 'evt_2', name: 'Event Two', status: 2 }]
+            ]);
+
+            const mockInteraction = {
+                commandName: 'stats',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_stats' },
+                guild: {
+                    scheduledEvents: {
+                        fetch: async () => mockEvents
+                    }
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                deferReply: async () => { deferred = true; },
+                editReply: async (payload) => { editReplyPayload = payload; }
+            };
+
+            storage.eventDb['evt_1'] = { users: { 'u1': true, 'u2': true } };
+            storage.eventDb['evt_2'] = { users: { 'u3': true } };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(deferred);
+            assert.ok(editReplyPayload);
+            assert.ok(editReplyPayload.embeds);
+            const statsEmbed = editReplyPayload.embeds[0].data || editReplyPayload.embeds[0];
+            assert.ok(statsEmbed.description.includes('Event One'));
+            assert.ok(statsEmbed.description.includes('2 opt-in'));
+            assert.ok(statsEmbed.description.includes('Event Two'));
+            assert.ok(statsEmbed.description.includes('1 opt-in'));
+            assert.strictEqual(statsEmbed.fields[0].value, '3');
+        });
+
+        it('should handle /settings channel subcommand', async () => {
+            let replyPayload = null;
+            const mockChannel = {
+                id: 'chan_new_announcements',
+                type: 0,
+                toString: () => '<#chan_new_announcements>',
+                permissionsFor: () => ({
+                    has: () => true
+                })
+            };
+
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_chan' },
+                guild: {
+                    members: {
+                        me: {}
+                    }
+                },
+                options: {
+                    getSubcommand: () => 'channel',
+                    getChannel: () => mockChannel
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.ok(replyPayload.flags & 64);
+            assert.strictEqual(storage.serverConfig['guild_123'].channelId, 'chan_new_announcements');
+            assert.ok(replyPayload.content.includes('chan_new_announcements'));
+        });
+
+        it('should handle /settings mode subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_mode' },
+                options: {
+                    getSubcommand: () => 'mode',
+                    getString: () => 'hybrid'
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.strictEqual(storage.serverConfig['guild_123'].mode, 'hybrid');
+            assert.ok(replyPayload.content.includes('Hybrid'));
+        });
+
+        it('should handle /settings calendar subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_cal' },
+                options: {
+                    getSubcommand: () => 'calendar',
+                    getBoolean: () => true
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.strictEqual(storage.serverConfig['guild_123'].calendarEnabled, true);
+        });
+
+        it('should handle /settings threads subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_threads' },
+                options: {
+                    getSubcommand: () => 'threads',
+                    getBoolean: () => false
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.strictEqual(storage.serverConfig['guild_123'].threadsEnabled, false);
+        });
+
+        it('should handle /settings autodelete subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_auto' },
+                options: {
+                    getSubcommand: () => 'autodelete',
+                    getBoolean: () => true
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.strictEqual(storage.serverConfig['guild_123'].autoDeleteEnabled, true);
+        });
+
+        it('should handle /settings mentions subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_mentions' },
+                options: {
+                    getSubcommand: () => 'mentions',
+                    getBoolean: () => false
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.strictEqual(storage.serverConfig['guild_123'].pingsEnabled, false);
+        });
+
+        it('should handle /settings intervals subcommand', async () => {
+            let replyPayload = null;
+            const mockEvents = new Map();
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_intervals' },
+                guild: {
+                    scheduledEvents: {
+                        fetch: async () => mockEvents
+                    }
+                },
+                options: {
+                    getSubcommand: () => 'intervals',
+                    getString: () => '12h, 30m'
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.ok(storage.serverConfig['guild_123'].intervals);
+            assert.strictEqual(storage.serverConfig['guild_123'].intervals[0].value, 12);
+            assert.strictEqual(storage.serverConfig['guild_123'].intervals[0].unit, 'h');
+            assert.strictEqual(storage.serverConfig['guild_123'].intervals[1].value, 30);
+            assert.strictEqual(storage.serverConfig['guild_123'].intervals[1].unit, 'm');
+        });
+
+        it('should handle /settings testreminder subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_testrem' },
+                options: {
+                    getSubcommand: () => 'testreminder'
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            storage.serverConfig['guild_123'] = {
+                mode: 'public',
+                intervals: [{ value: 1, unit: 'h', ms: 60 * 60 * 1000 }]
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.ok(replyPayload.content.includes('Test Reminder'));
+            assert.ok(replyPayload.components.length > 0);
+        });
+
+        it('should handle /settings view subcommand', async () => {
+            let replyPayload = null;
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_view' },
+                options: {
+                    getSubcommand: () => 'view'
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                reply: async (payload) => { replyPayload = payload; }
+            };
+
+            storage.serverConfig['guild_123'] = {
+                channelId: 'chan_view_test',
+                mode: 'hybrid',
+                intervals: [{ value: 1, unit: 'h', ms: 3600000 }]
+            };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(replyPayload);
+            assert.ok(replyPayload.content.includes('chan_view_test'));
+            assert.ok(replyPayload.content.includes('Hybrid'));
+        });
+
+        it('should handle /settings cleanup subcommand', async () => {
+            let editReplyPayload = null;
+            let deferred = false;
+
+            const mockMessageAnnounce = {
+                id: 'msg_ann_cleanup',
+                author: { id: 'mock_bot_user' },
+                embeds: [{
+                    title: 'New Event: Active Event To Keep',
+                    description: 'Time: <t:2000000000:F>\nLocation: Discord\nEvent URL: https://discord.com/events/123456789012345678/200000000000000001',
+                    data: {
+                        title: 'New Event: Active Event To Keep',
+                        description: 'Time: <t:2000000000:F>\nLocation: Discord\nEvent URL: https://discord.com/events/123456789012345678/200000000000000001'
+                    }
+                }],
+                components: [],
+                content: '',
+                edit: async () => {},
+                delete: async () => {}
+            };
+
+            const mockMessageConcluded = {
+                id: 'msg_ann_cleanup_concluded',
+                author: { id: 'mock_bot_user' },
+                embeds: [{
+                    title: 'New Event: Concluded Event To Delete',
+                    description: 'Time: <t:1000000000:F>\nLocation: Discord\nEvent URL: https://discord.com/events/123456789012345678/100000000000000001',
+                    data: {
+                        title: 'New Event: Concluded Event To Delete',
+                        description: 'Time: <t:1000000000:F>\nLocation: Discord\nEvent URL: https://discord.com/events/123456789012345678/100000000000000001'
+                    }
+                }],
+                components: [],
+                content: '',
+                edit: async () => {},
+                delete: async () => { mockMessageConcluded.deleted = true; }
+            };
+
+            const mockChannel = {
+                id: 'chan_cleanup',
+                messages: {
+                    fetch: async () => new Map([
+                        ['msg_ann_cleanup', mockMessageAnnounce],
+                        ['msg_ann_cleanup_concluded', mockMessageConcluded]
+                    ])
+                }
+            };
+
+            const mockEvents = new Map([
+                ['200000000000000001', { id: '200000000000000001', name: 'Active Event To Keep', status: 1, scheduledStartTimestamp: 2000000000000 }]
+            ]);
+
+            const mockInteraction = {
+                commandName: 'settings',
+                locale: 'en',
+                guildId: 'guild_123',
+                user: { id: 'mock_user_settings_cleanup' },
+                guild: {
+                    id: 'guild_123',
+                    preferredLocale: 'en',
+                    scheduledEvents: {
+                        fetch: async () => mockEvents
+                    },
+                    channels: {
+                        fetch: async () => mockChannel
+                    }
+                },
+                options: {
+                    getSubcommand: () => 'cleanup'
+                },
+                isChatInputCommand: () => true,
+                isStringSelectMenu: () => false,
+                deferReply: async () => { deferred = true; },
+                editReply: async (payload) => { editReplyPayload = payload; }
+            };
+
+            storage.serverConfig['guild_123'] = {
+                channelId: 'chan_cleanup',
+                autoDeleteEnabled: true
+            };
+
+            storage.eventDb['200000000000000001'] = { messageId: 'msg_ann_cleanup', guildId: 'guild_123' };
+            storage.eventDb['100000000000000001'] = { messageId: 'msg_ann_cleanup_concluded', guildId: 'guild_123' };
+
+            const interactionListeners = client.listeners('interactionCreate');
+            await interactionListeners[0](mockInteraction);
+
+            assert.ok(deferred);
+            assert.ok(editReplyPayload);
+            assert.ok(mockMessageConcluded.deleted);
+            assert.strictEqual(storage.eventDb['100000000000000001'], undefined);
+            assert.ok(storage.eventDb['200000000000000001']);
+            assert.ok(editReplyPayload.content.includes('cleaned up'));
         });
     });
 });

@@ -574,6 +574,13 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
 client.on(Events.ClientReady, async c => {
     console.log(`Bot logged in as ${c.user.tag} (v${version})`);
     
+    if (!process.env.ADMIN_USER_ID) {
+        console.warn('⚠️ WARNING: ADMIN_USER_ID is not configured in your .env file. Critical runtime error alerts will not be sent via DM.');
+    }
+    if (!process.env.DEFAULT_INTERVALS) {
+        console.log('ℹ️ INFO: DEFAULT_INTERVALS is not configured in your .env file. Servers without custom intervals will default to 24 hours and 1 hour.');
+    }
+    
     c.user.setActivity({
         name: 'Custom Status',
         type: ActivityType.Custom,
