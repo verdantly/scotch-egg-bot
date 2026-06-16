@@ -519,27 +519,35 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             
                             // If DMs failed, and NOT hybrid mode, post fallback mentions in public channel
                             if (failedUserIds.length > 0 && mode !== 'hybrid') {
-                                const mentions = failedUserIds.map(id => `<@${id}>`).join(' ');
-                                let prefix = 'Could not DM:';
-                                if (guildLocale === 'es') prefix = 'No se pudo enviar MD a:';
-                                else if (guildLocale === 'de') prefix = 'Konnte keine DM senden an:';
-                                else if (guildLocale === 'fr') prefix = "Impossible d'envoyer un DM à :";
-                                else if (guildLocale === 'pt') prefix = 'Não foi possível enviar DM para:';
-                                const fallbackMsg = `${alertMsg}\n\n${prefix} ${mentions}`;
-                                let sentMsg;
-                                if (fallbackMsg.length > 2000) {
-                                    let safeFallback = `${alertMsg}\n\n` + t(guildLocale, 'public_reminders_hidden_fallback', { count: failedUserIds.length });
-                                    if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
-                                    sentMsg = await channel.send(safeFallback).catch(() => null);
-                                } else {
-                                    sentMsg = await channel.send(fallbackMsg).catch(() => null);
+                                const activeFailedUserIds = [];
+                                for (const id of failedUserIds) {
+                                    const member = await event.guild.members.fetch(id).catch(() => null);
+                                    if (member) activeFailedUserIds.push(id);
                                 }
-                                if (sentMsg && eventDb[event.id]) {
-                                    if (!eventDb[event.id].reminderMessageIds) {
-                                        eventDb[event.id].reminderMessageIds = [];
+                                
+                                if (activeFailedUserIds.length > 0) {
+                                    const mentions = activeFailedUserIds.map(id => `<@${id}>`).join(' ');
+                                    let prefix = 'Could not DM:';
+                                    if (guildLocale === 'es') prefix = 'No se pudo enviar MD a:';
+                                    else if (guildLocale === 'de') prefix = 'Konnte keine DM senden an:';
+                                    else if (guildLocale === 'fr') prefix = "Impossible d'envoyer un DM à :";
+                                    else if (guildLocale === 'pt') prefix = 'Não foi possível enviar DM para:';
+                                    const fallbackMsg = `${alertMsg}\n\n${prefix} ${mentions}`;
+                                    let sentMsg;
+                                    if (fallbackMsg.length > 2000) {
+                                        let safeFallback = `${alertMsg}\n\n` + t(guildLocale, 'public_reminders_hidden_fallback', { count: activeFailedUserIds.length });
+                                        if (safeFallback.length > 2000) safeFallback = safeFallback.substring(0, 1995) + '...';
+                                        sentMsg = await channel.send(safeFallback).catch(() => null);
+                                    } else {
+                                        sentMsg = await channel.send(fallbackMsg).catch(() => null);
                                     }
-                                    eventDb[event.id].reminderMessageIds.push(sentMsg.id);
-                                    await saveDb();
+                                    if (sentMsg && eventDb[event.id]) {
+                                        if (!eventDb[event.id].reminderMessageIds) {
+                                            eventDb[event.id].reminderMessageIds = [];
+                                        }
+                                        eventDb[event.id].reminderMessageIds.push(sentMsg.id);
+                                        await saveDb();
+                                    }
                                 }
                             }
                         }

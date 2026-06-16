@@ -157,7 +157,8 @@ describe('Bot Logic Unit Tests', () => {
         const mockGuild = {
             id: 'guild_123',
             preferredLocale: 'en',
-            channels: {
+                members: { fetch: async (id) => ({ id }) },
+                channels: {
                 fetch: async (id) => fetchedChannel
             }
         };
@@ -748,6 +749,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -809,6 +811,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -866,6 +869,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -936,6 +940,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -985,6 +990,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -1027,6 +1033,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => null // missing channel
                 }
@@ -1070,6 +1077,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -1111,6 +1119,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
@@ -1158,6 +1167,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockGuild = {
                 id: 'guild_123',
                 preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
                 channels: {
                     fetch: async () => channel
                 }
