@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2026-06-16
+
+### Fixed
+
+- **Departed Users Edge Case:** Handled an edge case where a user who left the server entirely would cause an `@Invalid-User` mention in the public channel if their DMs were closed.
+- **Website Accessibility:** Added `<main>` tags to all documentation HTML pages for proper screen reader navigation (WCAG compliance).
+- **Test Suite Resiliency:** Refactored global `fs` mocking in the unit tests to ensure cleaner teardowns and added mock implementations for `guild.members.fetch()`.
+
 ## [1.6.3] - 2026-06-13
 
 ### Added
