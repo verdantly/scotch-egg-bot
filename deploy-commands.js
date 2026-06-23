@@ -216,7 +216,7 @@ const commands = [
                     'fr': 'autosuppression',
                     'pt-BR': 'autoexcluir'
                 })
-                .setDescription('Toggle whether event announcements are completely deleted when the event ends.')
+                .setDescription('Delete announcement when event ends? (Warning: Also deletes attached discussion thread)')
                 .setDescriptionLocalizations({
                     'es-ES': 'Alternar si los anuncios se eliminan por completo cuando termina el evento.',
                     'de': 'Schalte um, ob Event-Ankündigungen nach Event-Ende vollständig gelöscht werden.',
