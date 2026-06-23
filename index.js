@@ -1693,7 +1693,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
 
         if (interaction.commandName === 'help') {
-            const isAdmin = interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+            const isAdmin = interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.ManageGuild);
             const userLocale = getNormalizedLocale(interaction.locale);
 
             const fields = [

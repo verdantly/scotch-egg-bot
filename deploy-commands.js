@@ -28,7 +28,7 @@ const commands = [
             'fr': 'Gérer la configuration du bot pour ce serveur.',
             'pt-BR': 'Gerenciar a configuração do bot para este servidor.'
         })
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false)
         .addSubcommand(subcommand =>
             subcommand
@@ -478,7 +478,7 @@ const commands = [
                     'pt-BR': 'O link para o evento ou o ID dele'
                 })
                 .setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false),
     new SlashCommandBuilder()
         .setName('stats')
@@ -495,7 +495,7 @@ const commands = [
             'fr': 'Voir les statistiques d\'inscription pour les événements à venir sur ce serveur.',
             'pt-BR': 'Ver estatísticas de inscrição para eventos futuros neste servidor.'
         })
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false),
 ].map(command => command.toJSON());
 
