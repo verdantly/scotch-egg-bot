@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.5] - 2026-06-16
+
+### Changed
+
+- **Relaxed Slash Command Permissions:** Lowered the strict permission requirement for `/settings`, `/silenceevent`, and `/stats` commands from `Administrator` to `Manage Server`. This allows server moderators to natively configure the bot and unlocks Discord's Integrations UI so that access can be explicitly delegated to lower-level roles.
+- **Documentation OAuth2 Scopes:** Enhanced setup guides to clearly highlight that both the `bot` and `applications.commands` scopes are strictly required, and added explicit recommendations to check **Create Public Threads** and other core bot permissions in the URL generator.
+
 ## [1.6.4] - 2026-06-16
 
 ### Fixed

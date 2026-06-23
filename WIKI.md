@@ -133,7 +133,7 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 
 ### 5. Commands Reference
 
-**Administrator Commands**
+**Server Management Commands**
 - `/settings channel [channel]` - Sets or changes the server's announcement channel.
 - `/settings mode [mode]` - Selects the reminder delivery mode (`Public` channel @ pings, `Private` DM-only alerts, or `Hybrid` public-channel-posts with private DMs and zero user mentions).
 - `/settings view` - Admin command that shows current bot configurations.

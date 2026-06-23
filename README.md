@@ -128,7 +128,7 @@ Administrators can prevent specific events from being announced or having automa
 
 ## Commands Reference
 
-### Administrator Commands
+### Server Management Commands
 
 *   `/settings channel [channel]`
     -   **Action:** Sets the specific channel where the bot will post new event announcements and reminders for the current server.
