@@ -146,7 +146,7 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** Toggles whether the bot automatically creates a dedicated discussion thread on new announcements.
 
 *   `/settings autodelete [enabled]`
-    -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived.
+    -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived. *(Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread).*
 
 *   `/settings intervals [times]`
     -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`). Up to 5 intervals can be set per server.

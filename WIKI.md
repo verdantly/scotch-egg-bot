@@ -139,7 +139,7 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 - `/settings view` - Admin command that shows current bot configurations.
 - `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
 - `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
-- `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter).
+- `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter). *Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread.*
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/settings silenceevent [event]` - Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
