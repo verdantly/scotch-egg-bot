@@ -162,6 +162,15 @@
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Relaxed Slash Command Permissions:</strong> Lowered the strict permission requirement for <code>/settings</code>, <code>/silenceevent</code>, and <code>/stats</code> commands from <code>Administrator</code> to <code>Manage Server</code>. This allows standard server moderators to natively configure the bot and unlocks Discord's Integrations menu so that access can be easily delegated.</li>
                                 <li><strong>Documentation OAuth2 Scopes:</strong> Enhanced setup guides to explicitly highlight that both the <code>bot</code> and <code>applications.commands</code> scopes are strictly required, alongside new tips on recommending specific bot permissions in the URL generator.</li>
+                                <li><strong>Documentation Autodelete Warning:</strong> Added an explicit warning to the <code>/settings autodelete</code> command docs and Discord helper text that enabling autodelete will also delete the associated discussion thread.</li>
+                            </ul>
+                        </div>
+                        <div class="mt-8">
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Duplicate Announcements Race Condition:</strong> Fixed a bug where a network timeout during an initial event creation would cause the bot to later double-post "rescheduled" and "initial" announcements simultaneously during an event update.</li>
                             </ul>
                         </div>
                     </div>

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Relaxed Slash Command Permissions:** Lowered the strict permission requirement for `/settings`, `/silenceevent`, and `/stats` commands from `Administrator` to `Manage Server`. This allows server moderators to natively configure the bot and unlocks Discord's Integrations UI so that access can be explicitly delegated to lower-level roles.
 - **Documentation OAuth2 Scopes:** Enhanced setup guides to clearly highlight that both the `bot` and `applications.commands` scopes are strictly required, and added explicit recommendations to check **Create Public Threads** and other core bot permissions in the URL generator.
+- **Documentation Autodelete Warning:** Added an explicit warning to the `/settings autodelete` command docs and Discord helper text that enabling autodelete will also delete the associated discussion thread.
+
+### Fixed
+
+- **Duplicate Announcements Race Condition:** Fixed a bug where a network timeout during an initial event creation would cause the bot to later double-post "rescheduled" and "initial" announcements simultaneously during an event update.
 
 ## [1.6.4] - 2026-06-16
 
