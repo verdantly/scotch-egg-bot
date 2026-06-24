@@ -2295,8 +2295,10 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
                 if (channel) {
                     try {
                         await postAnnouncement(n, channel);
+                        return; // Stop update processing since we just handled it as a brand new event
                     } catch (err) {
                         // error logged in postAnnouncement
+                        return; // Also return on error so we don't accidentally run reschedule logic on an empty db entry
                     }
                 }
             }
