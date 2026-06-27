@@ -216,7 +216,7 @@
                     <div class="space-y-8">
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes & Improvements
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes & Improvements
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Departed Users Edge Case:</strong> Handled an edge case where a user who left the server entirely would cause an <code>@Invalid-User</code> mention in the public channel if their DMs were closed.</li>
@@ -267,7 +267,7 @@
                     <div class="space-y-8">
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Recurring Event Canceled Occurrence Rollover:</strong> Fixed a bug where canceling a single occurrence of a recurring scheduled event series caused the bot to incorrectly announce the next week's occurrence as a "new event" (archiving the old announcement as "Rescheduled" and posting a brand new announcement). The bot now dynamically fetches the event's raw exceptions list from the Discord API and treats canceled occurrences as recurring event rollovers, updating the original announcement message in-place and cleaning up the canceled occurrence's reminders.</li>
@@ -288,7 +288,7 @@
                     <div class="space-y-8">
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Canceled Occurrence Reminders for Recurring Events:</strong> Fixed a bug where reminder notifications (both public channel and direct messages) were still dispatched for individual occurrences of a recurring event series that had been canceled by the host on Discord. The bot now dynamically fetches the event's raw exceptions from the Discord API at dispatch time and skips sending the reminder if the next occurrence has a canceled exception.</li>
@@ -320,7 +320,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Robust Interaction Timeout Handling:</strong> Improved the Discord <code>10062 Unknown Interaction</code> timeout handler. It now correctly parses nested <code>discord.js</code> raw error codes using loose typing, successfully preventing noisy stack traces and bot crashes during temporary Discord API latency or network hiccups.</li>
@@ -346,7 +346,7 @@
                     <div class="space-y-8">
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Recurring Event Public Reminder Cleanup:</strong> Resolved a bug in <code>/settings cleanup</code> where orphaned public reminder pings for past occurrences of recurring events were not deleted because they shared the same name as upcoming occurrences. The bot now extracts and matches the unique Discord start timestamp tag (<code>&lt;t:TIMESTAMP:F&gt;</code>) to safely distinguish and clean up only the concluded occurrence.</li>
@@ -374,7 +374,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Concluded Event Archiving in Settings Cleanup:</strong> Fixed a bug where concluded event announcements were not being archived or deleted during <code>/settings cleanup</code> if they were still tracked in <code>eventDb</code> but missing their <code>messageId</code> field. <code>archiveAnnouncementMessage</code> now accepts an optional pre-fetched message parameter to ensure it can archive the message directly and safely populate <code>messageId</code>.</li>
@@ -420,7 +420,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Interaction Syntax Error:</strong> Fixed a critical <code>SyntaxError: Unexpected token 'catch'</code> startup crash in <code>index.js</code> caused by a truncated button interaction handler.</li>
@@ -456,7 +456,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Dynamic Relative Reminders:</strong> Shifted reminder message generation inside the scheduled node-schedule job callback, resolving an issue where the relative countdown (e.g., <code>(in 1 hour)</code>) was missing for events scheduled more than one week in advance.</li>
@@ -477,7 +477,7 @@
                     <div class="space-y-8">
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Memory Sweepers:</strong> Actually applied the Discord.js sweeper configuration to the client to properly clear cached messages and users, resolving an omission in the v1.3.0 release.</li>
@@ -521,7 +521,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Silent Errors:</strong> Fixed an issue where the live counter update function was silently swallowing errors without logging them.</li>
@@ -566,7 +566,7 @@
                         </div>
                         <div>
                             <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
-                                <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Docker Permissions:</strong> Fixed a critical bug in the <code>Dockerfile</code> where the non-root node user lacked write permissions for the app directory.</li>
