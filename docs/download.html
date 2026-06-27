@@ -142,13 +142,38 @@
             </div>
 
             <div class="space-y-12">
+                <!-- Release: v1.6.6 -->
+                <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.6.6</h3>
+                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
+                            </div>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">June 27, 2026</span>
+                        </div>
+                        <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Spurious "Rescheduled" Announcements:</strong> Fixed a bug where a native Discord behavior (Discord automatically shifting the scheduled start time of Voice/Stage events to exactly match the moment the host clicks "Start Event") tricked the bot into thinking the event was manually rescheduled, causing it to spam duplicate announcements precisely when the event started.</li>
+                                <li><strong>Cache Partial Object Protection:</strong> Added strict null-checks during event updates to prevent the bot from incorrectly firing location or time change notifications when recovering from a partial memory state after a restart.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- Release: v1.6.5 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v1.6.5</h3>
-                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
                             </div>
                             <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">June 22, 2026</span>
                         </div>

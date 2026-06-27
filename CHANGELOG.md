@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.6] - 2026-06-27
+
+### Fixed
+
+- **Spurious "Rescheduled" Announcements:** Fixed a bug where a native Discord behavior (Discord automatically shifting the scheduled start time of Voice/Stage events to exactly match the moment the host clicks "Start Event") tricked the bot into thinking the event was manually rescheduled, causing it to spam duplicate announcements precisely when the event started.
+- **Cache Partial Object Protection:** Added strict null-checks during event updates to prevent the bot from incorrectly firing location or time change notifications when recovering from a partial memory state after a restart.
+
 ## [1.6.5] - 2026-06-22
 
 ### Changed

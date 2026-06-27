@@ -2320,10 +2320,10 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
     } else {
         // Check if critical details changed to notify users
         if (o && eventDb[n.id]) {
-            const timeChanged = o.scheduledStartTimestamp !== n.scheduledStartTimestamp;
+            const timeChanged = o.scheduledStartTimestamp != null && o.scheduledStartTimestamp !== n.scheduledStartTimestamp && n.status === GuildScheduledEventStatus.Scheduled;
             const oldLocation = o.entityMetadata?.location || o.channelId;
             const newLocation = n.entityMetadata?.location || n.channelId;
-            const locationChanged = oldLocation !== newLocation;
+            const locationChanged = oldLocation != null && oldLocation !== newLocation;
 
             if (timeChanged || locationChanged) {
                 // If it's a recurring event rollover, we don't send time change notifications to users
