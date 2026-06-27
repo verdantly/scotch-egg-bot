@@ -161,6 +161,7 @@
                             </h4>
                             <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                                 <li><strong>Spurious "Rescheduled" Announcements:</strong> Fixed a bug where a native Discord behavior (Discord automatically shifting the scheduled start time of Voice/Stage events to exactly match the moment the host clicks "Start Event") tricked the bot into thinking the event was manually rescheduled, causing it to spam duplicate announcements precisely when the event started.</li>
+                                <li><strong>Legacy Event Start Announcements:</strong> Fixed an issue where events created before the bot was invited to a server would erroneously trigger a brand new "New Event" announcement exactly when the event started.</li>
                                 <li><strong>Cache Partial Object Protection:</strong> Added strict null-checks during event updates to prevent the bot from incorrectly firing location or time change notifications when recovering from a partial memory state after a restart.</li>
                             </ul>
                         </div>

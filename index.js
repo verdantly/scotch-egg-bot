@@ -2288,8 +2288,8 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
             }
         } else {
             // If it is not silenced, but was previously tag-excluded (so not in eventDb),
-            // and it is scheduled/active, we announce it now!
-            if (!eventDb[n.id] && (n.status === GuildScheduledEventStatus.Scheduled || n.status === GuildScheduledEventStatus.Active)) {
+            // and it is scheduled, we announce it now!
+            if (!eventDb[n.id] && n.status === GuildScheduledEventStatus.Scheduled) {
                 const channelId = getAnnouncementChannelId(n.guild.id);
                 const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                 if (channel) {

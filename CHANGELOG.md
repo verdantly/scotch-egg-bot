@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Spurious "Rescheduled" Announcements:** Fixed a bug where a native Discord behavior (Discord automatically shifting the scheduled start time of Voice/Stage events to exactly match the moment the host clicks "Start Event") tricked the bot into thinking the event was manually rescheduled, causing it to spam duplicate announcements precisely when the event started.
+- **Legacy Event Start Announcements:** Fixed an issue where events created before the bot was invited to a server would erroneously trigger a brand new "New Event" announcement exactly when the event started.
 - **Cache Partial Object Protection:** Added strict null-checks during event updates to prevent the bot from incorrectly firing location or time change notifications when recovering from a partial memory state after a restart.
 
 ## [1.6.5] - 2026-06-22
