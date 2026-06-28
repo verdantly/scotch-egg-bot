@@ -1224,6 +1224,99 @@ describe('Bot Logic Unit Tests', () => {
         });
     });
 
+
+        it('should NOT post a rescheduled announcement if the event is already Active (Spurious Reschedule bug)', async () => {
+            const eventId = 'evt_spurious_reschedule';
+            const { channel, sentMessages } = makeMockChannel();
+            storage.eventDb[eventId] = { messageId: 'msg_announcement', guildId: 'guild_123', users: {} };
+            
+            // o (old event) has original start time
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780000000000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+            
+            // n (new event) has slightly shifted start time due to host clicking start
+            const n = {
+                id: eventId,
+                guild: { id: 'guild_123', preferredLocale: 'en', channels: { fetch: async () => channel } },
+                scheduledStartTimestamp: 1780000005000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 2, // Active
+                name: 'Active Event',
+                description: 'Desc',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners('guildScheduledEventUpdate');
+            await updateListeners[0](o, n);
+
+            // Should ignore the timestamp change because it is Active
+            assert.strictEqual(sentMessages.length, 0);
+        });
+
+        it('should NOT announce a legacy event when it starts (Legacy Event Start bug)', async () => {
+            const eventId = 'evt_legacy_start';
+            const { channel, sentMessages } = makeMockChannel();
+            
+            // Legacy event has NO entry in eventDb
+            const o = null; 
+            
+            const n = {
+                id: eventId,
+                guild: { id: 'guild_123', preferredLocale: 'en', channels: { fetch: async () => channel } },
+                scheduledStartTimestamp: 1780000000000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 2, // Active
+                name: 'Legacy Event',
+                description: 'Desc',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners('guildScheduledEventUpdate');
+            await updateListeners[0](o, n);
+
+            // Should ignore it because status is Active and not Scheduled
+            assert.strictEqual(sentMessages.length, 0);
+        });
+
+        it('should handle partial cache objects gracefully without false-positive location changes', async () => {
+            const eventId = 'evt_partial_cache';
+            const { channel, sentMessages } = makeMockChannel();
+            storage.eventDb[eventId] = { messageId: 'msg_announcement', guildId: 'guild_123', users: {} };
+            
+            // o (old event) is missing entityMetadata and channelId due to partial cache
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780000000000
+            };
+            
+            const n = {
+                id: eventId,
+                guild: { id: 'guild_123', preferredLocale: 'en', channels: { fetch: async () => channel } },
+                scheduledStartTimestamp: 1780000000000,
+                entityMetadata: { location: 'New Location' },
+                channelId: null,
+                status: 1, // Scheduled
+                name: 'Partial Cache Event',
+                description: 'Desc',
+                client,
+                coverImageURL: () => null
+            };
+
+            const updateListeners = client.listeners('guildScheduledEventUpdate');
+            await updateListeners[0](o, n);
+
+            // Should ignore the missing oldLocation and not treat it as changed
+            assert.strictEqual(sentMessages.length, 0);
+        });
+
     describe('Slash Command Interaction Handling', () => {
         it('should execute /help command correctly for admin and non-admin users', async () => {
             let replyPayload = null;
