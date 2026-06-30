@@ -2289,7 +2289,9 @@ client.on(Events.GuildScheduledEventUpdate, async (o, n) => {
         } else {
             // If it is not silenced, but was previously tag-excluded (so not in eventDb),
             // and it is scheduled, we announce it now!
-            if (!eventDb[n.id] && n.status === GuildScheduledEventStatus.Scheduled) {
+            // If it's a recurring event that just rolled over (the old start time is in the past), do not auto-heal it.
+            const isRollover = o && n.recurrenceRule && o.scheduledStartTimestamp <= Date.now();
+            if (!eventDb[n.id] && n.status === GuildScheduledEventStatus.Scheduled && !isRollover) {
                 const channelId = getAnnouncementChannelId(n.guild.id);
                 const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                 if (channel) {

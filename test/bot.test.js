@@ -1317,6 +1317,46 @@ describe('Bot Logic Unit Tests', () => {
             assert.strictEqual(sentMessages.length, 0);
         });
 
+
+        it('should NOT announce a legacy recurring event when it rolls over (Legacy Recurring Rollover bug)', async () => {
+            const eventId = 'evt_legacy_recurring_rollover';
+            const { channel, sentMessages } = makeMockChannel();
+            
+            // Legacy event has NO entry in eventDb
+            
+            // Old event occurrence has already started/passed
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780000000000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+            
+            // New event rolled over to the next day and is Scheduled
+            const n = {
+                id: eventId,
+                guild: { id: 'guild_123', preferredLocale: 'en', channels: { fetch: async () => channel } },
+                scheduledStartTimestamp: 1780086400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1, // Scheduled
+                name: 'Legacy Recurring Event',
+                description: 'Desc',
+                recurrenceRule: {}, // Indicates it is a recurring event
+                client,
+                coverImageURL: () => null
+            };
+
+            // Set Date.now to be *after* the old occurrence
+            Date.now = () => 1780000010000;
+
+            const updateListeners = client.listeners('guildScheduledEventUpdate');
+            await updateListeners[0](o, n);
+
+            // Should ignore it because it's a rollover
+            assert.strictEqual(sentMessages.length, 0);
+        });
+
     describe('Slash Command Interaction Handling', () => {
         it('should execute /help command correctly for admin and non-admin users', async () => {
             let replyPayload = null;
