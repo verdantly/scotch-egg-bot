@@ -472,29 +472,58 @@ ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here</pre>
 
                     <div class="mt-10">
                         <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">Migrating from Legacy (Pre-v2.0)</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">If you are upgrading from an older version of the bot where your databases lived directly in the root directory rather than in a persistent <code>data/</code> folder, you can run the following sequence of terminal commands in your bot directory to preserve your server's data:</p>
-                        <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-4">
-                            <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
-                                data-target="migrate-code">Copy</button>
-                            <pre id="migrate-code" class="text-gray-300 font-mono text-sm overflow-x-auto whitespace-pre"># 1. Stop the bot
-docker compose down
-
-# 2. Download the latest code into your bot directory (e.g. via git pull)
-git pull
-
-# 3. Create the new data folder
-mkdir data
-
-# 4. Safely copy your existing database files into the new folder
-cp events.json data/events.json
-cp config.json data/config.json
-
-# 5. Rebuild and start the new container
-docker compose up -d --build
-
-# 6. Re-register the slash commands
-docker exec -it scotch-egg node deploy-commands.js</pre>
-                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">If you are upgrading from an older version of the bot where your databases lived directly in the root directory rather than in a persistent <code>data/</code> folder, follow these steps to preserve your server's data:</p>
+                        <ol class="list-decimal pl-6 space-y-6 text-gray-600 dark:text-gray-400">
+                            <li>
+                                Stop the bot:
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-1">Copy</button>
+                                    <pre id="migrate-code-1" class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose down</pre>
+                                </div>
+                            </li>
+                            <li>
+                                Download the latest code into your bot directory (e.g. via git pull):
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-2">Copy</button>
+                                    <pre id="migrate-code-2" class="text-gray-300 font-mono text-sm overflow-x-auto">git pull</pre>
+                                </div>
+                            </li>
+                            <li>
+                                Create a new folder named <code>data</code> inside your bot directory:
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-3">Copy</button>
+                                    <pre id="migrate-code-3" class="text-gray-300 font-mono text-sm overflow-x-auto">mkdir data</pre>
+                                </div>
+                            </li>
+                            <li>
+                                <strong>Important:</strong> Move your existing database files into the new <code>data</code> folder. You can use <code>cp</code> instead of <code>mv</code> to safely copy them without deleting your backups:
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-4">Copy</button>
+                                    <pre id="migrate-code-4" class="text-gray-300 font-mono text-sm overflow-x-auto whitespace-pre">cp events.json data/events.json
+cp config.json data/config.json</pre>
+                                </div>
+                            </li>
+                            <li>
+                                Rebuild the container:
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-5">Copy</button>
+                                    <pre id="migrate-code-5" class="text-gray-300 font-mono text-sm overflow-x-auto">docker compose up -d --build</pre>
+                                </div>
+                            </li>
+                            <li>
+                                Re-register the slash commands:
+                                <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-2">
+                                    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                        data-target="migrate-code-6">Copy</button>
+                                    <pre id="migrate-code-6" class="text-gray-300 font-mono text-sm overflow-x-auto">docker exec -it scotch-egg node deploy-commands.js</pre>
+                                </div>
+                            </li>
+                        </ol>
                     </div>
                 </section>
             </div>
