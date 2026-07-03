@@ -211,8 +211,7 @@
                 <section id="setup" class="scroll-mt-28">
                     <h2 class="text-4xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk mb-6">Deployment &
                         Setup Guide</h2>
-                    <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch
-                        Egg Bot. The setup below details the recommended containerized installation using Docker
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">Follow these steps to deploy and run Scotch Egg. The setup below details the recommended containerized installation using Docker
                         Compose.</p>
 
                     <!-- Recommendation Callout -->
@@ -223,8 +222,7 @@
                             <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended
                                 Deployment: Docker Compose</h4>
                             <p class="text-gray-700 dark:text-gray-300">
-                                Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg
-                                Bot. It pre-configures Node.js, database folders, and permission environments inside an
+                                Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg. It pre-configures Node.js, database folders, and permission environments inside an
                                 isolated container, making installation foolproof and keeping background process
                                 monitoring automated.
                             </p>
@@ -1237,9 +1235,7 @@ cp config.json data/config.json</pre>
                             <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
                                 <p>If your host device (like a Raspberry Pi) experiences a sudden power outage during a
                                     disk
-                                    write, the active database file can get truncated or corrupted. On startup, Scotch
-                                    Egg
-                                    Bot automatically attempts to load the database, falling back to a `.bak` copy if
+                                    write, the active database file can get truncated or corrupted. On startup, Scotch Egg automatically attempts to load the database, falling back to a `.bak` copy if
                                     the
                                     primary is damaged. If both are corrupted, it executes a Regex salvage parser to
                                     scan
