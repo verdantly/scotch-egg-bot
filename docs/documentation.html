@@ -472,15 +472,29 @@ ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here</pre>
 
                     <div class="mt-10">
                         <h3 class="text-2xl font-serif font-bold text-charcoal dark:text-white mb-4">Migrating from Legacy (Pre-v2.0)</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">If you are upgrading from an older version of the bot where your databases lived directly in the root directory rather than in a persistent <code>data/</code> folder, follow these steps to preserve your server's data:</p>
-                        <ol class="list-decimal pl-6 space-y-2 text-gray-600 dark:text-gray-400">
-                            <li>Stop the bot (<code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">docker compose down</code>).</li>
-                            <li>Download the latest code into your bot directory.</li>
-                            <li>Create a new folder named <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">data</code> inside your bot directory.</li>
-                            <li><strong>Important:</strong> Move your existing <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">events.json</code> and <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">config.json</code> files into the new <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">data</code> folder.</li>
-                            <li>Rebuild the container: <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">docker compose up -d --build</code></li>
-                            <li>Re-register the commands: <code class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded">docker exec -it scotch-egg node deploy-commands.js</code></li>
-                        </ol>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">If you are upgrading from an older version of the bot where your databases lived directly in the root directory rather than in a persistent <code>data/</code> folder, you can run the following sequence of terminal commands in your bot directory to preserve your server's data:</p>
+                        <div class="bg-charcoal dark:bg-gray-900 rounded-md p-4 relative group mt-4">
+                            <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity copy-btn"
+                                data-target="migrate-code">Copy</button>
+                            <pre id="migrate-code" class="text-gray-300 font-mono text-sm overflow-x-auto whitespace-pre"># 1. Stop the bot
+docker compose down
+
+# 2. Download the latest code into your bot directory (e.g. via git pull)
+git pull
+
+# 3. Create the new data folder
+mkdir data
+
+# 4. Safely copy your existing database files into the new folder
+cp events.json data/events.json
+cp config.json data/config.json
+
+# 5. Rebuild and start the new container
+docker compose up -d --build
+
+# 6. Re-register the slash commands
+docker exec -it scotch-egg node deploy-commands.js</pre>
+                        </div>
                     </div>
                 </section>
             </div>
