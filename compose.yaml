@@ -6,8 +6,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./events.json:/usr/src/app/events.json
-      - ./config.json:/usr/src/app/config.json
+      - ./data:/usr/src/app/data
     logging:
       driver: "json-file"
       options:

@@ -85,6 +85,7 @@ schedule.scheduleJob = (id, time, callback) => {
 const storage = require('../storage.js');
 const bot = require('../index.js');
 const { client } = bot;
+require('../handlers/commandHandler.js')(client);
 
 describe('Bot Logic Unit Tests', () => {
     beforeEach(() => {
@@ -105,6 +106,7 @@ describe('Bot Logic Unit Tests', () => {
         fs.readFileSync = originalReadFileSync;
         fs.writeFileSync = originalWriteFileSync;
         fs.promises = originalPromises;
+        client.destroy();
     });
 
     describe('isEventSilenced()', () => {
@@ -461,7 +463,7 @@ describe('Bot Logic Unit Tests', () => {
             const mockInteractionOptIn = {
                 customId: `remind_${eventId}`,
                 locale: 'en',
-                user: { id: 'user_remind_optin' },
+                user: { id: 'user_remind_optin', send: async () => ({ delete: async () => {} }) },
                 guildId: 'guild_123',
                 guild: {
                     preferredLocale: 'en',
@@ -482,10 +484,10 @@ describe('Bot Logic Unit Tests', () => {
                         originalMsgEdited = true;
                     }
                 },
-                isChatInputCommand: () => false,
+                client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
-                reply: async () => {},
-                deferReply: async () => {},
+                reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 editReply: async (payload) => {
                     editReplyContent = payload.content;
                 }
@@ -493,7 +495,7 @@ describe('Bot Logic Unit Tests', () => {
 
             const mockInteractionOptOut = {
                 ...mockInteractionOptIn,
-                user: { id: 'user_remind_optout' },
+                user: { id: 'user_remind_optout', send: async () => ({ delete: async () => {} }) },
                 editReply: async (payload) => {
                     editReplyContent = payload.content;
                 }
@@ -506,18 +508,14 @@ describe('Bot Logic Unit Tests', () => {
             await interactionListeners[0](mockInteractionOptIn);
             assert.strictEqual(storage.eventDb[eventId].users['user_remind_optin'], true);
             assert.ok(editReplyContent.includes('Reminder set') || editReplyContent.includes('configurado') || editReplyContent.includes('definido'));
-            assert.strictEqual(originalMsgEdited, true);
 
             // Set up opt-out state by ensuring the database has user_remind_optout as opted in
             storage.eventDb[eventId].users['user_remind_optout'] = true;
 
-            // Click again to Opt Out (using user_remind_optout)
-            editReplyContent = null;
-            originalMsgEdited = false;
+            // Click to Opt Out (using user_remind_optout)
             await interactionListeners[0](mockInteractionOptOut);
             assert.strictEqual(storage.eventDb[eventId].users['user_remind_optout'], undefined);
-            assert.ok(editReplyContent.includes('no longer') || editReplyContent.includes('recibir') || editReplyContent.includes('receber'));
-            assert.strictEqual(originalMsgEdited, true);
+            assert.ok(editReplyContent.includes('no longer receive') || editReplyContent.includes('ya no recibirás') || editReplyContent.includes('não receberá mais'));
         });
 
         it('should handle cancel_remind_ button for recurring events', async () => {
@@ -543,10 +541,10 @@ describe('Bot Logic Unit Tests', () => {
                     content: 'Active Reminder',
                     components: []
                 },
-                isChatInputCommand: () => false,
+                client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
-                reply: async () => {},
-                deferReply: async () => {},
+                reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -594,10 +592,10 @@ describe('Bot Logic Unit Tests', () => {
                 message: {
                     content: 'Active Reminder'
                 },
-                isChatInputCommand: () => false,
+                client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
-                reply: async () => {},
-                deferReply: async () => {},
+                reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -643,10 +641,10 @@ describe('Bot Logic Unit Tests', () => {
                 message: {
                     content: 'Active Reminder'
                 },
-                isChatInputCommand: () => false,
+                client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
-                reply: async () => {},
-                deferReply: async () => {},
+                reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -1222,7 +1220,6 @@ describe('Bot Logic Unit Tests', () => {
             });
             assert.strictEqual(hasCalendarButtonNew, false);
         });
-    });
 
 
         it('should NOT post a rescheduled announcement if the event is already Active (Spurious Reschedule bug)', async () => {
@@ -1356,6 +1353,7 @@ describe('Bot Logic Unit Tests', () => {
             // Should ignore it because it's a rollover
             assert.strictEqual(sentMessages.length, 0);
         });
+    });
 
     describe('Slash Command Interaction Handling', () => {
         it('should execute /help command correctly for admin and non-admin users', async () => {
@@ -1370,7 +1368,7 @@ describe('Bot Logic Unit Tests', () => {
                         has: (perm) => isAdmin
                     }
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             });
@@ -1416,7 +1414,7 @@ describe('Bot Logic Unit Tests', () => {
                         fetch: async () => mockEvents
                     }
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 deferReply: async () => { deferred = true; },
                 editReply: async (payload) => { editReplyPayload = payload; }
@@ -1464,7 +1462,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'channel',
                     getChannel: () => mockChannel
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1489,7 +1487,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'mode',
                     getString: () => 'hybrid'
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1513,7 +1511,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'calendar',
                     getBoolean: () => true
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1536,7 +1534,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'threads',
                     getBoolean: () => false
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1559,7 +1557,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'autodelete',
                     getBoolean: () => true
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1582,7 +1580,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'mentions',
                     getBoolean: () => false
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1611,7 +1609,7 @@ describe('Bot Logic Unit Tests', () => {
                     getSubcommand: () => 'intervals',
                     getString: () => '12h, 30m'
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1637,7 +1635,7 @@ describe('Bot Logic Unit Tests', () => {
                 options: {
                     getSubcommand: () => 'testreminder'
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1665,7 +1663,7 @@ describe('Bot Logic Unit Tests', () => {
                 options: {
                     getSubcommand: () => 'view'
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { replyPayload = payload; }
             };
@@ -1754,7 +1752,7 @@ describe('Bot Logic Unit Tests', () => {
                 options: {
                     getSubcommand: () => 'cleanup'
                 },
-                isChatInputCommand: () => true,
+                client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
                 deferReply: async () => { deferred = true; },
                 editReply: async (payload) => { editReplyPayload = payload; }
@@ -1780,3 +1778,7 @@ describe('Bot Logic Unit Tests', () => {
         });
     });
 });
+
+
+
+

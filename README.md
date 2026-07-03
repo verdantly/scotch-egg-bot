@@ -49,7 +49,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 ## Configuration
 
 **Environment Variables:**
-   Create a `.env` file in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/setchannel` command has not been used in a server.
+   Rename the provided `.env.example` file to `.env` in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/setchannel` command has not been used in a server.
    ```env
    DISCORD_TOKEN=your_actual_token_here
    CLIENT_ID=your_actual_client_id_here
@@ -96,21 +96,14 @@ This bot is designed to be easily containerized and run quietly in the backgroun
 
 ## Docker Compose Deployment (Recommended)
 
-Using Docker Compose makes it much easier to manage the container and perfectly map the `events.json` file so that your reminder database survives container restarts.
+Using Docker Compose makes it much easier to manage the container and maps a persistent `data/` folder so that your reminder database and backup files survive container restarts.
 
-1. **Create an empty database file first:**
-   Before starting the container, you *must* create empty database and config files on your host machine. If you skip this, Docker will mistakenly create directories instead of files.
-   ```bash
-   echo "{}" > events.json
-   echo "{}" > config.json
-   ```
-
-2. **Start the bot:**
-   Run the following command in the same directory as your `compose.yaml` (or `docker-compose.yml`):
+1. **Start the bot:**
+   Run the following command in the same directory as your `compose.yaml`:
    ```bash
    docker compose up -d --build
    ```
-   The bot will now run in the background, and any events or users who opt-in will be saved securely to the physical `events.json` file right next to your code.
+   The bot will now run in the background, automatically creating a `data/` directory next to your code. Any events, server configurations, or users who opt-in will be saved securely to this folder.
 
 ## Excluding / Silencing Events
 
@@ -222,9 +215,6 @@ A: Yes! You can invite the bot to as many servers as you want. Just use `/settin
 
 **Q: What happens if the bot goes offline while an event is created, deleted, or concluded?**
 A: Don't worry! Every time the bot starts up, it performs "Offline Garbage Collection." It automatically syncs with Discord, schedules reminders for any new events it missed, and automatically archives or deletes announcements for events that concluded while it was down. Furthermore, administrators can run `/settings cleanup` at any time to manually scan and archive any orphaned legacy announcements.
-
-**Q: Why do I need to create empty `events.json` and `config.json` files for Docker?**
-A: Docker Compose maps these files from your host to the container. If the files don't exist on your host machine *before* you run `docker compose up`, Docker assumes you are trying to map directories and will create folders named `events.json` and `config.json`. This will crash the bot.
 
 **Q: Why are the DM reminders plain text instead of Rich Embeds?**
 A: This is intentional. When an event URL is sent in a DM, Discord automatically generates a Rich Embed preview for it. If the bot sent an Embed, it would result in a cluttered "double-embed" in the user's DM.

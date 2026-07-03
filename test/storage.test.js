@@ -2,8 +2,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.resolve(__dirname, '../events.json');
-const CONFIG_PATH = path.resolve(__dirname, '../config.json');
+const DB_PATH = path.resolve(__dirname, '../data/events.json');
+const CONFIG_PATH = path.resolve(__dirname, '../data/config.json');
 
 // Backup original fs methods
 const originalExistsSync = fs.existsSync;

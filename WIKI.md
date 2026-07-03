@@ -27,7 +27,7 @@ Before running the code, you need to create a bot application on Discord and gat
 Clone this repository to your host machine (e.g., your Raspberry Pi, VPS, or local computer).
 
 ### 1. The `.env` File
-Create a new file named `.env` in the root directory of the project and add your credentials:
+Rename the provided `.env.example` file to `.env` in the root directory of the project and fill in your credentials:
 ```env
 DISCORD_TOKEN=your_actual_token_here
 CLIENT_ID=your_actual_client_id_here
@@ -37,14 +37,6 @@ ANNOUNCEMENT_CHANNEL_ID=your_optional_fallback_channel_id_here
 ```
 *(Note: `ANNOUNCEMENT_CHANNEL_ID` acts as a fallback. You will configure the primary channel inside Discord later).*
 
-### 2. Database & Config Files (Crucial for Docker)
-If you are deploying via Docker, you **must** create empty configuration files on your host machine first so Docker doesn't accidentally create directories instead of files.
-Run this in your terminal:
-```bash
-echo "{}" > events.json
-echo "{}" > config.json
-```
-
 ---
 
 ## 🚀 Phase 3: Deployment
@@ -52,13 +44,14 @@ echo "{}" > config.json
 You can run the bot locally using Node.js, or securely inside a Docker container (recommended).
 
 ### Option A: Docker Compose (Recommended)
-This is the best method, especially for devices like a Raspberry Pi, as it maps your data files properly and ensures the bot restarts automatically.
+This is the best method, especially for devices like a Raspberry Pi, as it maps a persistent `data/` folder so your reminder database and backups survive container restarts.
 
 1. Ensure Docker and Docker Compose are installed.
 2. In the project directory, start the container:
    ```bash
    docker compose up -d --build
    ```
+   The bot will automatically create a `data/` directory next to your code to securely store everything.
 
 ### Option B: Local Node.js
 If you prefer not to use Docker:
@@ -164,6 +157,15 @@ If you ever edit the code or download an updated version of the bot, applying th
 2. If your update includes changes to slash commands, register them by running:
    `docker exec -it scotch-egg node deploy-commands.js`
 
+### Migrating from Legacy (Pre-v2.0)
+If you are upgrading from an older version of the bot where your databases lived directly in the root directory rather than in a persistent `data/` folder, follow these steps to preserve your server's data:
+1. Stop the bot (`docker compose down`).
+2. Download the latest code into your bot directory.
+3. Create a new folder named `data` inside your bot directory.
+4. **Important:** Move your existing `events.json` and `config.json` files into the new `data` folder.
+5. Rebuild the container: `docker compose up -d --build`
+6. Re-register the commands: `docker exec -it scotch-egg node deploy-commands.js`
+
 ---
 
 ## ❓ Frequently Asked Questions (FAQ)
@@ -177,4 +179,4 @@ A: If your host device (like a Raspberry Pi) experiences a sudden power outage d
 ---
 
 ### 🎉 You're All Set!
-Your Scotch Egg is now actively monitoring your server, ready to keep your community engaged and on time. If you ever restart the bot, don't worry—your `events.json` and `config.json` files safely preserve all opted-in users and settings!
+Your Scotch Egg is now actively monitoring your server, ready to keep your community engaged and on time. If you ever restart the bot, don't worry—your `data/` folder safely preserves all opted-in users and settings!

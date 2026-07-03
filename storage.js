@@ -5,8 +5,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'events.json');
-const CONFIG_PATH = path.join(__dirname, 'config.json');
+const DB_PATH = path.join(__dirname, 'data', 'events.json');
+const CONFIG_PATH = path.join(__dirname, 'data', 'config.json');
+
+// Ensure the data directory exists for Docker persistence
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
 
 const eventDb = Object.create(null);
 const serverConfig = Object.create(null);

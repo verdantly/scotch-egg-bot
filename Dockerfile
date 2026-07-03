@@ -8,15 +8,12 @@ ENV NODE_ENV=production
 RUN mkdir -p /usr/src/app && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
 
-# Switch to the restricted user before copying/installing
-USER node
-
 # Copy package files first to leverage Docker layer caching
-COPY --chown=node:node package*.json ./
+COPY package*.json ./
 
 # Perform a clean, production-only install
 RUN npm ci --omit=dev
 
-COPY --chown=node:node . .
+COPY . .
 
 CMD [ "node", "index.js" ]
