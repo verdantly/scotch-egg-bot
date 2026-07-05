@@ -115,10 +115,11 @@ module.exports = {
         }
 
         if (subcommand === 'intervals') {
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             const input = interaction.options.getString('times');
             const parsed = parseIntervals(input);
             if (parsed.length === 0) {
-                return interaction.reply({ content: t(userLocale, 'settings_intervals_invalid'), flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: t(userLocale, 'settings_intervals_invalid') });
             }
             if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
                 serverConfig[interaction.guildId].intervals = parsed;
@@ -132,7 +133,7 @@ module.exports = {
             guildEvents.forEach(event => { cancelEventReminders(event.id); scheduleRemindersForEvent(event, now); });
             
             const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
-            await interaction.reply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }) });
         }
 
         if (subcommand === 'mentions') {
