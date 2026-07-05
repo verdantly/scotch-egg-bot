@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-07-04
+
+### Fixed
+- **API Timeout Resiliency:** Globally implemented proactive `deferReply` calls across the entire `/settings` command suite to prevent `DiscordAPIError[10062]: Unknown interaction` timeouts on servers with severe network latency or during Discord API degradation.
+
 ## [2.0.0] - 2026-07-03
 
 This is a major architectural release that significantly improves the bot's codebase organization, resiliency, and deployability. While there are no major new user-facing slash commands, the internal mechanics have been completely rebuilt to prepare for future feature expansion.
 
 ### Added
+- **Automatic Reminder Cleanup:** The bot now reliably sweeps and deletes old reminder messages from the public channel when the associated event concludes, significantly reducing channel clutter.
 - **Modular Codebase Architecture:** Completely refactored the legacy monolithic `index.js` file into a clean, modern, modular structure. Features are now decoupled into separate `commands/`, `events/`, and `services/` directories, making the codebase vastly easier to read, maintain, and contribute to.
 - **Comprehensive Test Suite:** Implemented a robust `mocha` and `sinon` unit testing suite covering over 70 unique edge cases.
 - **`.env.example` Template:** Added an official environment variables template to streamline the onboarding experience for new server hosts.
