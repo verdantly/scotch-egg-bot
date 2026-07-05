@@ -34,12 +34,12 @@ module.exports = {
             const channel = interaction.options.getChannel('channel');
 
             if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
-                return interaction.reply({ content: t(userLocale, 'settings_invalid_channel'), flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: t(userLocale, 'settings_invalid_channel') });
             }
 
             const botPermissions = channel.permissionsFor(interaction.guild.members.me);
             if (!botPermissions.has(PermissionFlagsBits.ViewChannel) || !botPermissions.has(PermissionFlagsBits.SendMessages) || !botPermissions.has(PermissionFlagsBits.EmbedLinks)) {
-                return interaction.reply({ content: t(userLocale, 'settings_bot_no_permissions', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: t(userLocale, 'settings_bot_no_permissions', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
             }
 
             if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
@@ -48,7 +48,7 @@ module.exports = {
                 serverConfig[interaction.guildId] = { channelId: channel.id, mode: 'private' };
             }
             await saveConfig();
-            await interaction.reply({ content: t(userLocale, 'settings_channel_success', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_channel_success', { channel: channel.toString() }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'mode') {
@@ -62,7 +62,7 @@ module.exports = {
             }
             await saveConfig();
             const modeText = getModeText(mode, userLocale);
-            await interaction.reply({ content: t(userLocale, 'settings_mode_success', { mode: modeText }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_mode_success', { mode: modeText }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'calendar') {
@@ -78,7 +78,7 @@ module.exports = {
             else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
             else if (userLocale === 'fr') statusText = enabled ? 'activé' : 'désactivé';
             else if (userLocale === 'pt') statusText = enabled ? 'ativado' : 'desativado';
-            await interaction.reply({ content: t(userLocale, 'settings_calendar_success', { status: statusText }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_calendar_success', { status: statusText }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'threads') {
@@ -94,7 +94,7 @@ module.exports = {
             else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
             else if (userLocale === 'fr') statusText = enabled ? 'activé' : 'désactivé';
             else if (userLocale === 'pt') statusText = enabled ? 'ativado' : 'desativado';
-            await interaction.reply({ content: t(userLocale, 'settings_threads_success', { status: statusText }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_threads_success', { status: statusText }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'autodelete') {
@@ -111,7 +111,7 @@ module.exports = {
             else if (userLocale === 'de') { statusText = enabled ? 'aktiviert' : 'deaktiviert'; archiveStatusText = enabled ? 'deaktiviert' : 'aktiviert'; }
             else if (userLocale === 'fr') { statusText = enabled ? 'activé' : 'désactivé'; archiveStatusText = enabled ? 'désactivé' : 'activé'; }
             else if (userLocale === 'pt') { statusText = enabled ? 'ativado' : 'desativado'; archiveStatusText = enabled ? 'desativado' : 'ativado'; }
-            await interaction.reply({ content: t(userLocale, 'settings_autodelete_success', { status: statusText, archiveStatus: archiveStatusText }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_autodelete_success', { status: statusText, archiveStatus: archiveStatusText }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'intervals') {
@@ -149,7 +149,7 @@ module.exports = {
             else if (userLocale === 'de') statusText = enabled ? 'Aktiviert' : 'Deaktiviert';
             else if (userLocale === 'fr') statusText = enabled ? 'Activé' : 'Désactivé';
             else if (userLocale === 'pt') statusText = enabled ? 'Ativado' : 'Desativado';
-            await interaction.reply({ content: t(userLocale, 'settings_mentions_success', { status: statusText }), flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: t(userLocale, 'settings_mentions_success', { status: statusText }), flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'testreminder') {
@@ -190,7 +190,7 @@ module.exports = {
                 row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
             }
 
-            await interaction.reply({ content: replyContent, components: [row], flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: replyContent, components: [row] });
         }
 
         if (subcommand === 'view') {
@@ -222,7 +222,7 @@ module.exports = {
             
             replyMessage += t(userLocale, 'settings_view_autodelete', { status: autoDeleteStatus });
 
-            await interaction.reply({ content: replyMessage, flags: MessageFlags.Ephemeral });
+            await interaction.editReply({ content: replyMessage });
         }
 
         if (subcommand === 'cleanup') {

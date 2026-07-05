@@ -59,5 +59,43 @@ describe('Commands Unit Tests', () => {
 
             assert.strictEqual(replyCalled, true, 'Command should reply with settings view');
         });
+
+        it('should correctly defer and edit reply for the intervals subcommand', async () => {
+            let deferCalled = false;
+            let editReplyCalled = false;
+            
+            const mockInteraction = {
+                options: {
+                    getSubcommand: () => 'intervals',
+                    getString: () => '24h, 1h'
+                },
+                guildId: 'guild_123',
+                locale: 'en',
+                guild: {
+                    scheduledEvents: {
+                        fetch: async () => [] // Mock an empty array of events
+                    },
+                    members: {
+                        me: {
+                            permissionsIn: () => ({
+                                has: () => true
+                            })
+                        }
+                    }
+                },
+                deferReply: async () => {
+                    deferCalled = true;
+                },
+                editReply: async (payload) => {
+                    editReplyCalled = true;
+                    assert.ok(payload.content.includes('24h, 1h'));
+                }
+            };
+
+            await settingsCommand.execute(mockInteraction);
+
+            assert.strictEqual(deferCalled, true, 'Command should call deferReply to prevent API timeouts');
+            assert.strictEqual(editReplyCalled, true, 'Command should call editReply after processing');
+        });
     });
 });
