@@ -189,19 +189,20 @@ module.exports = {
             }
 
             if (interaction.customId.startsWith('remind_')) {
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                 const eventId = interaction.customId.replace('remind_', '');
                 
                 if (eventDb[eventId] && eventDb[eventId].remindersDisabled) {
-                    return interaction.reply({ content: t(userLocale, 'button_reminders_disabled'), flags: MessageFlags.Ephemeral });
+                    return interaction.editReply({ content: t(userLocale, 'button_reminders_disabled') });
                 }
 
                 const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
                 if (!event) {
-                    return interaction.reply({ content: t(userLocale, 'button_event_not_found'), flags: MessageFlags.Ephemeral });
+                    return interaction.editReply({ content: t(userLocale, 'button_event_not_found') });
                 }
 
                 if (isEventSilenced(event)) {
-                    return interaction.reply({ content: t(userLocale, 'button_reminders_disabled'), flags: MessageFlags.Ephemeral });
+                    return interaction.editReply({ content: t(userLocale, 'button_reminders_disabled') });
                 }
 
                 const mode = getAnnouncementMode(interaction.guildId);
@@ -210,7 +211,7 @@ module.exports = {
                         const testMsg = await interaction.user.send(t(userLocale, 'button_dm_test'));
                         await testMsg.delete().catch(() => {});
                     } catch (err) {
-                        return interaction.reply({ content: t(userLocale, 'button_dm_closed'), flags: MessageFlags.Ephemeral });
+                        return interaction.editReply({ content: t(userLocale, 'button_dm_closed') });
                     }
                 }
 
@@ -241,10 +242,11 @@ module.exports = {
                 await saveDb();
                 updateLiveCounter(eventId);
                 
-                return interaction.reply({ content: replyMsg, flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: replyMsg });
             }
 
     if (interaction.customId.startsWith('cancel_remind_')) {
+        await interaction.deferUpdate();
         const eventId = interaction.customId.replace('cancel_remind_', '');
         
         if (eventDb[eventId]) {
@@ -270,7 +272,7 @@ module.exports = {
                         if (newContent.length > 2000) {
                             newContent = `${interaction.message.content.substring(0, 2000 - promptText.length)}...${promptText}`;
                         }
-                        await interaction.update({ content: newContent, components: [row] });
+                        await interaction.editReply({ content: newContent, components: [row] });
                     } else {
                         // Standard event cancellation (or fallback if event fetch fails)
                         delete eventDb[eventId].users[userId];
@@ -285,7 +287,7 @@ module.exports = {
                         if (newContent.length > 2000) {
                             newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
                         }
-                        await interaction.update({ content: newContent, components: [] });
+                        await interaction.editReply({ content: newContent, components: [] });
                     }
                 } else {
                     let notOptedNotice = `*(${t(userLocale, 'cancel_remind_not_opted')})*`;
@@ -293,7 +295,7 @@ module.exports = {
                     if (newContent.length > 2000) {
                         newContent = `${interaction.message.content.substring(0, 1930)}...\n\n${notOptedNotice}`;
                     }
-                    await interaction.update({ content: newContent, components: [] });
+                    await interaction.editReply({ content: newContent, components: [] });
                 }
             } catch (error) {
                 console.error('Failed to handle cancel_remind interaction:', error);
@@ -304,11 +306,12 @@ module.exports = {
             if (newContent.length > 2000) {
                 newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${inactiveNotice}`;
             }
-            await interaction.update({ content: newContent, components: [] });
+            await interaction.editReply({ content: newContent, components: [] });
         }
     }
 
     if (interaction.customId.startsWith('cancel_occ_')) {
+        await interaction.deferUpdate();
         const eventId = interaction.customId.replace('cancel_occ_', '');
         if (eventDb[eventId]) {
             const userId = interaction.user.id;
@@ -335,7 +338,7 @@ module.exports = {
                 if (newContent.length > 2000) {
                     newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
                 }
-                await interaction.update({ content: newContent, components: [] });
+                await interaction.editReply({ content: newContent, components: [] });
             } catch (error) {
                 console.error('Failed to handle cancel_occ interaction:', error);
             }
@@ -343,6 +346,7 @@ module.exports = {
     }
 
     if (interaction.customId.startsWith('cancel_series_')) {
+        await interaction.deferUpdate();
         const eventId = interaction.customId.replace('cancel_series_', '');
         if (eventDb[eventId]) {
             const userId = interaction.user.id;
@@ -366,7 +370,7 @@ module.exports = {
                 if (newContent.length > 2000) {
                     newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
                 }
-                await interaction.update({ content: newContent, components: [] });
+                await interaction.editReply({ content: newContent, components: [] });
             } catch (error) {
                 console.error('Failed to handle cancel_series interaction:', error);
             }
