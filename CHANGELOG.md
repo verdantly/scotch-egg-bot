@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2026-07-04
 
 ### Fixed
-- **API Timeout Resiliency:** Globally implemented proactive `deferReply` calls across the entire `/settings` command suite to prevent `DiscordAPIError[10062]: Unknown interaction` timeouts on servers with severe network latency or during Discord API degradation.
+- **API Timeout Resiliency:** Globally implemented proactive `deferReply` calls across the entire `/settings` command suite, as well as the interactive `"Remind Me"` and `"Cancel"` buttons on announcements, to prevent `DiscordAPIError[10062]: Unknown interaction` timeouts on servers with severe network latency or during Discord API degradation.
 
 ## [2.0.0] - 2026-07-03
 
