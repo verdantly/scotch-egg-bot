@@ -27,6 +27,7 @@ module.exports = {
         .addSubcommand(subcommand => subcommand.setName('silenceevent').setDescription('Disable reminder scheduling for a specific event (stops DMs and pings).').addStringOption(option => option.setName('event').setDescription('The event link or ID to silence').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('unsilenceevent').setDescription('Re-enable reminder scheduling for a silenced event.').addStringOption(option => option.setName('event').setDescription('The event link or ID to unsilence').setRequired(true))),
     async execute(interaction) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const subcommand = interaction.options.getSubcommand();
         const userLocale = getNormalizedLocale(interaction.locale);
 
@@ -115,7 +116,6 @@ module.exports = {
         }
 
         if (subcommand === 'intervals') {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             const input = interaction.options.getString('times');
             const parsed = parseIntervals(input);
             if (parsed.length === 0) {
@@ -226,7 +226,6 @@ module.exports = {
         }
 
         if (subcommand === 'cleanup') {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             const channelId = getAnnouncementChannelId(interaction.guildId);
             const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
             
@@ -411,7 +410,6 @@ module.exports = {
         }
 
         if (subcommand === 'silenceevent' || subcommand === 'unsilenceevent') {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             const eventIdentifier = interaction.options.getString('event');
             const match = eventIdentifier.match(/(?:\/events\/\d+\/)?(\d{17,19})/);
             const eventId = match ? match[1] : null;
