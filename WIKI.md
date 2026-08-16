@@ -15,7 +15,7 @@ Before running the code, you need to create a bot application on Discord and gat
 1. **Create the Application:** Go to the [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**.
 2. **Get your Client ID:** On the "General Information" tab, copy your **Application ID** (this is your `CLIENT_ID`).
 3. **Get your Bot Token:** Navigate to the "Bot" tab, click **Reset Token**, and copy the new token (this is your `DISCORD_TOKEN`). *Never share this publicly!*
-4. **Invite the Bot:** Go to "OAuth2" -> "URL Generator". Check the `bot` and `applications.commands` scopes. Give it the necessary permissions (Send Messages, Read Message History, View Channels, Embed Links, Create Public Threads), copy the generated URL, and paste it into your browser to invite the bot to your server.
+4. **Invite the Bot:** Go to "OAuth2" -> "URL Generator". Check the `bot` and `applications.commands` scopes. Give it the necessary permissions (Send Messages, Read Message History, View Channels, Embed Links, Create Public Threads, Manage Threads), copy the generated URL, and paste it into your browser to invite the bot to your server.
    > **Important:** You must select BOTH the `bot` and `applications.commands` scopes, or the bot will not function correctly.
 
 *(Note: This bot uses modern interactions and does **not** require any Privileged Intents to function!)*

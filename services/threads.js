@@ -47,11 +47,12 @@ function isScotchEggDiscussionThread(thread, guild, channel = null) {
  * Prunes inactive bot-created discussion threads that are at least 30 days old in a specific channel.
  * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} channel 
  * @param {import('discord.js').Guild} guild 
- * @returns {Promise<number>}
+ * @returns {Promise<{count: number, permissionError: boolean}>}
  */
 async function pruneChannelThreads(channel, guild) {
-    if (!channel || !channel.threads) return 0;
+    if (!channel || !channel.threads) return { count: 0, permissionError: false };
     let deletedCount = 0;
+    let permissionError = false;
     const now = Date.now();
     const processedThreadIds = new Set();
 
@@ -71,7 +72,11 @@ async function pruneChannelThreads(channel, guild) {
             }
 
             const archivedData = await channel.threads.fetchArchived(fetchOptions).catch(err => {
-                console.error(`Error fetching public archived threads in channel ${channel.id}:`, err);
+                if (err.code === 50013 || err.status === 403) {
+                    permissionError = true;
+                } else {
+                    console.error(`Error fetching public archived threads in channel ${channel.id}:`, err);
+                }
                 return null;
             });
 
@@ -158,24 +163,36 @@ async function pruneChannelThreads(channel, guild) {
                     await thread.delete('Pruning inactive discussion thread older than 30 days');
                     deletedCount++;
                 } catch (deleteErr) {
-                    console.error(`Failed to delete inactive thread ${id} (${thread.name}):`, deleteErr);
+                    if (deleteErr.code === 50013 || deleteErr.status === 403) {
+                        console.warn(`[Thread Prune] Cannot delete thread "${thread.name}" (${id}): Missing "Manage Threads" permission.`);
+                        permissionError = true;
+                    } else {
+                        console.error(`Failed to delete inactive thread ${id} (${thread.name}):`, deleteErr);
+                    }
                 }
             }
         }
     }
 
-    return deletedCount;
+    return { count: deletedCount, permissionError };
 }
 
 /**
  * Prunes inactive bot-created discussion threads that are at least 30 days old across a guild.
  * @param {import('discord.js').Guild} guild 
  * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} [customChannel] 
- * @returns {Promise<number>} Number of pruned threads
+ * @returns {Promise<{count: number, permissionError: boolean, valueOf: () => number}>}
  */
 async function pruneInactiveThreads(guild, customChannel = null) {
-    if (!guild) return 0;
-    if (!getThreadPruneEnabled(guild.id)) return 0;
+    const resultObj = {
+        count: 0,
+        permissionError: false,
+        valueOf() { return this.count; },
+        [Symbol.toPrimitive]() { return this.count; }
+    };
+
+    if (!guild) return resultObj;
+    if (!getThreadPruneEnabled(guild.id)) return resultObj;
 
     const channelsToScan = new Set();
 
@@ -199,16 +216,17 @@ async function pruneInactiveThreads(guild, customChannel = null) {
         }
     }
 
-    let totalPruned = 0;
     for (const ch of channelsToScan) {
         try {
-            totalPruned += await pruneChannelThreads(ch, guild);
+            const res = await pruneChannelThreads(ch, guild);
+            resultObj.count += res.count;
+            if (res.permissionError) resultObj.permissionError = true;
         } catch (err) {
             console.error(`Error pruning threads in channel ${ch.id}:`, err);
         }
     }
 
-    return totalPruned;
+    return resultObj;
 }
 
 module.exports = {

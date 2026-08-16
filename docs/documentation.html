@@ -269,7 +269,7 @@
                                         class="bg-cream-dark dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-bold text-red-600 dark:text-red-400">applications.commands</code>
                                     scopes. 
                                     <div class="mt-2 mb-2 text-gray-700 dark:text-gray-300">
-                                        <strong>Tip:</strong> After checking the <code>bot</code> scope, a <strong>Bot Permissions</strong> grid will appear below it. It is highly recommended to select <strong>Send Messages</strong>, <strong>Read Message History</strong>, <strong>View Channels</strong>, <strong>Embed Links</strong>, and <strong>Create Public Threads</strong> (if using the auto-thread feature) so the bot's role is automatically configured.
+                                        <strong>Tip:</strong> After checking the <code>bot</code> scope, a <strong>Bot Permissions</strong> grid will appear below it. It is highly recommended to select <strong>Send Messages</strong>, <strong>Read Message History</strong>, <strong>View Channels</strong>, <strong>Embed Links</strong>, <strong>Create Public Threads</strong>, and <strong>Manage Threads</strong> (if using discussion threads and auto-pruning) so the bot's role is automatically configured.
                                     </div>
                                     Copy the generated URL at the bottom and open it in your browser to invite
                                     the bot to your server.
@@ -1348,7 +1348,7 @@ cp config.json data/config.json</pre>
                                     the
                                     following permissions in the target channel's settings: <strong>View
                                         Channel</strong>,
-                                    <strong>Send Messages</strong>, and <strong>Embed Links</strong>. If the bot is
+                                    <strong>Send Messages</strong>, <strong>Embed Links</strong>, <strong>Create Public Threads</strong>, and <strong>Manage Threads</strong> (required for deleting inactive discussion threads). If the bot is
                                     missing
                                     any of these, it will fail to post announcements or return descriptive permission
                                     warning responses.

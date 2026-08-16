@@ -433,9 +433,15 @@ module.exports = {
                 }
             }
 
-            const threadsPrunedCount = await pruneInactiveThreads(interaction.guild, channel);
+            const pruneResult = await pruneInactiveThreads(interaction.guild, channel);
+            const threadsPrunedCount = typeof pruneResult === 'object' && pruneResult !== null ? pruneResult.count : pruneResult;
+            const hasPermissionError = typeof pruneResult === 'object' && pruneResult !== null && pruneResult.permissionError;
+
             if (cleanedCount > 0 || remindersDeletedCount > 0) await saveDb();
             let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s), deleted **${remindersDeletedCount}** public reminder(s), and pruned **${threadsPrunedCount}** inactive discussion thread(s)!`;
+            if (hasPermissionError) {
+                successMsg += `\n\n⚠️ **Permission Notice:** Some discussion threads could not be deleted because Scotch Egg is missing the **Manage Threads** permission in this channel. Granting **Manage Threads** to the bot role will allow it to delete older discussion threads automatically.`;
+            }
             await interaction.editReply({ content: successMsg });
         }
 
