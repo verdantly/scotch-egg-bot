@@ -72,6 +72,12 @@ function getThreadsEnabled(guildId) {
     return true; 
 }
 
+function getThreadPruneEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.threadPruneEnabled !== undefined) return config.threadPruneEnabled;
+    return true; 
+}
+
 function getPingsEnabled(guildId) {
     const config = serverConfig[guildId];
     if (typeof config === 'object' && config !== null && config.pingsEnabled !== undefined) return config.pingsEnabled;
@@ -103,6 +109,7 @@ module.exports = {
     getReminderIntervals,
     getCalendarEnabled,
     getThreadsEnabled,
+    getThreadPruneEnabled,
     getPingsEnabled,
     getAutoDeleteEnabled,
     isEventSilenced

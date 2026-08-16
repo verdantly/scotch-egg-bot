@@ -1,7 +1,9 @@
 const { Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
+const schedule = require('node-schedule');
 const { eventDb, saveDb } = require('../storage.js');
 const { syncEventReminders } = require('../services/reminders.js');
 const { archiveAnnouncementMessage } = require('../services/announcements.js');
+const { pruneInactiveThreads } = require('../services/threads.js');
 const { version } = require('../package.json');
 
 module.exports = {
@@ -36,6 +38,26 @@ module.exports = {
             }
         });
         await Promise.all(syncPromises);
+
+        // Prune inactive discussion threads (30+ days old) on startup
+        for (const guild of c.guilds.cache.values()) {
+            try {
+                await pruneInactiveThreads(guild);
+            } catch (err) {
+                console.error(`Failed to prune inactive threads for guild ${guild.id}:`, err);
+            }
+        }
+
+        // Schedule daily maintenance job to prune inactive threads at 03:00 AM
+        schedule.scheduleJob('daily-thread-prune', '0 3 * * *', async () => {
+            for (const guild of c.guilds.cache.values()) {
+                try {
+                    await pruneInactiveThreads(guild);
+                } catch (err) {
+                    console.error(`Failed daily thread prune for guild ${guild.id}:`, err);
+                }
+            }
+        });
 
         let dbModified = false;
         for (const eventId in eventDb) {

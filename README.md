@@ -10,7 +10,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude, while **always deleting** the associated public reminders to keep channels completely clutter-free.
 - **Add to Calendar & View Event Buttons:** Event announcements and reminders feature dedicated interactive link buttons. The **Add to Calendar** button lets users add the event directly to Google Calendar pre-filled with the details. The **View Event** button links directly to Discord's native event window, resolving duplicate "double embed" clutter in chat.
-- **Auto-Create Discussion Threads:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement.
+- **Auto-Create Discussion Threads & Pruning:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement, and automatically prunes inactive discussion threads older than 30 days to keep channels completely clutter-free.
 - **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
 - **Multi-Language (Localization):** Fully supports 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Features native name and description slash command metadata, client-locale detection for translating slash command interfaces on the fly, and guild-locale preferred language detection for dynamic server announcements.
 
@@ -135,8 +135,8 @@ Administrators can prevent specific events from being announced or having automa
 *   `/settings calendar [enabled]`
     -   **Action:** Toggles whether the bot includes an "Add to Calendar" button on event announcements.
 
-*   `/settings threads [enabled]`
-    -   **Action:** Toggles whether the bot automatically creates a dedicated discussion thread on new announcements.
+*   `/settings threads [enabled] [prune]`
+    -   **Action:** Configures discussion thread creation (enabled) and toggles automatic 30-day inactive discussion thread pruning (prune).
 
 *   `/settings autodelete [enabled]`
     -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived. *(Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread).*
@@ -154,7 +154,7 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** Re-enables reminder scheduling for a stummgeschaltetes/silenced event.
 
 *   `/settings cleanup`
-    -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, and performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages and keep the channel clean.
+    -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages, and prunes inactive discussion threads older than 30 days to keep the channel clean.
 
 *   `/announceevent [event_link_or_id]`
     -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.

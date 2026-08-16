@@ -2,9 +2,10 @@ const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags, Emb
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, serverConfig, saveConfig, saveDb } = require('../storage.js');
 const { parseIntervals, getFormattedTimeString } = require('../utils.js');
-const { getAnnouncementChannelId, getAnnouncementMode, getModeText, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getPingsEnabled, getAutoDeleteEnabled } = require('../services/config.js');
+const { getAnnouncementChannelId, getAnnouncementMode, getModeText, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled } = require('../services/config.js');
 const { buildAnnouncementEmbed, archiveAnnouncementMessage } = require('../services/announcements.js');
 const { scheduleRemindersForEvent, cancelEventReminders } = require('../services/reminders.js');
+const { pruneInactiveThreads } = require('../services/threads.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,7 +19,7 @@ module.exports = {
         .addSubcommand(subcommand => subcommand.setName('mode').setDescription('Choose the reminder delivery mode (Public channel pings, Private DM-only, or Hybrid).').addStringOption(option => option.setName('mode').setDescription('The announcement mode').setRequired(true).addChoices({ name: 'Public Channel Reminders', value: 'public' }, { name: 'Private DM Reminders (Opt-in)', value: 'private' }, { name: 'Hybrid (Public Channel & DM)', value: 'hybrid' })))
         .addSubcommand(subcommand => subcommand.setName('view').setDescription('View the current bot settings for this server.'))
         .addSubcommand(subcommand => subcommand.setName('calendar').setDescription('Toggle the "Add to Calendar" button on event announcements.').addBooleanOption(option => option.setName('enabled').setDescription('Enable or disable the calendar button').setRequired(true)))
-        .addSubcommand(subcommand => subcommand.setName('threads').setDescription('Toggle whether the bot automatically creates a discussion thread for new events.').addBooleanOption(option => option.setName('enabled').setDescription('Enable or disable auto-thread creation').setRequired(true)))
+        .addSubcommand(subcommand => subcommand.setName('threads').setDescription('Configure discussion threads and inactive thread pruning for event announcements.').addBooleanOption(option => option.setName('enabled').setDescription('Enable or disable auto-thread creation').setRequired(false)).addBooleanOption(option => option.setName('prune').setDescription('Enable or disable auto-deleting inactive threads older than 30 days').setRequired(false)))
         .addSubcommand(subcommand => subcommand.setName('autodelete').setDescription('Delete announcement when event ends? (Warning: Also deletes attached discussion thread)').addBooleanOption(option => option.setName('enabled').setDescription('Enable to delete, disable to gracefully archive').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('intervals').setDescription('Set custom reminder intervals (e.g., 24h, 1h, 15m).').addStringOption(option => option.setName('times').setDescription('Comma-separated list of times (max 5). Examples: "24h, 1h"').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('mentions').setDescription('Toggle whether public reminders mention/ping opted-in users.').addBooleanOption(option => option.setName('enabled').setDescription('Enable to ping users, disable for silent reminders').setRequired(true)))
@@ -84,18 +85,47 @@ module.exports = {
 
         if (subcommand === 'threads') {
             const enabled = interaction.options.getBoolean('enabled');
-            if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
-                serverConfig[interaction.guildId].threadsEnabled = enabled;
-            } else {
-                serverConfig[interaction.guildId] = { channelId: null, mode: 'private', threadsEnabled: enabled };
+            const prune = interaction.options.getBoolean('prune');
+
+            if (typeof serverConfig[interaction.guildId] !== 'object' || serverConfig[interaction.guildId] === null) {
+                serverConfig[interaction.guildId] = { channelId: null, mode: 'private' };
             }
+
+            if (enabled === null && prune === null) {
+                const currentThreads = getThreadsEnabled(interaction.guildId);
+                const currentPrune = getThreadPruneEnabled(interaction.guildId);
+                const threadsText = currentThreads ? (userLocale === 'es' ? 'activado' : userLocale === 'de' ? 'aktiviert' : userLocale === 'fr' ? 'activé' : userLocale === 'pt' ? 'ativado' : 'enabled') : (userLocale === 'es' ? 'desactivado' : userLocale === 'de' ? 'deaktiviert' : userLocale === 'fr' ? 'désactivé' : userLocale === 'pt' ? 'desativado' : 'disabled');
+                const pruneText = currentPrune ? (userLocale === 'es' ? 'activado' : userLocale === 'de' ? 'aktiviert' : userLocale === 'fr' ? 'activé' : userLocale === 'pt' ? 'ativado' : 'enabled') : (userLocale === 'es' ? 'desactivado' : userLocale === 'de' ? 'deaktiviert' : userLocale === 'fr' ? 'désactivé' : userLocale === 'pt' ? 'desativado' : 'disabled');
+                return interaction.editReply({
+                    content: t(userLocale, 'settings_threads_both_success', { status: threadsText, pruneStatus: pruneText })
+                });
+            }
+
+            let statusText = null;
+            let pruneStatusText = null;
+
+            if (enabled !== null) {
+                serverConfig[interaction.guildId].threadsEnabled = enabled;
+                statusText = enabled ? (userLocale === 'es' ? 'activado' : userLocale === 'de' ? 'aktiviert' : userLocale === 'fr' ? 'activé' : userLocale === 'pt' ? 'ativado' : 'enabled') : (userLocale === 'es' ? 'desactivado' : userLocale === 'de' ? 'deaktiviert' : userLocale === 'fr' ? 'désactivé' : userLocale === 'pt' ? 'desativado' : 'disabled');
+            }
+
+            if (prune !== null) {
+                serverConfig[interaction.guildId].threadPruneEnabled = prune;
+                pruneStatusText = prune ? (userLocale === 'es' ? 'activado' : userLocale === 'de' ? 'aktiviert' : userLocale === 'fr' ? 'activé' : userLocale === 'pt' ? 'ativado' : 'enabled') : (userLocale === 'es' ? 'desactivado' : userLocale === 'de' ? 'deaktiviert' : userLocale === 'fr' ? 'désactivé' : userLocale === 'pt' ? 'desativado' : 'disabled');
+            }
+
             await saveConfig();
-            let statusText = enabled ? 'enabled' : 'disabled';
-            if (userLocale === 'es') statusText = enabled ? 'activado' : 'desactivado';
-            else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
-            else if (userLocale === 'fr') statusText = enabled ? 'activé' : 'désactivé';
-            else if (userLocale === 'pt') statusText = enabled ? 'ativado' : 'desativado';
-            await interaction.editReply({ content: t(userLocale, 'settings_threads_success', { status: statusText }), flags: MessageFlags.Ephemeral });
+
+            let replyMsg = '';
+            if (statusText && pruneStatusText) {
+                replyMsg = t(userLocale, 'settings_threads_both_success', { status: statusText, pruneStatus: pruneStatusText });
+            } else if (statusText) {
+                replyMsg = t(userLocale, 'settings_threads_success', { status: statusText });
+            } else if (pruneStatusText) {
+                replyMsg = t(userLocale, 'settings_threads_prune_success', { pruneStatus: pruneStatusText });
+            }
+
+            await interaction.editReply({ content: replyMsg, flags: MessageFlags.Ephemeral });
         }
 
         if (subcommand === 'autodelete') {
@@ -214,7 +244,10 @@ module.exports = {
             replyMessage += t(userLocale, 'settings_view_mode', { mode: modeText });
             replyMessage += t(userLocale, 'settings_view_intervals', { intervals: intervalsStr });
             replyMessage += t(userLocale, 'settings_view_calendar', { status: getCalendarEnabled(interaction.guildId) ? enabledText : disabledText });
-            replyMessage += t(userLocale, 'settings_view_threads', { status: getThreadsEnabled(interaction.guildId) ? enabledText : disabledText });
+            const threadsEnabled = getThreadsEnabled(interaction.guildId);
+            const pruneEnabled = getThreadPruneEnabled(interaction.guildId);
+            const threadsStatusStr = `${threadsEnabled ? enabledText : disabledText} (${pruneEnabled ? (userLocale === 'es' ? 'Purga 30d: Activada' : userLocale === 'de' ? '30d-Bereinigung: Aktiv' : userLocale === 'fr' ? 'Purge 30j : Activée' : userLocale === 'pt' ? 'Purga 30d: Ativada' : '30-Day Prune: Enabled') : (userLocale === 'es' ? 'Purga 30d: Desactivada' : userLocale === 'de' ? '30d-Bereinigung: Inaktiv' : userLocale === 'fr' ? 'Purge 30j : Désactivée' : userLocale === 'pt' ? 'Purga 30d: Desativada' : '30-Day Prune: Disabled')})`;
+            replyMessage += t(userLocale, 'settings_view_threads', { status: threadsStatusStr });
             
             const autoDeleteStatus = getAutoDeleteEnabled(interaction.guildId) 
                 ? (userLocale === 'es' ? 'Activado ✅ (Eliminado)' : userLocale === 'de' ? 'Aktiviert ✅ (Gelöscht)' : userLocale === 'fr' ? 'Activé ✅ (Supprimé)' : userLocale === 'pt' ? 'Ativado ✅ (Excluído)' : 'Enabled ✅ (Deleted)')
@@ -404,8 +437,9 @@ module.exports = {
                 }
             }
 
+            const threadsPrunedCount = await pruneInactiveThreads(interaction.guild, channel);
             if (cleanedCount > 0 || remindersDeletedCount > 0) await saveDb();
-            let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s) and deleted **${remindersDeletedCount}** public reminder(s)!`;
+            let successMsg = `Successfully scanned and cleaned up **${cleanedCount}** concluded event announcement(s), deleted **${remindersDeletedCount}** public reminder(s), and pruned **${threadsPrunedCount}** inactive discussion thread(s)!`;
             await interaction.editReply({ content: successMsg });
         }
 

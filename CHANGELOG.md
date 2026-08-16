@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-15
+
+### Added
+- **30-Day Inactive Discussion Thread Auto-Pruning:** Introduced an automated thread lifecycle cleanup system to eliminate thread drawer clutter. The bot now automatically sweeps and deletes bot-created discussion threads that are at least 30 days old and inactive.
+- **Enhanced `/settings threads` Configuration:** Upgraded `/settings threads` with a new `prune` toggle (`/settings threads enabled:[true/false] prune:[true/false]`), allowing server admins to independently control auto-thread creation and 30-day thread pruning.
+- **Automated Startup & Daily Maintenance Pruning:** Thread pruning runs automatically upon bot startup (offline garbage collection) and via a scheduled daily maintenance cron at 03:00 AM.
+- **Integrated Thread Pruning in `/settings cleanup`:** Running `/settings cleanup` now sweeps and reports pruned 30+ day old inactive discussion threads alongside concluded announcements and reminder messages.
+
 ## [2.0.1] - 2026-07-04
 
 ### Fixed

@@ -28,7 +28,8 @@ describe('Commands Unit Tests', () => {
         });
 
         it('should handle view subcommand by checking permissions and deferring reply', async () => {
-            let replyCalled = false;
+            let deferCalled = false;
+            let editReplyCalled = false;
             
             const mockInteraction = {
                 options: {
@@ -49,15 +50,52 @@ describe('Commands Unit Tests', () => {
                 channel: {
                     id: 'channel_123'
                 },
-                reply: async (payload) => {
-                    replyCalled = true;
+                deferReply: async () => {
+                    deferCalled = true;
+                },
+                editReply: async (payload) => {
+                    editReplyCalled = true;
                     assert.ok(payload.content.includes('Current Server Settings'));
                 }
             };
 
             await settingsCommand.execute(mockInteraction);
 
-            assert.strictEqual(replyCalled, true, 'Command should reply with settings view');
+            assert.strictEqual(deferCalled, true, 'Command should defer reply');
+            assert.strictEqual(editReplyCalled, true, 'Command should reply with settings view');
+        });
+
+        it('should handle threads subcommand with enabled and prune options', async () => {
+            let deferCalled = false;
+            let editReplyCalled = false;
+            let replyContent = '';
+
+            const mockInteraction = {
+                options: {
+                    getSubcommand: () => 'threads',
+                    getBoolean: (name) => {
+                        if (name === 'enabled') return true;
+                        if (name === 'prune') return false;
+                        return null;
+                    }
+                },
+                guildId: 'guild_123',
+                locale: 'en',
+                deferReply: async () => {
+                    deferCalled = true;
+                },
+                editReply: async (payload) => {
+                    editReplyCalled = true;
+                    replyContent = payload.content;
+                }
+            };
+
+            await settingsCommand.execute(mockInteraction);
+
+            assert.strictEqual(deferCalled, true);
+            assert.strictEqual(editReplyCalled, true);
+            assert.ok(replyContent.includes('Auto-creating discussion threads is now **enabled**'));
+            assert.ok(replyContent.includes('30-day inactive thread auto-pruning is **disabled**'));
         });
 
         it('should correctly defer and edit reply for the intervals subcommand', async () => {

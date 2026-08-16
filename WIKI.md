@@ -131,13 +131,13 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 - `/settings mode [mode]` - Selects the reminder delivery mode (`Public` channel @ pings, `Private` DM-only alerts, or `Hybrid` public-channel-posts with private DMs and zero user mentions).
 - `/settings view` - Admin command that shows current bot configurations.
 - `/settings calendar [enabled]` - Toggles the "Add to Calendar" button on announcements.
-- `/settings threads [enabled]` - Toggles the automatic creation of discussion threads.
+- `/settings threads [enabled] [prune]` - Configures automatic discussion thread creation and 30-day inactive thread auto-pruning.
 - `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter). *Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread.*
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/settings silenceevent [event]` - Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
 - `/settings unsilenceevent [event]` - Re-enables reminder scheduling for a silenced event.
-- `/settings cleanup` - Admin command that scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, and performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages and keep the channel clean.
+- `/settings cleanup` - Admin command that scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, deletes **all** matching public event reminder messages, and prunes inactive discussion threads older than 30 days to keep the channel clean.
 - `/announceevent [event_link_or_id]` - Manually forces the bot to post an announcement for an existing event (useful if the bot was offline when the event was originally created).
 - `/stats` - Admin command to view opt-in statistics for upcoming events in this server.
 

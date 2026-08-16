@@ -127,5 +127,109 @@ describe('Services Unit Tests', () => {
             assert.strictEqual(editCalled, false);
         });
     });
+
+    describe('Threads Service - pruneInactiveThreads', () => {
+        const { pruneInactiveThreads, THIRTY_DAYS_MS } = require('../services/threads.js');
+        let originalServerConfig;
+
+        beforeEach(() => {
+            originalServerConfig = JSON.parse(JSON.stringify(storage.serverConfig));
+            storage.serverConfig['guild_threads'] = {
+                channelId: 'channel_threads',
+                threadPruneEnabled: true
+            };
+        });
+
+        afterEach(() => {
+            Object.keys(storage.serverConfig).forEach(k => delete storage.serverConfig[k]);
+            Object.assign(storage.serverConfig, originalServerConfig);
+        });
+
+        it('should prune bot-created archived threads older than 30 days', async () => {
+            const now = Date.now();
+            let deletedThreadIds = [];
+
+            const oldArchivedThread = {
+                id: 'thread_old',
+                name: '💬 Discussion: Old Event',
+                ownerId: 'bot_id',
+                createdTimestamp: now - (THIRTY_DAYS_MS + 10000),
+                archiveTimestamp: now - (THIRTY_DAYS_MS + 5000),
+                archived: true,
+                delete: async () => {
+                    deletedThreadIds.push('thread_old');
+                }
+            };
+
+            const recentArchivedThread = {
+                id: 'thread_recent',
+                name: '💬 Discussion: Recent Event',
+                ownerId: 'bot_id',
+                createdTimestamp: now - (5 * 24 * 60 * 60 * 1000),
+                archiveTimestamp: now - (2 * 24 * 60 * 60 * 1000),
+                archived: true,
+                delete: async () => {
+                    deletedThreadIds.push('thread_recent');
+                }
+            };
+
+            const userCreatedOldThread = {
+                id: 'thread_user',
+                name: 'General Discussion',
+                ownerId: 'user_123',
+                createdTimestamp: now - (40 * 24 * 60 * 60 * 1000),
+                archiveTimestamp: now - (35 * 24 * 60 * 60 * 1000),
+                archived: true,
+                delete: async () => {
+                    deletedThreadIds.push('thread_user');
+                }
+            };
+
+            const mockChannel = {
+                id: 'channel_threads',
+                threads: {
+                    fetchArchived: async () => ({
+                        threads: new Map([
+                            ['thread_old', oldArchivedThread],
+                            ['thread_recent', recentArchivedThread],
+                            ['thread_user', userCreatedOldThread]
+                        ])
+                    }),
+                    fetchActive: async () => ({
+                        threads: new Map()
+                    })
+                }
+            };
+
+            const mockGuild = {
+                id: 'guild_threads',
+                client: {
+                    user: { id: 'bot_id' }
+                },
+                channels: {
+                    fetch: async (id) => (id === 'channel_threads' ? mockChannel : null)
+                }
+            };
+
+            const count = await pruneInactiveThreads(mockGuild);
+
+            assert.strictEqual(count, 1);
+            assert.deepStrictEqual(deletedThreadIds, ['thread_old']);
+        });
+
+        it('should do nothing if threadPruneEnabled is false', async () => {
+            storage.serverConfig['guild_threads'].threadPruneEnabled = false;
+
+            const mockGuild = {
+                id: 'guild_threads',
+                client: {
+                    user: { id: 'bot_id' }
+                }
+            };
+
+            const count = await pruneInactiveThreads(mockGuild);
+            assert.strictEqual(count, 0);
+        });
+    });
 });
 
