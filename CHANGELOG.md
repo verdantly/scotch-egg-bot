@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automated Startup & Daily Maintenance Pruning:** Thread pruning runs automatically upon bot startup (offline garbage collection) and via a scheduled daily maintenance cron at 03:00 AM.
 - **Integrated Thread Pruning in `/settings cleanup`:** Running `/settings cleanup` now sweeps and reports pruned 30+ day old inactive discussion threads alongside concluded announcements and reminder messages.
 
+### Fixed & Improved
+- **Robust Multi-Source Discovery:** Upgraded thread detection to traverse active threads, archived public threads via cursor pagination, and channel caches.
+- **Permission Error Resilience:** Handled `50013 Missing Permissions` and `50001 Missing Access` cleanly, pre-filtering inaccessible channels and notifying admins if `Manage Threads` permission is needed.
+
 ## [2.0.1] - 2026-07-04
 
 ### Fixed
