@@ -217,14 +217,75 @@ describe('Services Unit Tests', () => {
             assert.deepStrictEqual(deletedThreadIds, ['thread_old']);
         });
 
-        it('should do nothing if threadPruneEnabled is false', async () => {
-            storage.serverConfig['guild_threads'].threadPruneEnabled = false;
+        it('should handle pagination and ISO string before parameter', async () => {
+            const now = Date.now();
+            let deletedThreadIds = [];
+            let callCount = 0;
+
+            const page1Thread = {
+                id: 'thread_page1',
+                name: '💬 Discussion: Event 1',
+                ownerId: 'bot_id',
+                createdTimestamp: now - (THIRTY_DAYS_MS + 10000),
+                archiveTimestamp: now - (THIRTY_DAYS_MS + 5000),
+                archived: true,
+                delete: async () => { deletedThreadIds.push('thread_page1'); }
+            };
+
+            const page2Thread = {
+                id: 'thread_page2',
+                name: '💬 Discussion: Event 2',
+                ownerId: 'bot_id',
+                createdTimestamp: now - (THIRTY_DAYS_MS + 20000),
+                archiveTimestamp: now - (THIRTY_DAYS_MS + 15000),
+                archived: true,
+                delete: async () => { deletedThreadIds.push('thread_page2'); }
+            };
+
+            const mockChannel = {
+                id: 'channel_threads',
+                threads: {
+                    fetchArchived: async (options) => {
+                        callCount++;
+                        if (options.type === 'private') {
+                            return { threads: new Map(), hasMore: false };
+                        }
+                        if (!options.before) {
+                            return {
+                                threads: new Map([['thread_page1', page1Thread]]),
+                                hasMore: true
+                            };
+                        } else {
+                            return {
+                                threads: new Map([['thread_page2', page2Thread]]),
+                                hasMore: false
+                            };
+                        }
+                    },
+                    fetchActive: async () => ({ threads: new Map() })
+                }
+            };
 
             const mockGuild = {
                 id: 'guild_threads',
-                client: {
-                    user: { id: 'bot_id' }
+                client: { user: { id: 'bot_id' } },
+                channels: {
+                    fetch: async (id) => (id === 'channel_threads' ? mockChannel : null),
+                    cache: new Map()
                 }
+            };
+
+            const count = await pruneInactiveThreads(mockGuild);
+
+            assert.strictEqual(count, 2);
+            assert.deepStrictEqual(deletedThreadIds, ['thread_page1', 'thread_page2']);
+            assert.strictEqual(callCount >= 2, true);
+        });
+
+        it('should do nothing if threadPruneEnabled is false', async () => {
+            storage.serverConfig['guild_threads'].threadPruneEnabled = false;
+            const mockGuild = {
+                id: 'guild_threads'
             };
 
             const count = await pruneInactiveThreads(mockGuild);
@@ -232,4 +293,3 @@ describe('Services Unit Tests', () => {
         });
     });
 });
-
