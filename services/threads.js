@@ -1,3 +1,4 @@
+const { PermissionFlagsBits } = require('discord.js');
 const { getAnnouncementChannelId, getThreadPruneEnabled } = require('./config.js');
 const { eventDb } = require('../storage.js');
 
@@ -56,6 +57,15 @@ async function pruneChannelThreads(channel, guild) {
     const now = Date.now();
     const processedThreadIds = new Set();
 
+    // Check basic channel access permissions before querying threads
+    const botMember = guild.members.me || (guild.client?.user ? guild.members.cache.get(guild.client.user.id) : null);
+    if (botMember && typeof channel.permissionsFor === 'function') {
+        const perms = channel.permissionsFor(botMember);
+        if (perms && (!perms.has(PermissionFlagsBits.ViewChannel) || !perms.has(PermissionFlagsBits.ReadMessageHistory))) {
+            return { count: 0, permissionError: false };
+        }
+    }
+
     const candidateThreads = new Map();
 
     // 1. Fetch public archived threads via fetchArchived with cursor pagination
@@ -72,8 +82,8 @@ async function pruneChannelThreads(channel, guild) {
             }
 
             const archivedData = await channel.threads.fetchArchived(fetchOptions).catch(err => {
-                if (err.code === 50013 || err.status === 403) {
-                    permissionError = true;
+                if (err.code === 50001 || err.code === 50013 || err.status === 403) {
+                    if (err.code === 50013) permissionError = true;
                 } else {
                     console.error(`Error fetching public archived threads in channel ${channel.id}:`, err);
                 }
@@ -96,7 +106,9 @@ async function pruneChannelThreads(channel, guild) {
             if (!before) break;
         }
     } catch (err) {
-        console.error(`Error in public archived thread pagination for channel ${channel.id}:`, err);
+        if (err.code !== 50001 && err.code !== 50013 && err.status !== 403) {
+            console.error(`Error in public archived thread pagination for channel ${channel.id}:`, err);
+        }
     }
 
     // 2. Fetch standard thread fetch / active threads
@@ -110,7 +122,7 @@ async function pruneChannelThreads(channel, guild) {
             }
         }
     } catch (err) {
-        console.error(`Error fetching active threads in channel ${channel.id}:`, err);
+        // Quietly handle access errors
     }
 
     try {
@@ -123,7 +135,7 @@ async function pruneChannelThreads(channel, guild) {
             }
         }
     } catch (err) {
-        console.error(`Error fetching general threads in channel ${channel.id}:`, err);
+        // Quietly handle access errors
     }
 
     // 3. Check thread cache on the channel and guild
@@ -163,7 +175,7 @@ async function pruneChannelThreads(channel, guild) {
                     await thread.delete('Pruning inactive discussion thread older than 30 days');
                     deletedCount++;
                 } catch (deleteErr) {
-                    if (deleteErr.code === 50013 || deleteErr.status === 403) {
+                    if (deleteErr.code === 50013 || deleteErr.code === 50001 || deleteErr.status === 403) {
                         console.warn(`[Thread Prune] Cannot delete thread "${thread.name}" (${id}): Missing "Manage Threads" permission.`);
                         permissionError = true;
                     } else {
@@ -207,10 +219,18 @@ async function pruneInactiveThreads(guild, customChannel = null) {
         if (primaryChannel) channelsToScan.add(primaryChannel);
     }
 
-    // Also scan all text channels in guild cache
+    const botMember = guild.members.me || (guild.client?.user ? guild.members.cache.get(guild.client.user.id) : null);
+
+    // Also scan all text channels in guild cache that the bot can view and read history in
     if (guild.channels && guild.channels.cache) {
         for (const ch of guild.channels.cache.values()) {
             if (ch.threads && (ch.type === 0 || ch.type === 5)) {
+                if (botMember && typeof ch.permissionsFor === 'function') {
+                    const perms = ch.permissionsFor(botMember);
+                    if (!perms || !perms.has(PermissionFlagsBits.ViewChannel) || !perms.has(PermissionFlagsBits.ReadMessageHistory)) {
+                        continue;
+                    }
+                }
                 channelsToScan.add(ch);
             }
         }
@@ -222,7 +242,9 @@ async function pruneInactiveThreads(guild, customChannel = null) {
             resultObj.count += res.count;
             if (res.permissionError) resultObj.permissionError = true;
         } catch (err) {
-            console.error(`Error pruning threads in channel ${ch.id}:`, err);
+            if (err.code !== 50001 && err.code !== 50013 && err.status !== 403) {
+                console.error(`Error pruning threads in channel ${ch.id}:`, err);
+            }
         }
     }
 
