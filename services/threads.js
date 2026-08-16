@@ -4,28 +4,39 @@ const { eventDb } = require('../storage.js');
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
- * Checks if a thread was created by Scotch Egg for event discussions.
+ * Checks if a thread is a discussion thread eligible for pruning.
  * @param {import('discord.js').ThreadChannel} thread 
  * @param {import('discord.js').Guild} guild 
+ * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} [channel]
  * @returns {boolean}
  */
-function isScotchEggDiscussionThread(thread, guild) {
+function isScotchEggDiscussionThread(thread, guild, channel = null) {
     if (!thread) return false;
     const name = thread.name || '';
     
-    // Check name patterns
-    if (name.startsWith('💬 Discussion:') || name.startsWith('💬') || /discussion/i.test(name)) {
+    // 1. Thread name matches discussion pattern or emoji
+    if (name.startsWith('💬') || /discussion/i.test(name) || /discus/i.test(name) || /diskussion/i.test(name) || /débat/i.test(name) || /event/i.test(name)) {
         return true;
     }
     
-    // Check owner
+    // 2. Created by or owned by the bot
     const botId = guild?.client?.user?.id;
-    if (botId && thread.ownerId === botId) {
+    if (botId && (thread.ownerId === botId || thread.creatorId === botId)) {
         return true;
     }
     
-    // Check eventDb (message threads share their id with the announcement message)
+    // 3. Thread ID matches an announcement message ID in eventDb
     if (eventDb && eventDb[thread.id]) {
+        return true;
+    }
+    
+    // 4. Any thread inside the announcement channel
+    if (channel && (thread.parentId === channel.id || thread.parent?.id === channel.id)) {
+        return true;
+    }
+
+    const announcementChannelId = guild ? getAnnouncementChannelId(guild.id) : null;
+    if (announcementChannelId && (thread.parentId === announcementChannelId || thread.parent?.id === announcementChannelId)) {
         return true;
     }
     
@@ -44,59 +55,32 @@ async function pruneChannelThreads(channel, guild) {
     const now = Date.now();
     const processedThreadIds = new Set();
 
-    // 1. Fetch archived threads (public and private) with cursor-based pagination
-    for (const type of ['public', 'private']) {
+    const candidateThreads = new Map();
+
+    // 1. Fetch public archived threads via fetchArchived with cursor pagination
+    try {
         let hasMore = true;
         let before = undefined;
         let pageCount = 0;
 
         while (hasMore && pageCount < 50) {
             pageCount++;
-            const fetchOptions = { type, limit: 100 };
+            const fetchOptions = { limit: 100 };
             if (before) {
                 fetchOptions.before = before instanceof Date ? before.toISOString() : new Date(before).toISOString();
             }
 
-            let archivedData;
-            try {
-                archivedData = await channel.threads.fetchArchived(fetchOptions);
-            } catch (fetchErr) {
-                // Ignore 403 / 50001 (Missing Permissions / Access) for private threads
-                if (type !== 'private') {
-                    console.error(`Failed to fetch archived ${type} threads in channel ${channel.id}:`, fetchErr);
-                }
-                break;
-            }
+            const archivedData = await channel.threads.fetchArchived(fetchOptions).catch(err => {
+                console.error(`Error fetching public archived threads in channel ${channel.id}:`, err);
+                return null;
+            });
 
             if (!archivedData || !archivedData.threads || archivedData.threads.size === 0) {
                 break;
             }
 
             for (const [id, thread] of archivedData.threads) {
-                if (processedThreadIds.has(id)) continue;
-                processedThreadIds.add(id);
-
-                const createdTs = thread.createdTimestamp || (Number(BigInt(id) >> 22n) + 1420070400000);
-                const age = now - createdTs;
-
-                if (isScotchEggDiscussionThread(thread, guild) && age >= THIRTY_DAYS_MS) {
-                    let isInactive = thread.archived === true;
-                    if (!isInactive) {
-                        const lastMsgTs = thread.lastMessageId 
-                            ? Number((BigInt(thread.lastMessageId) >> 22n) + 1420070400000) 
-                            : createdTs;
-                        isInactive = (now - lastMsgTs) >= THIRTY_DAYS_MS;
-                    }
-
-                    if (isInactive) {
-                        try {
-                            await thread.delete('Pruning inactive discussion thread older than 30 days');
-                            deletedCount++;
-                        } catch (deleteErr) {
-                            console.error(`Failed to delete archived thread ${id}:`, deleteErr);
-                        }
-                    }
-                }
+                candidateThreads.set(id, thread);
             }
 
             hasMore = archivedData.hasMore === true && archivedData.threads.size > 0;
@@ -106,31 +90,17 @@ async function pruneChannelThreads(channel, guild) {
             }
             if (!before) break;
         }
+    } catch (err) {
+        console.error(`Error in public archived thread pagination for channel ${channel.id}:`, err);
     }
 
-    // 2. Fetch active threads that have been stale/inactive for 30+ days
+    // 2. Fetch standard thread fetch / active threads
     try {
-        const activeData = await channel.threads.fetchActive().catch(() => null);
-        if (activeData && activeData.threads) {
-            for (const [id, thread] of activeData.threads) {
-                if (processedThreadIds.has(id)) continue;
-                processedThreadIds.add(id);
-
-                const createdTs = thread.createdTimestamp || (Number(BigInt(id) >> 22n) + 1420070400000);
-                const age = now - createdTs;
-
-                const lastMsgTs = thread.lastMessageId 
-                    ? Number((BigInt(thread.lastMessageId) >> 22n) + 1420070400000) 
-                    : createdTs;
-                const lastMsgAge = now - lastMsgTs;
-
-                if (isScotchEggDiscussionThread(thread, guild) && age >= THIRTY_DAYS_MS && lastMsgAge >= THIRTY_DAYS_MS) {
-                    try {
-                        await thread.delete('Pruning inactive discussion thread older than 30 days');
-                        deletedCount++;
-                    } catch (deleteErr) {
-                        console.error(`Failed to delete active thread ${id}:`, deleteErr);
-                    }
+        if (typeof channel.threads.fetchActive === 'function') {
+            const activeData = await channel.threads.fetchActive().catch(() => null);
+            if (activeData && activeData.threads) {
+                for (const [id, thread] of activeData.threads) {
+                    candidateThreads.set(id, thread);
                 }
             }
         }
@@ -138,30 +108,57 @@ async function pruneChannelThreads(channel, guild) {
         console.error(`Error fetching active threads in channel ${channel.id}:`, err);
     }
 
-    // 3. Check any threads in guild cache that match this channel
+    try {
+        if (typeof channel.threads.fetch === 'function') {
+            const fetched = await channel.threads.fetch().catch(() => null);
+            if (fetched && fetched.threads) {
+                for (const [id, thread] of fetched.threads) {
+                    candidateThreads.set(id, thread);
+                }
+            }
+        }
+    } catch (err) {
+        console.error(`Error fetching general threads in channel ${channel.id}:`, err);
+    }
+
+    // 3. Check thread cache on the channel and guild
+    if (channel.threads && channel.threads.cache) {
+        for (const [id, thread] of channel.threads.cache) {
+            candidateThreads.set(id, thread);
+        }
+    }
+
     if (guild && guild.channels && guild.channels.cache) {
         for (const ch of guild.channels.cache.values()) {
-            if (ch.isThread && ch.isThread() && ch.parentId === channel.id) {
-                if (processedThreadIds.has(ch.id)) continue;
-                processedThreadIds.add(ch.id);
+            if (ch.isThread && ch.isThread() && (ch.parentId === channel.id || ch.parent?.id === channel.id)) {
+                candidateThreads.set(ch.id, ch);
+            }
+        }
+    }
 
-                const createdTs = ch.createdTimestamp || (Number(BigInt(ch.id) >> 22n) + 1420070400000);
-                const age = now - createdTs;
+    // Process all collected candidate threads
+    for (const [id, thread] of candidateThreads.entries()) {
+        if (processedThreadIds.has(id)) continue;
+        processedThreadIds.add(id);
 
-                if (isScotchEggDiscussionThread(ch, guild) && age >= THIRTY_DAYS_MS) {
-                    const lastMsgTs = ch.lastMessageId 
-                        ? Number((BigInt(ch.lastMessageId) >> 22n) + 1420070400000) 
-                        : createdTs;
-                    const isInactive = ch.archived === true || (now - lastMsgTs >= THIRTY_DAYS_MS);
+        const createdTs = thread.createdTimestamp || (Number(BigInt(id) >> 22n) + 1420070400000);
+        const age = now - createdTs;
 
-                    if (isInactive) {
-                        try {
-                            await ch.delete('Pruning inactive discussion thread older than 30 days');
-                            deletedCount++;
-                        } catch (deleteErr) {
-                            console.error(`Failed to delete cached thread ${ch.id}:`, deleteErr);
-                        }
-                    }
+        if (isScotchEggDiscussionThread(thread, guild, channel) && age >= THIRTY_DAYS_MS) {
+            let isInactive = thread.archived === true;
+            if (!isInactive) {
+                const lastMsgTs = thread.lastMessageId 
+                    ? Number((BigInt(thread.lastMessageId) >> 22n) + 1420070400000) 
+                    : createdTs;
+                isInactive = (now - lastMsgTs) >= THIRTY_DAYS_MS;
+            }
+
+            if (isInactive) {
+                try {
+                    await thread.delete('Pruning inactive discussion thread older than 30 days');
+                    deletedCount++;
+                } catch (deleteErr) {
+                    console.error(`Failed to delete inactive thread ${id} (${thread.name}):`, deleteErr);
                 }
             }
         }
@@ -180,16 +177,35 @@ async function pruneInactiveThreads(guild, customChannel = null) {
     if (!guild) return 0;
     if (!getThreadPruneEnabled(guild.id)) return 0;
 
+    const channelsToScan = new Set();
+
     if (customChannel) {
-        return await pruneChannelThreads(customChannel, guild);
+        channelsToScan.add(customChannel);
+    }
+
+    const configuredChannelId = getAnnouncementChannelId(guild.id);
+    if (configuredChannelId) {
+        const primaryChannel = (guild.channels && guild.channels.cache ? guild.channels.cache.get(configuredChannelId) : null) || 
+                              (guild.channels && typeof guild.channels.fetch === 'function' ? await guild.channels.fetch(configuredChannelId).catch(() => null) : null);
+        if (primaryChannel) channelsToScan.add(primaryChannel);
+    }
+
+    // Also scan all text channels in guild cache
+    if (guild.channels && guild.channels.cache) {
+        for (const ch of guild.channels.cache.values()) {
+            if (ch.threads && (ch.type === 0 || ch.type === 5)) {
+                channelsToScan.add(ch);
+            }
+        }
     }
 
     let totalPruned = 0;
-    const channelId = getAnnouncementChannelId(guild.id);
-    const primaryChannel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
-
-    if (primaryChannel) {
-        totalPruned += await pruneChannelThreads(primaryChannel, guild);
+    for (const ch of channelsToScan) {
+        try {
+            totalPruned += await pruneChannelThreads(ch, guild);
+        } catch (err) {
+            console.error(`Error pruning threads in channel ${ch.id}:`, err);
+        }
     }
 
     return totalPruned;

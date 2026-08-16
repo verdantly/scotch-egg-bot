@@ -267,16 +267,12 @@ module.exports = {
             }
 
             const messages = await channel.messages.fetch({ limit: 100 }).catch(() => null);
-            if (!messages || messages.size === 0) {
-                return interaction.editReply({ content: 'No messages found in the announcement channel to clean up.' });
-            }
-
             const autoDelete = getAutoDeleteEnabled(interaction.guildId);
             const guildLocale = getNormalizedLocale(interaction.guild.preferredLocale);
             let cleanedCount = 0;
             let remindersDeletedCount = 0;
 
-            const botMessages = Array.from(messages.values()).filter(msg => msg.author.id === interaction.client.user.id);
+            const botMessages = messages ? Array.from(messages.values()).filter(msg => msg.author.id === interaction.client.user.id) : [];
             const foundEvents = new Map();
             const deletedMessageIds = new Set();
             const activeEventsCollection = await interaction.guild.scheduledEvents.fetch().catch(() => null);
