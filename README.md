@@ -9,8 +9,8 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 - **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about. Keep your community in the loop exactly how you prefer via Private DMs, Public Mentions, or a Hybrid configuration (Public reminders + Private DM alerts).
 - **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude, while **always deleting** the associated public reminders to keep channels completely clutter-free.
-- **Add to Calendar & View Event Buttons:** Event announcements and reminders feature dedicated interactive link buttons. The **Add to Calendar** button lets users add the event directly to Google Calendar pre-filled with the details. The **View Event** button links directly to Discord's native event window, resolving duplicate "double embed" clutter in chat.
-- **Auto-Create Discussion Threads & Pruning:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement, and automatically prunes inactive discussion threads older than 30 days to keep channels completely clutter-free.
+- **Add to Calendar, View Event & Discussion Thread Buttons:** Event announcements and reminders feature dedicated interactive link buttons. The **Add to Calendar** button lets users add the event directly to Google Calendar pre-filled with the details. The **View Event** button links directly to Discord's native event window. Reminders also feature a **Join Discussion** button that opens the event's dedicated discussion thread.
+- **Auto-Create Discussion Threads & Pruning:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement, links to the thread in all reminder messages, and automatically prunes inactive discussion threads older than 30 days to keep channels completely clutter-free.
 - **Dynamic Relative Timestamps:** Event dates display a relative countdown alongside the date and time (e.g., *Tuesday, October 24, 2023 8:00 PM (in 3 days)*) when the event is less than a week away.
 - **Multi-Language (Localization):** Fully supports 5 major native locales: English (`en`), Spanish (`es`), German (`de`), French (`fr`), and Portuguese (`pt`). Features native name and description slash command metadata, client-locale detection for translating slash command interfaces on the fly, and guild-locale preferred language detection for dynamic server announcements.
 
@@ -31,7 +31,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 > 
 > @User1 @User2 @User3
 > 
-> `[ ⏰ Remind Me! ]` `[ 📅 Add to Calendar ]` *(Interactive Buttons)*
+> `[ ⏰ Remind Me! ]` `[ 📅 Add to Calendar ]` `[ 🔗 View Event ]` `[ 💬 Join Discussion ]` *(Interactive Buttons)*
 
 ## Prerequisites & Discord Setup
 

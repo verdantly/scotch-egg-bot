@@ -3,7 +3,7 @@ const { GuildScheduledEventStatus, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, saveDb } = require('../storage.js');
 const { getFormattedTimeString, generateGoogleCalendarLink } = require('../utils.js');
-const { getAnnouncementChannelId, getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getPingsEnabled, isEventSilenced } = require('./config.js');
+const { getAnnouncementChannelId, getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getPingsEnabled, isEventSilenced } = require('./config.js');
 const { notifyAdmin } = require('./admin.js');
 
 let discordClient = null;
@@ -232,6 +232,19 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                                 row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
                             }
                             row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
+                            
+                            const threadId = eventData && (eventData.threadId || eventData.messageId);
+                            const shouldShowThreadButton = (eventData && eventData.threadId) || (getThreadsEnabled(event.guild.id) && threadId);
+                            if (shouldShowThreadButton && threadId) {
+                                row.addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(t(guildLocale, 'reminder_button_thread'))
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL(`https://discord.com/channels/${event.guild.id}/${threadId}`)
+                                        .setEmoji('💬')
+                                );
+                            }
+
                             if (row.components.length > 0) {
                                 payload.components = [row];
                             }
@@ -257,6 +270,19 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                             row.addComponents(
                                 new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗')
                             );
+
+                            const threadId = eventData && (eventData.threadId || eventData.messageId);
+                            const shouldShowThreadButton = (eventData && eventData.threadId) || (getThreadsEnabled(event.guild.id) && threadId);
+                            if (shouldShowThreadButton && threadId) {
+                                row.addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(t(guildLocale, 'reminder_button_thread'))
+                                        .setStyle(ButtonStyle.Link)
+                                        .setURL(`https://discord.com/channels/${event.guild.id}/${threadId}`)
+                                        .setEmoji('💬')
+                                );
+                            }
+
                             components.push(row);
 
                             const failedUserIds = await sendDMsWithRateLimit(userIds, { content: alertMsg, components });

@@ -429,4 +429,17 @@ describe('Services Unit Tests', () => {
             assert.strictEqual(count, 0);
         });
     });
+
+    describe('Reminders Service - Thread Link Buttons & Localization', () => {
+        const { t } = require('../i18n.js');
+
+        it('should have localized reminder_button_thread across all supported locales', () => {
+            const locales = ['en', 'es', 'de', 'fr', 'pt'];
+            locales.forEach(loc => {
+                const label = t(loc, 'reminder_button_thread');
+                assert.ok(label, `Missing reminder_button_thread for locale: ${loc}`);
+                assert.notStrictEqual(label, 'reminder_button_thread');
+            });
+        });
+    });
 });

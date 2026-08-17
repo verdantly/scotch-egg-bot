@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-08-16
+
+### Added
+- **Discussion Thread Links on Reminders:** Added an interactive `💬 Join Discussion` link button to all public, hybrid, and private DM event reminder messages. This allows server members to navigate directly to the event's dedicated discussion thread right from the reminder notification.
+- **Dynamic Thread Link Support:** Automatically attaches the thread link button whenever discussion threads are enabled in server settings or when an active discussion thread is registered for the event.
+- **Test Reminder Preview Integration:** Updated `/settings testreminder` previews to display the `💬 Join Discussion` button when discussion threads are enabled.
+
 ## [2.1.0] - 2026-08-15
 
 ### Added

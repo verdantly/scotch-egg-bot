@@ -113,7 +113,11 @@ async function postAnnouncement(event, channel) {
 
         if (getThreadsEnabled(event.guild.id)) {
             try {
-                await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
+                const thread = await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
+                if (thread && eventDb[event.id]) {
+                    eventDb[event.id].threadId = thread.id;
+                    await saveDb();
+                }
             } catch (threadErr) {
                 console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
             }

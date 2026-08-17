@@ -215,9 +215,15 @@ module.exports = {
                     row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL('https://calendar.google.com/').setEmoji('📅'));
                 }
                 row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
+                if (getThreadsEnabled(interaction.guildId)) {
+                    row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'reminder_button_thread')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('💬'));
+                }
             } else {
                 row.addComponents(new ButtonBuilder().setCustomId('mock_cancel').setLabel(t(userLocale, 'reminder_button_cancel')).setStyle(ButtonStyle.Danger).setEmoji('🔕').setDisabled(true));
                 row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('🔗'));
+                if (getThreadsEnabled(interaction.guildId)) {
+                    row.addComponents(new ButtonBuilder().setLabel(t(userLocale, 'reminder_button_thread')).setStyle(ButtonStyle.Link).setURL('https://discord.com/').setEmoji('💬'));
+                }
             }
 
             await interaction.editReply({ content: replyContent, components: [row] });
