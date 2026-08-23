@@ -143,13 +143,36 @@
             </div>
 
             <div class="space-y-12">
+                <!-- Release: v2.2.1 -->
+                <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.2.1</h3>
+                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
+                            </div>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">August 23, 2026</span>
+                        </div>
+                        <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Thread Inactivity BigInt Arithmetic:</strong> Fixed a <code>TypeError: Cannot mix BigInt and other types</code> during thread pruning sweeps by standardizing snowflake timestamp math with <code>1420070400000n</code> BigInt literals when inspecting active discussion threads.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Release: v2.2.0 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.2.0</h3>
-                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
                             </div>
                             <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">August 16, 2026</span>
                         </div>
