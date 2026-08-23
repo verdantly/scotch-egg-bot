@@ -419,6 +419,43 @@ describe('Services Unit Tests', () => {
             assert.strictEqual(callCount >= 2, true);
         });
 
+        it('should prune active threads if lastMessageId is older than 30 days using snowflake calculation', async () => {
+            const now = Date.now();
+            let deletedThreadIds = [];
+            const oldMessageId = (BigInt(now - (THIRTY_DAYS_MS + 5000) - 1420070400000) << 22n).toString();
+            const threadSnowflake = (BigInt(now - (THIRTY_DAYS_MS + 10000) - 1420070400000) << 22n).toString();
+
+            const activeOldThread = {
+                id: threadSnowflake,
+                name: '💬 Discussion: Active Old Event',
+                ownerId: 'bot_id',
+                archived: false,
+                lastMessageId: oldMessageId,
+                delete: async () => { deletedThreadIds.push(threadSnowflake); }
+            };
+
+            const mockChannel = {
+                id: 'channel_threads',
+                threads: {
+                    fetchArchived: async () => ({ threads: new Map() }),
+                    fetchActive: async () => ({ threads: new Map([[threadSnowflake, activeOldThread]]) })
+                }
+            };
+
+            const mockGuild = {
+                id: 'guild_threads',
+                client: { user: { id: 'bot_id' } },
+                channels: {
+                    fetch: async (id) => (id === 'channel_threads' ? mockChannel : null),
+                    cache: new Map()
+                }
+            };
+
+            const count = await pruneInactiveThreads(mockGuild);
+            assert.strictEqual(count, 1);
+            assert.deepStrictEqual(deletedThreadIds, [threadSnowflake]);
+        });
+
         it('should do nothing if threadPruneEnabled is false', async () => {
             storage.serverConfig['guild_threads'].threadPruneEnabled = false;
             const mockGuild = {

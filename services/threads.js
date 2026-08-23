@@ -158,14 +158,14 @@ async function pruneChannelThreads(channel, guild) {
         if (processedThreadIds.has(id)) continue;
         processedThreadIds.add(id);
 
-        const createdTs = thread.createdTimestamp || (Number(BigInt(id) >> 22n) + 1420070400000);
+        const createdTs = thread.createdTimestamp || Number((BigInt(id) >> 22n) + 1420070400000n);
         const age = now - createdTs;
 
         if (isScotchEggDiscussionThread(thread, guild, channel) && age >= THIRTY_DAYS_MS) {
             let isInactive = thread.archived === true;
             if (!isInactive) {
                 const lastMsgTs = thread.lastMessageId 
-                    ? Number((BigInt(thread.lastMessageId) >> 22n) + 1420070400000) 
+                    ? Number((BigInt(thread.lastMessageId) >> 22n) + 1420070400000n) 
                     : createdTs;
                 isInactive = (now - lastMsgTs) >= THIRTY_DAYS_MS;
             }
