@@ -114,9 +114,19 @@ async function postAnnouncement(event, channel) {
         if (getThreadsEnabled(event.guild.id)) {
             try {
                 const thread = await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
-                if (thread && eventDb[event.id]) {
-                    eventDb[event.id].threadId = thread.id;
-                    await saveDb();
+                if (thread) {
+                    if (eventDb[event.id]) {
+                        eventDb[event.id].threadId = thread.id;
+                        await saveDb();
+                    }
+                    const hostTag = event.creatorId ? `, <@${event.creatorId}>` : '';
+                    const starterMsg = t(guildLocale, 'thread_starter_message', {
+                        name: event.name,
+                        host: hostTag
+                    });
+                    await thread.send({ content: starterMsg }).catch(starterErr => {
+                        console.error(`Could not send starter message in thread for event ${event.id}:`, starterErr);
+                    });
                 }
             } catch (threadErr) {
                 console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);

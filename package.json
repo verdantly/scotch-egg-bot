@@ -1,6 +1,6 @@
 {
   "name": "scotch-egg",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "main": "index.js",
   "dependencies": {
     "discord.js": "^14.26.4",

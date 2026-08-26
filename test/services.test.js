@@ -478,5 +478,15 @@ describe('Services Unit Tests', () => {
                 assert.notStrictEqual(label, 'reminder_button_thread');
             });
         });
+
+        it('should have localized thread_starter_message across all supported locales', () => {
+            const locales = ['en', 'es', 'de', 'fr', 'pt'];
+            locales.forEach(loc => {
+                const msg = t(loc, 'thread_starter_message', { name: 'Test Event', host: ', <@123>' });
+                assert.ok(msg, `Missing thread_starter_message for locale: ${loc}`);
+                assert.ok(msg.includes('Test Event'));
+                assert.ok(msg.includes('<@123>'));
+            });
+        });
     });
 });
