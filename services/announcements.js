@@ -125,7 +125,11 @@ async function postAnnouncement(event, channel) {
                         host: hostTag
                     });
                     await thread.send({ content: starterMsg }).catch(starterErr => {
-                        console.error(`Could not send starter message in thread for event ${event.id}:`, starterErr);
+                        if (starterErr.code === 50001 || starterErr.code === 50013 || starterErr.status === 403) {
+                            console.warn(`[Announcement Thread] Could not send starter message in thread for event ${event.id}: Missing "Send Messages in Threads" permission in channel.`);
+                        } else {
+                            console.error(`Could not send starter message in thread for event ${event.id}:`, starterErr);
+                        }
                     });
                 }
             } catch (threadErr) {

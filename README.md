@@ -39,7 +39,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 2. On the "General Information" page, copy your **Application ID** (this will be your `CLIENT_ID`).
 3. Navigate to the "Bot" tab on the left, click **Reset Token**, and copy the new token (this will be your `DISCORD_TOKEN`).
 4. Go to "OAuth2" > "OAuth2 URL Generator". Check the `bot` and `applications.commands` scopes.
-   - **Tip:** After checking the `bot` scope, a "Bot Permissions" grid will appear. It is highly recommended to select **Send Messages**, **Read Message History**, **View Channels**, **Embed Links**, **Create Public Threads**, and **Manage Threads** (if using the auto-thread creation and auto-pruning features) so the bot's permissions are automatically configured.
+   - **Tip:** After checking the `bot` scope, a "Bot Permissions" grid will appear. It is highly recommended to select **Send Messages**, **Send Messages in Threads**, **Read Message History**, **View Channels**, **Embed Links**, **Create Public Threads**, and **Manage Threads** (if using discussion threads and auto-pruning) so the bot's permissions are automatically configured.
    > **Important:** You must select BOTH the `bot` and `applications.commands` scopes, or the bot will not function correctly.
 5. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.
 6. Ensure you have **Node.js (v16.14.0 or higher)** installed, OR **Docker** if you prefer containerized deployment.
