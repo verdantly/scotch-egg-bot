@@ -57,16 +57,28 @@
             }
         }
     </script>
+    <style>
+        :focus-visible {
+            outline: 2px solid #c47c43;
+            outline-offset: 2px;
+        }
+    </style>
     <link rel="canonical" href="https://www.scotchegg.app/documentation.html" />
 </head>
 
 <body
     class="bg-cream dark:bg-gray-900 text-charcoal dark:text-gray-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
 
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-breadcrumb focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eggyolk font-medium">
+        Skip to main content
+    </a>
+
     <!-- Header & Navigation -->
     <header
         class="sticky top-0 z-50 bg-cream dark:bg-gray-900 border-b border-cream-dark dark:border-gray-800 transition-colors duration-300">
-        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+        <nav class="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center" aria-label="Main Navigation">
             <a href="index.html"
                 class="flex items-center space-x-3 text-2xl font-serif font-bold text-breadcrumb-dark dark:text-eggyolk hover:text-eggyolk dark:hover:text-eggyolk-hover transition-colors">
                 <span>🥚</span>
@@ -83,8 +95,8 @@
                 <button id="theme-toggle"
                     class="p-2 rounded-full hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors"
                     aria-label="Toggle Dark Mode">
-                    <span class="dark:hidden text-xl">🌙</span>
-                    <span class="hidden dark:inline text-xl">☀️</span>
+                    <span class="dark:hidden text-xl" aria-hidden="true">🌙</span>
+                    <span class="hidden dark:inline text-xl" aria-hidden="true">☀️</span>
                 </button>
                 <a href="https://github.com/verdantly/scotch-egg-bot" target="_blank" rel="noopener noreferrer"
                     class="bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm hidden sm:inline-block">
@@ -92,9 +104,9 @@
                 </a>
                 <button id="mobile-menu-btn"
                     class="md:hidden p-2 rounded-md hover:bg-cream-dark dark:hover:bg-gray-800 transition-colors"
-                    aria-label="Toggle Mobile Menu">
+                    aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
                     <svg class="w-6 h-6 text-charcoal dark:text-gray-200" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                        viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
@@ -118,18 +130,18 @@
         </div>
     </header>
 
-    <!-- Main Content Layout -->
-    <div class="w-full max-w-7xl mx-auto flex flex-col md:flex-row flex-1">
-
+    <!-- Docs Layout Container -->
+    <div class="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto">
         <!-- Sidebar Navigation -->
         <aside
-            class="w-full md:w-64 bg-cream-dark dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent px-6 py-8 border-b md:border-b-0 md:border-r border-cream-dark dark:border-gray-800 md:sticky md:top-[89px] md:h-[calc(100vh-89px)] overflow-y-auto transition-colors duration-300">
+            class="w-full md:w-64 bg-cream-dark dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent px-6 py-8 border-b md:border-b-0 md:border-r border-cream-dark dark:border-gray-800 md:sticky md:top-[89px] md:h-[calc(100vh-89px)] overflow-y-auto transition-colors duration-300"
+            aria-label="Documentation Sidebar">
             <h3 class="font-serif font-bold text-breadcrumb-dark dark:text-eggyolk text-xl mb-4">Documentation</h3>
 
             <div class="space-y-6">
                 <!-- Group 1: How Tos -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">How Tos</h4>
+                    <h4 class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">How Tos</h4>
                     <ul class="space-y-2 text-gray-700 dark:text-gray-300">
                         <li><a href="#prerequisites"
                                 class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Prerequisites</a>
@@ -148,7 +160,7 @@
 
                 <!-- Group 2: Commands -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Commands</h4>
+                    <h4 class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">Commands</h4>
                     <ul class="space-y-2 text-gray-700 dark:text-gray-300">
                         <li><a href="#server-management-commands"
                                 class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Server Management Commands</a></li>
@@ -159,7 +171,7 @@
 
                 <!-- Group 3: Miscellaneous -->
                 <div>
-                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Miscellaneous</h4>
+                    <h4 class="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">Miscellaneous</h4>
                     <ul class="space-y-2 text-gray-700 dark:text-gray-300">
                         <li><a href="#features"
                                 class="hover:text-eggyolk dark:hover:text-eggyolk-hover font-medium block text-sm transition-colors">Core
@@ -180,7 +192,7 @@
                 </div>
             </div>
         </aside>
-        <main
+        <main id="main-content" tabindex="-1"
             class="flex-1 px-6 md:px-12 py-10 space-y-16 bg-white dark:bg-gray-900 min-h-screen transition-colors duration-300">
 
             <!-- ==================== HOW TOS CATEGORY ==================== -->
@@ -220,8 +232,8 @@
                         class="bg-eggyolk/10 dark:bg-[#fcba03]/10 border-l-4 border-eggyolk p-6 rounded-r-xl mb-8 flex items-start space-x-4">
                         <span class="text-3xl shrink-0">🐋</span>
                         <div>
-                            <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended
-                                Deployment: Docker Compose</h4>
+                            <h3 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-1">Recommended
+                                Deployment: Docker Compose</h3>
                             <p class="text-gray-700 dark:text-gray-300">
                                 Using <strong>Docker Compose</strong> is strongly recommended for hosting Scotch Egg. It pre-configures Node.js, database folders, and permission environments inside an
                                 isolated container, making installation foolproof and keeping background process
@@ -1443,15 +1455,15 @@ cp config.json data/config.json</pre>
                 <span>Scotch Egg</span>
             </div>
             <div class="flex flex-col items-center md:items-end space-y-2">
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
                     Open Source under the GPLv3 License. 
-                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb transition-colors ml-2 font-medium">View on GitHub</a>
+                    <a href="https://github.com/verdantly/scotch-egg-bot" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors ml-2 font-medium">View on GitHub</a>
                 </p>
-                <div class="flex space-x-4 text-xs text-gray-400 dark:text-gray-500 font-medium">
+                <div class="flex space-x-4 text-xs text-gray-600 dark:text-gray-400 font-medium">
                     <a href="privacy.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Privacy Policy</a>
-                    <span>•</span>
+                    <span aria-hidden="true">•</span>
                     <a href="terms.html" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Terms of Service</a>
-                    <span>•</span>
+                    <span aria-hidden="true">•</span>
                     <a href="https://github.com/verdantly/scotch-egg-bot/issues" target="_blank" rel="noopener noreferrer" class="hover:text-breadcrumb dark:hover:text-eggyolk transition-colors">Report Bugs</a>
                 </div>
             </div>
