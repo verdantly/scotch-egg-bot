@@ -795,6 +795,108 @@ describe('Bot Logic Unit Tests', () => {
             assert.strictEqual(storage.eventDb[eventId].messageId, 'new_msg_announcement');
         });
 
+        it('should reuse existing discussion thread and announce new time when rescheduled', async () => {
+            const eventId = 'evt_resched_thread_reuse';
+            const { channel, sentMessages } = makeMockChannel();
+
+            let threadStartCalled = false;
+            let threadSentMessages = [];
+            let threadUnarchived = false;
+
+            const mockThread = {
+                id: 'thread_existing_123',
+                name: '💬 Discussion: Test Event',
+                archived: true,
+                setArchived: async (archivedState) => {
+                    if (!archivedState) threadUnarchived = true;
+                },
+                send: async (payload) => {
+                    threadSentMessages.push(payload);
+                    return { id: 'thread_msg_123' };
+                }
+            };
+
+            channel.threads = {
+                fetch: async (id) => {
+                    if (id === 'thread_existing_123') return mockThread;
+                    return null;
+                }
+            };
+
+            channel.send = async (payload) => {
+                sentMessages.push(payload);
+                return {
+                    id: 'new_announcement_id',
+                    embeds: payload.embeds,
+                    components: payload.components,
+                    startThread: async () => {
+                        threadStartCalled = true;
+                        return { id: 'new_thread_should_not_be_created' };
+                    }
+                };
+            };
+
+            // Enable threads in guild config
+            storage.serverConfig['guild_123'] = {
+                threadsEnabled: true
+            };
+
+            // Existing database entry with threadId
+            storage.eventDb[eventId] = {
+                messageId: 'old_announcement_id',
+                threadId: 'thread_existing_123',
+                guildId: 'guild_123',
+                users: {}
+            };
+
+            const mockGuild = {
+                id: 'guild_123',
+                preferredLocale: 'en',
+                members: { fetch: async (id) => ({ id }) },
+                channels: {
+                    fetch: async (id) => (id === 'thread_existing_123' ? mockThread : channel)
+                }
+            };
+
+            const o = {
+                id: eventId,
+                scheduledStartTimestamp: 1780340400000,
+                entityMetadata: { location: 'Voice' },
+                channelId: null
+            };
+
+            const n = {
+                id: eventId,
+                guild: mockGuild,
+                scheduledStartTimestamp: 1780426800000, // Saturday (different day/time)
+                entityMetadata: { location: 'Voice' },
+                channelId: null,
+                status: 1,
+                name: 'Test Event',
+                description: 'Description',
+                client,
+                coverImageURL: () => null
+            };
+
+            Date.now = () => 1780167600000;
+
+            const updateListeners = client.listeners(Events.GuildScheduledEventUpdate);
+            await updateListeners[0](o, n);
+
+            // Assertions:
+            // 1. New announcement message was posted
+            assert.strictEqual(sentMessages.length, 1);
+            // 2. startThread() was NOT called because existing thread was reused
+            assert.strictEqual(threadStartCalled, false);
+            // 3. Existing thread was unarchived
+            assert.strictEqual(threadUnarchived, true);
+            // 4. An announcement was sent inside the existing thread with the new time
+            assert.strictEqual(threadSentMessages.length, 1);
+            assert.ok(threadSentMessages[0].content.includes('rescheduled') || threadSentMessages[0].content.includes('New Time'));
+            // 5. threadId is preserved in DB for the event
+            assert.strictEqual(storage.eventDb[eventId].threadId, 'thread_existing_123');
+        });
+
         it('should treat standard recurring rollover as rollover (edit in-place)', async () => {
             const eventId = 'evt_rollover';
             const { channel, sentMessages, mockMessage } = makeMockChannel();

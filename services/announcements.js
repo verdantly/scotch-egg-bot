@@ -103,7 +103,8 @@ async function postAnnouncement(event, channel) {
             guildId: event.guild.id,
             remindersDisabled: !!existing.remindersDisabled,
             reminderMessageIds: existing.reminderMessageIds || [],
-            skippedUsers: existing.skippedUsers || {}
+            skippedUsers: existing.skippedUsers || {},
+            threadId: existing.threadId || undefined
         };
         await saveDb();
 
@@ -112,28 +113,62 @@ async function postAnnouncement(event, channel) {
         }
 
         if (getThreadsEnabled(event.guild.id)) {
-            try {
-                const thread = await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
-                if (thread) {
-                    if (eventDb[event.id]) {
-                        eventDb[event.id].threadId = thread.id;
-                        await saveDb();
+            let reusedThread = null;
+            if (existing.threadId) {
+                try {
+                    reusedThread = (channel.threads && typeof channel.threads.fetch === 'function'
+                        ? await channel.threads.fetch(existing.threadId).catch(() => null)
+                        : null) || (event.guild.channels && typeof event.guild.channels.fetch === 'function'
+                        ? await event.guild.channels.fetch(existing.threadId).catch(() => null)
+                        : null);
+                } catch (fetchErr) {
+                    reusedThread = null;
+                }
+            }
+
+            if (reusedThread) {
+                try {
+                    if (reusedThread.archived && typeof reusedThread.setArchived === 'function') {
+                        await reusedThread.setArchived(false).catch(() => {});
                     }
-                    const hostTag = event.creatorId ? `, <@${event.creatorId}>` : '';
-                    const starterMsg = t(guildLocale, 'thread_starter_message', {
-                        name: event.name,
-                        host: hostTag
+                    const newTimeFormatted = `<t:${Math.floor(event.scheduledStartTimestamp / 1000)}:F>`;
+                    const rescheduleMsg = t(guildLocale, 'thread_rescheduled_announcement', {
+                        time: newTimeFormatted
                     });
-                    await thread.send({ content: starterMsg }).catch(starterErr => {
-                        if (starterErr.code === 50001 || starterErr.code === 50013 || starterErr.status === 403) {
-                            console.warn(`[Announcement Thread] Could not send starter message in thread for event ${event.id}: Missing "Send Messages in Threads" permission in channel.`);
+                    await reusedThread.send({ content: rescheduleMsg }).catch(reschedSendErr => {
+                        if (reschedSendErr.code === 50001 || reschedSendErr.code === 50013 || reschedSendErr.status === 403) {
+                            console.warn(`[Announcement Thread] Could not send reschedule message in thread for event ${event.id}: Missing permissions.`);
                         } else {
-                            console.error(`Could not send starter message in thread for event ${event.id}:`, starterErr);
+                            console.error(`Could not send reschedule message in thread for event ${event.id}:`, reschedSendErr);
                         }
                     });
+                } catch (threadErr) {
+                    console.error(`Error reusing discussion thread for event ${event.id}:`, threadErr);
                 }
-            } catch (threadErr) {
-                console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
+            } else {
+                try {
+                    const thread = await message.startThread({ name: `💬 Discussion: ${event.name}`.substring(0, 100) });
+                    if (thread) {
+                        if (eventDb[event.id]) {
+                            eventDb[event.id].threadId = thread.id;
+                            await saveDb();
+                        }
+                        const hostTag = event.creatorId ? `, <@${event.creatorId}>` : '';
+                        const starterMsg = t(guildLocale, 'thread_starter_message', {
+                            name: event.name,
+                            host: hostTag
+                        });
+                        await thread.send({ content: starterMsg }).catch(starterErr => {
+                            if (starterErr.code === 50001 || starterErr.code === 50013 || starterErr.status === 403) {
+                                console.warn(`[Announcement Thread] Could not send starter message in thread for event ${event.id}: Missing "Send Messages in Threads" permission in channel.`);
+                            } else {
+                                console.error(`Could not send starter message in thread for event ${event.id}:`, starterErr);
+                            }
+                        });
+                    }
+                } catch (threadErr) {
+                    console.error(`Could not create discussion thread for event ${event.id}:`, threadErr);
+                }
             }
         }
     } catch (err) {

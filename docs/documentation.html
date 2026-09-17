@@ -1228,7 +1228,7 @@ cp config.json data/config.json</pre>
                                 class="font-bold text-xl text-charcoal dark:text-white cursor-pointer select-none outline-none">
                                 What happens if a scheduled event is rescheduled (time changed)?</summary>
                             <div class="mt-4 text-gray-700 dark:text-gray-300 text-lg">
-                                <p>When an event's start time is updated in Discord, the bot automatically archives the old announcement in the channel with a disabled button labeled "Rescheduled" and strikes through the outdated details. It then posts a new, active announcement message with the updated time. This ensures all server members see a fresh notification, while the new announcement's "Remind Me!" button automatically carries over the count and list of already registered users.</p>
+                                <p>When an event's start time is updated in Discord, the bot automatically archives the old announcement in the channel with a disabled button labeled "Rescheduled" and strikes through the outdated details. It then posts a new, active announcement message with the updated time. This ensures all server members see a fresh notification, while the new announcement's "Remind Me!" button automatically carries over the count and list of already registered users. If discussion threads are enabled, the bot reuses the existing discussion thread and posts an announcement with the new event time, rather than creating a duplicate thread.</p>
                             </div>
                         </details>
                         <details

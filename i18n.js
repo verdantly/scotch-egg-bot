@@ -108,7 +108,8 @@ const translations = {
         settings_silenceevent_success: "Success! Reminders have been silenced for event **{name}**.",
         settings_unsilenceevent_success: "Success! Reminders have been re-enabled for event **{name}**.",
         settings_silenceevent_error: "Error: That event is not currently tracked by the bot or is completed/canceled.",
-        thread_starter_message: "💬 Welcome to the discussion thread for **{name}**{host}! Feel free to use this space for event discussions, questions, and updates."
+        thread_starter_message: "💬 Welcome to the discussion thread for **{name}**{host}! Feel free to use this space for event discussions, questions, and updates.",
+        thread_rescheduled_announcement: "📅 **This event has been rescheduled!**\n• **New Time:** {time}"
     },
 
     // Spanish
@@ -214,7 +215,8 @@ const translations = {
         settings_silenceevent_success: "¡Éxito! Se han silenciado los recordatorios para el evento **{name}**.",
         settings_unsilenceevent_success: "¡Éxito! Se han vuelto a activar los recordatorios para el evento **{name}**.",
         settings_silenceevent_error: "Error: Ese evento no está siendo rastreado actualmente por el bot o ya ha finalizado/sido cancelado.",
-        thread_starter_message: "💬 ¡Te damos la bienvenida al hilo de debate de **{name}**{host}! Usa este espacio para preguntas, debates y actualizaciones del evento."
+        thread_starter_message: "💬 ¡Te damos la bienvenida al hilo de debate de **{name}**{host}! Usa este espacio para preguntas, debates y actualizaciones del evento.",
+        thread_rescheduled_announcement: "📅 **¡Este evento ha sido reprogramado!**\n• **Nueva hora:** {time}"
     },
 
     // German
@@ -320,7 +322,8 @@ const translations = {
         settings_silenceevent_success: "Erfolg! Erinnerungen für das Event **{name}** wurden stummgeschaltet.",
         settings_unsilenceevent_success: "Erfolg! Erinnerungen für das Event **{name}** wurden wieder aktiviert.",
         settings_silenceevent_error: "Fehler: Dieses Event wird derzeit nicht vom Bot verfolgt oder ist bereits beendet/abgesagt.",
-        thread_starter_message: "💬 Willkommen im Diskussionsthema für **{name}**{host}! Nutzt diesen Bereich gerne für Fragen, Diskussionen und Neuigkeiten rund um das Event."
+        thread_starter_message: "💬 Willkommen im Diskussionsthema für **{name}**{host}! Nutzt diesen Bereich gerne für Fragen, Diskussionen und Neuigkeiten rund um das Event.",
+        thread_rescheduled_announcement: "📅 **Dieses Event wurde verschoben!**\n• **Neue Zeit:** {time}"
     },
 
     // French
@@ -426,7 +429,8 @@ const translations = {
         settings_silenceevent_success: "Succès ! Les rappels ont été désactivés pour l'événement **{name}**.",
         settings_unsilenceevent_success: "Succès ! Les rappels ont été réactivés pour l'événement **{name}**.",
         settings_silenceevent_error: "Erreur : Cet événement n'est pas suivi actuellement par le bot ou est terminé/annulé.",
-        thread_starter_message: "💬 Bienvenue dans le fil de discussion pour **{name}**{host} ! N'hésitez pas à utiliser cet espace pour discuter, poser des questions et partager des infos sur l'événement."
+        thread_starter_message: "💬 Bienvenue dans le fil de discussion pour **{name}**{host} ! N'hésitez pas à utiliser cet espace pour discuter, poser des questions et partager des infos sur l'événement.",
+        thread_rescheduled_announcement: "📅 **Cet événement a été reporté !**\n• **Nouvelle heure :** {time}"
     },
 
     // Portuguese
@@ -532,7 +536,8 @@ const translations = {
         settings_silenceevent_success: "Sucesso! Os lembretes foram silenciados para o evento **{name}**.",
         settings_unsilenceevent_success: "Sucesso! Os lembretes foram reativados para o evento **{name}**.",
         settings_silenceevent_error: "Erro: Esse evento não está sendo rastreado pelo bot ou já foi concluído/cancelado.",
-        thread_starter_message: "💬 Boas-vindas ao tópico de discussão de **{name}**{host}! Sinta-se à vontade para usar este espaço para conversas, dúvidas e atualizações sobre o evento."
+        thread_starter_message: "💬 Boas-vindas ao tópico de discussão de **{name}**{host}! Sinta-se à vontade para usar este espaço para conversas, dúvidas e atualizações sobre o evento.",
+        thread_rescheduled_announcement: "📅 **Este evento foi reagendado!**\n• **Novo horário:** {time}"
     }
 };
 
