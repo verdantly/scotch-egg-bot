@@ -1,4 +1,4 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits, GuildScheduledEventStatus } = require('discord.js');
 const { getAnnouncementChannelId, getThreadPruneEnabled } = require('./config.js');
 const { eventDb } = require('../storage.js');
 
@@ -58,7 +58,7 @@ async function pruneChannelThreads(channel, guild) {
     const processedThreadIds = new Set();
 
     // Check basic channel access permissions before querying threads
-    const botMember = guild.members.me || (guild.client?.user ? guild.members.cache.get(guild.client.user.id) : null);
+    const botMember = guild?.members?.me || (guild?.client?.user && guild?.members?.cache ? guild.members.cache.get(guild.client.user.id) : null);
     if (botMember && typeof channel.permissionsFor === 'function') {
         const perms = channel.permissionsFor(botMember);
         if (perms && (!perms.has(PermissionFlagsBits.ViewChannel) || !perms.has(PermissionFlagsBits.ReadMessageHistory))) {
@@ -162,6 +162,34 @@ async function pruneChannelThreads(channel, guild) {
         const age = now - createdTs;
 
         if (isScotchEggDiscussionThread(thread, guild, channel) && age >= THIRTY_DAYS_MS) {
+            // Check if this thread belongs to an upcoming or active scheduled event
+            let isUpcomingOrActiveEvent = false;
+            if (eventDb) {
+                for (const [eventId, data] of Object.entries(eventDb)) {
+                    if (data && (data.threadId === id || data.messageId === id || eventId === id)) {
+                        const event = guild?.scheduledEvents?.cache?.get(eventId);
+                        if (event) {
+                            const isScheduledOrActive = event.status === GuildScheduledEventStatus?.Scheduled ||
+                                                        event.status === GuildScheduledEventStatus?.Active ||
+                                                        event.status === 1 ||
+                                                        event.status === 2;
+                            const isFuture = (event.scheduledStartTimestamp && event.scheduledStartTimestamp > now);
+                            if (isScheduledOrActive || isFuture) {
+                                isUpcomingOrActiveEvent = true;
+                                break;
+                            }
+                        } else if (data.scheduledStartTimestamp && data.scheduledStartTimestamp > now) {
+                            isUpcomingOrActiveEvent = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (isUpcomingOrActiveEvent) {
+                continue;
+            }
+
             let isInactive = thread.archived === true;
             if (!isInactive) {
                 const lastMsgTs = thread.lastMessageId 
@@ -219,7 +247,7 @@ async function pruneInactiveThreads(guild, customChannel = null) {
         if (primaryChannel) channelsToScan.add(primaryChannel);
     }
 
-    const botMember = guild.members.me || (guild.client?.user ? guild.members.cache.get(guild.client.user.id) : null);
+    const botMember = guild.members?.me || (guild.client?.user && guild.members?.cache ? guild.members.cache.get(guild.client.user.id) : null);
 
     // Also scan all text channels in guild cache that the bot can view and read history in
     if (guild.channels && guild.channels.cache) {

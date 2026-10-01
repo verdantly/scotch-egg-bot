@@ -216,7 +216,7 @@ describe('Services Unit Tests', () => {
 
             const count = await pruneInactiveThreads(mockGuild);
 
-            assert.strictEqual(count, 1);
+            assert.strictEqual(Number(count), 1);
             assert.deepStrictEqual(deletedThreadIds, ['thread_old']);
         });
 
@@ -277,7 +277,7 @@ describe('Services Unit Tests', () => {
 
             const count = await pruneInactiveThreads(mockGuild);
 
-            assert.strictEqual(count, 2);
+            assert.strictEqual(Number(count), 2);
             assert.deepStrictEqual(deletedThreadIds, ['thread_page1', 'thread_page2']);
             assert.strictEqual(callCount >= 2, true);
         });
@@ -315,7 +315,7 @@ describe('Services Unit Tests', () => {
             };
 
             const count = await pruneInactiveThreads(mockGuild);
-            assert.strictEqual(count, 1);
+            assert.strictEqual(Number(count), 1);
             assert.deepStrictEqual(deletedThreadIds, [threadSnowflake]);
         });
 
@@ -325,8 +325,63 @@ describe('Services Unit Tests', () => {
                 id: 'guild_threads'
             };
 
+            const result = await pruneInactiveThreads(mockGuild);
+            assert.strictEqual(Number(result), 0);
+        });
+
+        it('should NOT prune threads older than 30 days if their scheduled event is upcoming', async () => {
+            const now = Date.now();
+            let deletedThreadIds = [];
+            const oldMessageId = (BigInt(now - (THIRTY_DAYS_MS + 5000) - 1420070400000) << 22n).toString();
+            const threadSnowflake = (BigInt(now - (THIRTY_DAYS_MS + 10000) - 1420070400000) << 22n).toString();
+
+            const upcomingEventThread = {
+                id: threadSnowflake,
+                name: '💬 Discussion: Future Event',
+                ownerId: 'bot_id',
+                archived: true,
+                createdTimestamp: now - (THIRTY_DAYS_MS + 10000),
+                archiveTimestamp: now - (THIRTY_DAYS_MS + 5000),
+                delete: async () => { deletedThreadIds.push(threadSnowflake); }
+            };
+
+            // Event is scheduled in the future (tomorrow)
+            const futureEventId = 'future_event_999';
+            storage.eventDb[futureEventId] = {
+                threadId: threadSnowflake,
+                guildId: 'guild_threads',
+                scheduledStartTimestamp: now + 86400000
+            };
+
+            const mockScheduledEvent = {
+                id: futureEventId,
+                status: 1, // Scheduled
+                scheduledStartTimestamp: now + 86400000
+            };
+
+            const mockChannel = {
+                id: 'channel_threads',
+                threads: {
+                    fetchArchived: async () => ({ threads: new Map([[threadSnowflake, upcomingEventThread]]) }),
+                    fetchActive: async () => ({ threads: new Map() })
+                }
+            };
+
+            const mockGuild = {
+                id: 'guild_threads',
+                client: { user: { id: 'bot_id' } },
+                channels: {
+                    fetch: async (id) => (id === 'channel_threads' ? mockChannel : null),
+                    cache: new Map()
+                },
+                scheduledEvents: {
+                    cache: new Map([[futureEventId, mockScheduledEvent]])
+                }
+            };
+
             const count = await pruneInactiveThreads(mockGuild);
-            assert.strictEqual(count, 0);
+            assert.strictEqual(Number(count), 0);
+            assert.deepStrictEqual(deletedThreadIds, []);
         });
     });
 

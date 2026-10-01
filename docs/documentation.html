@@ -651,7 +651,7 @@ cp config.json data/config.json</pre>
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings threads</code>
-                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Configures discussion threads (<code>enabled</code>) and toggles automatic 30-day inactive thread auto-pruning (<code>prune</code>).</span>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Configures discussion threads (<code>enabled</code>) and toggles automatic 30-day inactive thread auto-pruning (<code>prune</code>). Discussion threads linked to upcoming or active events are always protected from pruning.</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -846,7 +846,7 @@ cp config.json data/config.json</pre>
                                 <div>
                                     <h4 class="font-serif font-bold text-lg text-charcoal dark:text-white mb-2">
                                         Automated Discussion Threads & Direct Links</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements, greets the event creator with an introductory message, embeds direct discussion link buttons in all event reminder messages, and automatically prunes inactive threads older than 30 days.</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Automatically creates dedicated discussion threads under server event announcements, greets the event creator with an introductory message, embeds direct discussion link buttons in all event reminder messages, and automatically prunes inactive threads older than 30 days while protecting upcoming event threads.</p>
                                 </div>
                             </div>
 
