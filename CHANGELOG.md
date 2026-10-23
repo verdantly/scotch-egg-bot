@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.3] - 2026-10-23
+
+### Fixed
+- **Discord Interaction Timeout & Expiration Resilience:** Gracefully handle DiscordAPIError[10062]: Unknown interaction and DiscordAPIError[40060]: Interaction has already been acknowledged. When network latency or low-power host resource constraints cause interaction acknowledgments to exceed Discord's 3-second deadline, informational warnings are logged instead of dumping unhandled error traces, and downstream error reply cascades are safely caught.
+
+## [2.3.2] - 2026-10-01
+
+### Fixed
+- **Upcoming Event Discussion Thread Protection:** Thread pruning now cross-references active and future scheduled events so discussion threads for upcoming events are never pruned or deleted, even if the thread has been inactive for over 30 days.
+- **Thread Association Persistence:** Added support for preserving thread IDs across database reload cycles during storage hydration.
+
 ## [2.3.1] - 2026-09-17
 
 ### Fixed
