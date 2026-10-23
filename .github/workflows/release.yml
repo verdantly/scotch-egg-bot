@@ -1,4 +1,4 @@
-﻿name: Create Release
+name: Create Release
 
 on:
   push:
@@ -15,7 +15,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Extract Release Notes from CHANGELOG
+        id: extract_changelog
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Extracting release notes for version ${VERSION}..."
+          
+          # Extract notes between ## [VERSION] and the next ## [ heading
+          awk -v ver="$VERSION" '
+            BEGIN { found=0 }
+            $0 ~ "^## \\[" ver "\\]" { found=1; next }
+            found && /^## \\[/ { found=0 }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          
+          if [ ! -s release_notes.md ]; then
+            echo "No notes found in CHANGELOG.md for ${VERSION}, falling back to git log."
+            git log -1 --pretty=format:"%B" > release_notes.md
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: release_notes.md
+          generate_release_notes: false
