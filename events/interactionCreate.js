@@ -17,11 +17,15 @@ module.exports = {
             try {
                 await command.execute(interaction);
             } catch (error) {
+                if (error.code === 10062 || error.code === 40060) {
+                    console.warn(`[Interaction] ${interaction.commandName} timed out or was already acknowledged (Error ${error.code}: ${error.message}).`);
+                    return;
+                }
                 console.error(`Error executing ${interaction.commandName}:`, error);
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+                    await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral }).catch(() => {});
                 } else {
-                    await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+                    await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral }).catch(() => {});
                 }
             }
             return;
@@ -378,12 +382,16 @@ module.exports = {
     }
         }
         } catch (error) {
+            if (error.code === 10062 || error.code === 40060) {
+                console.warn(`[Interaction] ${interaction?.customId || interaction?.commandName} timed out or was already acknowledged (Error ${error.code}: ${error.message}).`);
+                return;
+            }
             console.error(`Unhandled error for interaction ${interaction?.customId || interaction?.commandName}:`, error);
             try {
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: 'An unexpected error occurred while processing your request.', flags: MessageFlags.Ephemeral });
+                    await interaction.followUp({ content: 'An unexpected error occurred while processing your request.', flags: MessageFlags.Ephemeral }).catch(() => {});
                 } else {
-                    await interaction.reply({ content: 'An unexpected error occurred while processing your request.', flags: MessageFlags.Ephemeral });
+                    await interaction.reply({ content: 'An unexpected error occurred while processing your request.', flags: MessageFlags.Ephemeral }).catch(() => {});
                 }
             } catch (err) {
                 // Ignore if we can't send error reply
