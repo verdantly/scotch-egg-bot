@@ -32,9 +32,19 @@ jobs:
             const notes = out.join("\n").trim();
             fs.writeFileSync("release_notes.md", notes || ("Release " + process.env.GITHUB_REF_NAME));
           '
+          echo "--- Extracted Release Notes ---"
+          cat release_notes.md
+
+      - name: Delete Existing Release (if any)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete "${GITHUB_REF_NAME}" --yes || true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: release_notes.md
-          generate_release_notes: false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release_notes.md
