@@ -18,21 +18,20 @@ jobs:
       - name: Extract Release Notes from CHANGELOG
         id: extract_changelog
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "Extracting release notes for version ${VERSION}..."
-          
-          # Extract notes between ## [VERSION] and the next ## [ heading
-          awk -v ver="$VERSION" '
-            BEGIN { found=0 }
-            $0 ~ "^## \\[" ver "\\]" { found=1; next }
-            found && /^## \\[/ { found=0 }
-            found { print }
-          ' CHANGELOG.md > release_notes.md
-          
-          if [ ! -s release_notes.md ]; then
-            echo "No notes found in CHANGELOG.md for ${VERSION}, falling back to git log."
-            git log -1 --pretty=format:"%B" > release_notes.md
-          fi
+          node -e '
+            const fs = require("fs");
+            const ver = (process.env.GITHUB_REF_NAME || "").replace(/^v/, "");
+            const lines = fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            let found = false;
+            const out = [];
+            for (const line of lines) {
+              if (line.startsWith("## [" + ver + "]")) { found = true; continue; }
+              if (found && line.startsWith("## [")) { break; }
+              if (found) { out.push(line); }
+            }
+            const notes = out.join("\n").trim();
+            fs.writeFileSync("release_notes.md", notes || ("Release " + process.env.GITHUB_REF_NAME));
+          '
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
