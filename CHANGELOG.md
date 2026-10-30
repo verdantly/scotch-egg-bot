@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.4] - 2026-10-30
+
+### Added
+- **Public Mention Setting in `/settings view` & `/help`:** Surfaced the `/settings mentions` configuration inside `/settings view` and `/help` across all 5 supported locales (`en`, `es`, `de`, `fr`, `pt`).
+- **Complete Localization for Interactive Responses:** Added localized translations across all 5 languages for DM reachability checks, closed-DM errors, disabled reminder notices, mock button previews, and dropdown opt-in/cancel confirmations.
+- **Automated GitHub Release Workflow:** Added a GitHub Actions workflow (`.github/workflows/release.yml`) that automatically creates a GitHub Release and extracts version notes from `CHANGELOG.md` whenever a `v*` tag is pushed.
+
+### Changed
+- **Raspberry Pi Memory & Gateway Optimization:** Removed the unused `GuildMessages` gateway intent and configured bounded `discord.js` caches (`Options.cacheWithLimits`) in `index.js` to prevent unbounded memory growth on single-board computers.
+- **Docker Hardening & Node 22 LTS Upgrade:** Upgraded `Dockerfile` from `node:18-alpine` to `node:22-alpine`, configured non-root execution (`USER node`), and tightened `.gitignore` and `.dockerignore` rules.
+
+### Fixed
+- **Human Discussion Thread Protection:** Fixed `isScotchEggDiscussionThread()` and `pruneInactiveThreads()` in `services/threads.js` so user-created threads in announcement channels and threads in non-announcement channels are never deleted during 30-day inactivity pruning.
+- **Unconditional Opt-Out when DMs are Closed:** Reordered the `remind_` button handler in `events/interactionCreate.js` so already-subscribed users can always opt out immediately without triggering a DM test probe.
+- **Silenced Event Filtering in `/upcoming`:** Excluded silenced events (`[silent]`, `[exclude]`, or `/settings silenceevent`) from `/upcoming` embeds and interactive opt-in dropdown menus.
+- **`/announceevent` Lifecycle & Reminder Scheduling:** Prevented `/announceevent` from posting active announcements for completed or canceled events and ensured manual announcements immediately schedule reminder jobs.
+- **Offline Garbage Collection Ordering & Resilience:** Updated startup sync in `events/ready.js` so events that concluded while the bot was offline still have their announcement embeds archived before database records are pruned, and temporary Discord API fetch errors never wipe active event subscriptions.
+- **Dual-File Regex Salvage & Auto-Healing:** Fixed a variable shadowing bug in `storage.js` so regex salvage recovers and merges records from both `events.json` and `events.json.bak`, then immediately heals the primary file on disk.
+- **Surrogate-Safe Emoji Strikethrough:** Updated `toUnicodeStrikeThrough()` in `services/announcements.js` to iterate Unicode code points so 4-byte emojis in event titles are never corrupted into replacement characters (`\uFFFD`) when archived.
+- **Per-Event Channel Tracking:** Persisted `channelId` on event database entries so lifecycle edits, cleanups, and archivals always target the channel where an announcement was originally posted, even if `/settings channel` is changed later.
+- **UTF-8 Dropdown Emoji Encoding:** Fixed mojibake characters in `list_optin_select` and `list_cancel_select` translations across all locales.
+
 ## [2.3.3] - 2026-10-23
 
 ### Fixed
