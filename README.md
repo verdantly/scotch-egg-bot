@@ -42,14 +42,14 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
    - **Tip:** After checking the `bot` scope, a "Bot Permissions" grid will appear. It is highly recommended to select **Send Messages**, **Send Messages in Threads**, **Read Message History**, **View Channels**, **Embed Links**, **Create Public Threads**, and **Manage Threads** (if using discussion threads and auto-pruning) so the bot's permissions are automatically configured.
    > **Important:** You must select BOTH the `bot` and `applications.commands` scopes, or the bot will not function correctly.
 5. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.
-6. Ensure you have **Node.js (v16.14.0 or higher)** installed, OR **Docker** if you prefer containerized deployment.
+6. Ensure you have **Node.js (v18.17.0 or higher; v22 LTS recommended)** installed, OR **Docker** if you prefer containerized deployment.
 
 *Note: **No Privileged Intents are required!** The bot relies entirely on modern slash commands.*
 
 ## Configuration
 
 **Environment Variables:**
-   Rename the provided `.env.example` file to `.env` in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/setchannel` command has not been used in a server.
+   Rename the provided `.env.example` file to `.env` in the root directory and configure your bot token and Client ID. The `ANNOUNCEMENT_CHANNEL_ID` is now optional and acts as a fallback if the `/settings channel` command has not been used in a server.
    ```env
    DISCORD_TOKEN=your_actual_token_here
    CLIENT_ID=your_actual_client_id_here
@@ -91,7 +91,7 @@ This bot is designed to be easily containerized and run quietly in the backgroun
 
 2. **Run the container:**
    ```bash
-   docker run -d --name scotch-egg --env-file .env scotch-egg
+   docker run -d --name scotch-egg --restart unless-stopped --env-file .env -v ./data:/usr/src/app/data scotch-egg
    ```
 
 ## Docker Compose Deployment (Recommended)
@@ -144,6 +144,9 @@ Administrators can prevent specific events from being announced or having automa
 *   `/settings intervals [times]`
     -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`). Up to 5 intervals can be set per server.
 
+*   `/settings mentions [enabled]`
+    -   **Action:** Toggles whether public channel reminders mention/ping opted-in users or post silently.
+
 *   `/settings testreminder`
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
 
@@ -151,7 +154,7 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
 
 *   `/settings unsilenceevent [event]`
-    -   **Action:** Re-enables reminder scheduling for a stummgeschaltetes/silenced event.
+    -   **Action:** Re-enables reminder scheduling for a silenced event.
 
 *   `/settings cleanup`
     -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages, and prunes inactive discussion threads older than 30 days to keep the channel clean.

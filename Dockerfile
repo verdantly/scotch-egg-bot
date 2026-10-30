@@ -1,19 +1,17 @@
-# Use the highly optimized Alpine Linux build for Node.js
-FROM node:18-alpine
+FROM node:22-alpine
 
-# Set the environment to production for optimal performance
-ENV NODE_ENV=production
-
-# Create the app directory and give the node user ownership so it can write .tmp files
-RUN mkdir -p /usr/src/app && chown -R node:node /usr/src/app
+# Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files first to leverage Docker layer caching
+# Install app dependencies
 COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
 
-# Perform a clean, production-only install
-RUN npm ci --omit=dev
+# Bundle app source and set ownership to non-root node user
+COPY --chown=node:node . .
+RUN mkdir -p /usr/src/app/data && chown -R node:node /usr/src/app/data
 
-COPY . .
+USER node
 
+# Start the bot
 CMD [ "node", "index.js" ]

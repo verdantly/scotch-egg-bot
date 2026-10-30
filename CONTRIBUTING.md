@@ -15,9 +15,11 @@ Scotch Egg recently underwent a major refactoring to transition from a single mo
   - `eventHandler.js`: Dynamically loads Discord event listeners.
   - `jobHandler.js`: Manages the `node-schedule` background jobs for sending reminders.
 - **`/services`**: Contains business logic and background services decoupled from direct Discord interactions.
-  - `reminders.js`: Logic for formatting, sending, and updating reminders (like `updateLiveCounter`).
-  - `events.js`: Logic for handling the lifecycle of Discord Scheduled Events.
+  - `announcements.js`: Logic for building, updating, and archiving event announcement embeds and live counters.
+  - `reminders.js`: Logic for scheduling, formatting, and sending DM and public channel reminders.
+  - `threads.js`: Logic for creating, locating, and pruning event discussion threads.
   - `config.js`: Helpers for reading server-specific configurations.
+  - `admin.js`: Runtime error reporting and administrator DM alerts.
 - **`/test`**: Contains Mocha unit tests for the bot's logic.
 - **`storage.js`**: Manages the local `events.json` and `config.json` databases, including the auto-healing fallback mechanisms.
 - **`i18n.js`**: Contains all multi-language translations and localization functions.

@@ -3,6 +3,22 @@ const path = require('path');
 const fs = require('fs');
 
 describe('Commands Unit Tests', () => {
+    let originalPromises;
+    before(() => {
+        originalPromises = fs.promises;
+        Object.defineProperty(fs, 'promises', {
+            value: { ...originalPromises, writeFile: async () => {}, rename: async () => {}, unlink: async () => {} },
+            configurable: true,
+            writable: true
+        });
+    });
+    after(() => {
+        Object.defineProperty(fs, 'promises', {
+            value: originalPromises,
+            configurable: true,
+            writable: true
+        });
+    });
     describe('Command Loader Validation', () => {
         const commandsPath = path.join(__dirname, '..', 'commands');
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));

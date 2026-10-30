@@ -254,6 +254,7 @@ module.exports = {
             const pruneEnabled = getThreadPruneEnabled(interaction.guildId);
             const threadsStatusStr = `${threadsEnabled ? enabledText : disabledText} (${pruneEnabled ? (userLocale === 'es' ? 'Purga 30d: Activada' : userLocale === 'de' ? '30d-Bereinigung: Aktiv' : userLocale === 'fr' ? 'Purge 30j : Activée' : userLocale === 'pt' ? 'Purga 30d: Ativada' : '30-Day Prune: Enabled') : (userLocale === 'es' ? 'Purga 30d: Desactivada' : userLocale === 'de' ? '30d-Bereinigung: Inaktiv' : userLocale === 'fr' ? 'Purge 30j : Désactivée' : userLocale === 'pt' ? 'Purga 30d: Desativada' : '30-Day Prune: Disabled')})`;
             replyMessage += t(userLocale, 'settings_view_threads', { status: threadsStatusStr });
+            replyMessage += t(userLocale, 'settings_view_mentions', { status: getPingsEnabled(interaction.guildId) ? enabledText : disabledText });
             
             const autoDeleteStatus = getAutoDeleteEnabled(interaction.guildId) 
                 ? (userLocale === 'es' ? 'Activado ✅ (Eliminado)' : userLocale === 'de' ? 'Aktiviert ✅ (Gelöscht)' : userLocale === 'fr' ? 'Activé ✅ (Supprimé)' : userLocale === 'pt' ? 'Ativado ✅ (Excluído)' : 'Enabled ✅ (Deleted)')

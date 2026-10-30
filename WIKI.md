@@ -56,7 +56,7 @@ This is the best method, especially for devices like a Raspberry Pi, as it maps 
 ### Option B: Local Node.js
 If you prefer not to use Docker:
 
-1. Ensure Node.js (v16.14.0+) is installed.
+1. Ensure Node.js (v18.17.0+, v22 LTS recommended) is installed.
 2. Install the required dependencies:
    ```bash
    npm install
@@ -134,6 +134,7 @@ To minimize disk wear on single-board computers (like the Raspberry Pi) and prot
 - `/settings threads [enabled] [prune]` - Configures automatic discussion thread creation and 30-day inactive thread auto-pruning.
 - `/settings autodelete [enabled]` - Toggles whether event announcements are completely deleted when the event ends, rather than just being gracefully archived (public reminder messages are always deleted entirely to reduce channel clutter). *Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread.*
 - `/settings intervals [times]` - Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`).
+- `/settings mentions [enabled]` - Toggles whether public channel reminders mention/ping opted-in users or post silently.
 - `/settings testreminder` - Displays a mock preview of what a reminder message will look like with the server's current settings.
 - `/settings silenceevent [event]` - Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
 - `/settings unsilenceevent [event]` - Re-enables reminder scheduling for a silenced event.

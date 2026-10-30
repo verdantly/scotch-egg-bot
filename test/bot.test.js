@@ -6,8 +6,8 @@ const path = require('path');
 process.env.NODE_ENV = 'test';
 process.env.ANNOUNCEMENT_CHANNEL_ID = 'env_channel_default';
 
-const DB_PATH = path.resolve(__dirname, '../events.json');
-const CONFIG_PATH = path.resolve(__dirname, '../config.json');
+const DB_PATH = path.resolve(__dirname, '../data/events.json');
+const CONFIG_PATH = path.resolve(__dirname, '../data/config.json');
 
 // Mock filesystem before importing anything
 const originalExistsSync = fs.existsSync;
@@ -88,6 +88,12 @@ const { client } = bot;
 require('../handlers/commandHandler.js')(client);
 
 describe('Bot Logic Unit Tests', () => {
+    after(() => {
+        fs.existsSync = originalExistsSync;
+        fs.readFileSync = originalReadFileSync;
+        fs.writeFileSync = originalWriteFileSync;
+        fs.promises = originalPromises;
+    });
     beforeEach(() => {
         // Reset databases
         for (const key in storage.eventDb) delete storage.eventDb[key];
@@ -487,7 +493,9 @@ describe('Bot Logic Unit Tests', () => {
                 client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
-                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferUpdate: async () => {},
+                editReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 editReply: async (payload) => {
                     editReplyContent = payload.content;
                 }
@@ -544,7 +552,9 @@ describe('Bot Logic Unit Tests', () => {
                 client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
-                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferUpdate: async () => {},
+                editReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -595,7 +605,9 @@ describe('Bot Logic Unit Tests', () => {
                 client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
-                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferUpdate: async () => {},
+                editReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -644,7 +656,9 @@ describe('Bot Logic Unit Tests', () => {
                 client, isChatInputCommand: () => false, isButton: () => true,
                 isStringSelectMenu: () => false,
                 reply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
-                deferreply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
+                deferUpdate: async () => {},
+                editReply: async (payload) => { try { editReplyContent = payload.content; } catch(e){} try { updatedPayload = payload; } catch(e){} },
                 update: async (payload) => {
                     updatedPayload = payload;
                 }
@@ -1472,7 +1486,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             });
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1566,7 +1582,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1591,7 +1609,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1615,7 +1635,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1638,7 +1660,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1661,7 +1685,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1684,7 +1710,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1713,7 +1741,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             const interactionListeners = client.listeners('interactionCreate');
@@ -1739,7 +1769,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             storage.serverConfig['guild_123'] = {
@@ -1767,7 +1799,9 @@ describe('Bot Logic Unit Tests', () => {
                 },
                 client, isChatInputCommand: () => true, isButton: () => false,
                 isStringSelectMenu: () => false,
-                reply: async (payload) => { replyPayload = payload; }
+                deferReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(payload || {}) }; },
+                editReply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; },
+                reply: async (payload) => { replyPayload = { ...(replyPayload || {}), ...(typeof payload === 'string' ? { content: payload } : payload) }; }
             };
 
             storage.serverConfig['guild_123'] = {
