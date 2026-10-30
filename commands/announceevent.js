@@ -1,8 +1,9 @@
-const { SlashCommandBuilder, MessageFlags, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, GuildScheduledEventStatus } = require('discord.js');
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb } = require('../storage.js');
-const { getAnnouncementChannelId } = require('../services/config.js');
+const { getAnnouncementChannelId, isEventSilenced } = require('../services/config.js');
 const { postAnnouncement } = require('../services/announcements.js');
+const { scheduleRemindersForEvent } = require('../services/reminders.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -50,13 +51,17 @@ module.exports = {
             return interaction.editReply({ content: t(userLocale, 'announce_invalid_id') });
         }
 
-        if (eventDb[eventId]) {
+        if (eventDb[eventId] && eventDb[eventId].messageId) {
             return interaction.editReply({ content: t(userLocale, 'announce_already_posted') });
         }
 
         const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
             return interaction.editReply({ content: t(userLocale, 'announce_not_found') });
+        }
+
+        if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {
+            return interaction.editReply({ content: t(userLocale, 'remind_inactive') });
         }
 
         const channelId = getAnnouncementChannelId(interaction.guildId);
@@ -72,6 +77,9 @@ module.exports = {
 
         try {
             await postAnnouncement(event, channel);
+            if (!isEventSilenced(event)) {
+                scheduleRemindersForEvent(event);
+            }
             await interaction.editReply({ content: t(userLocale, 'announce_success', { name: event.name }) });
         } catch (err) {
             await interaction.editReply({ content: t(userLocale, 'announce_error') });

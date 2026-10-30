@@ -40,16 +40,19 @@ module.exports = {
         await Promise.all(syncPromises);
 
         // Prune inactive discussion threads (30+ days old) on startup
-        for (const guild of c.guilds.cache.values()) {
-            try {
-                await pruneInactiveThreads(guild);
-            } catch (err) {
-                console.error(`Failed to prune inactive threads for guild ${guild.id}:`, err);
+        if (typeof c.guilds.cache.values === 'function') {
+            for (const guild of c.guilds.cache.values()) {
+                try {
+                    await pruneInactiveThreads(guild);
+                } catch (err) {
+                    console.error(`Failed to prune inactive threads for guild ${guild.id}:`, err);
+                }
             }
         }
 
         // Schedule daily maintenance job to prune inactive threads at 03:00 AM
         schedule.scheduleJob('daily-thread-prune', '0 3 * * *', async () => {
+            if (typeof c.guilds.cache.values !== 'function') return;
             for (const guild of c.guilds.cache.values()) {
                 try {
                     await pruneInactiveThreads(guild);
@@ -60,6 +63,7 @@ module.exports = {
         });
 
         let dbModified = false;
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
         for (const eventId in eventDb) {
             const eventData = eventDb[eventId];
             
@@ -67,16 +71,6 @@ module.exports = {
                 delete eventDb[eventId];
                 dbModified = true;
                 continue;
-            }
-
-            const eventTimestamp = Number((BigInt(eventId) >> 22n) + 1420070400000n);
-            const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-            if (Date.now() - eventTimestamp > THIRTY_DAYS_MS) {
-                if (!activeEventIds.has(eventId)) {
-                    delete eventDb[eventId];
-                    dbModified = true;
-                    continue;
-                }
             }
 
             if (eventData && eventData.guildId && successfulGuildIds.has(eventData.guildId)) {
@@ -91,6 +85,14 @@ module.exports = {
                     } catch (archiveErr) {
                         console.error(`Failed to auto-archive offline event ${eventId}:`, archiveErr);
                     }
+                    delete eventDb[eventId];
+                    dbModified = true;
+                    continue;
+                }
+            } else if (!eventData || !eventData.guildId) {
+                // Only age-out orphaned records lacking a guildId if they are >30 days old and not active
+                const eventTimestamp = Number((BigInt(eventId) >> 22n) + 1420070400000n);
+                if (Date.now() - eventTimestamp > THIRTY_DAYS_MS && !activeEventIds.has(eventId)) {
                     delete eventDb[eventId];
                     dbModified = true;
                 }

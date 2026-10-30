@@ -39,10 +39,10 @@ async function executeLiveCounterUpdate(eventId) {
         }
         if (!guild) return;
 
-        const channelId = getAnnouncementChannelId(guild.id);
+        const channelId = eventData.channelId || getAnnouncementChannelId(guild.id);
         if (!channelId) return;
 
-        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        const channel = guild.channels.cache.get(channelId) || (typeof guild.channels.fetch === 'function' ? await guild.channels.fetch(channelId).catch(() => null) : null);
         if (!channel) return;
 
         const msg = await channel.messages.fetch(eventData.messageId).catch(() => null);
@@ -140,7 +140,7 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
         if (alert.time > now) {
             if (schedule.scheduledJobs[alert.id]) schedule.scheduledJobs[alert.id].cancel();
             schedule.scheduleJob(alert.id, new Date(alert.time), async () => {
-                const channelId = getAnnouncementChannelId(event.guild.id);
+                const channelId = eventDb[event.id]?.channelId || getAnnouncementChannelId(event.guild.id);
                 const channel = channelId ? await event.guild.channels.fetch(channelId).catch(() => null) : null;
                 if (channel) {
                     try {                            
@@ -351,14 +351,19 @@ async function syncEventReminders(guild) {
     const events = await guild.scheduledEvents.fetch().catch(() => null);
     if (!events) return;
     const now = Date.now();
-    const channelId = getAnnouncementChannelId(guild.id);
-    const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
+    const configuredChannelId = getAnnouncementChannelId(guild.id);
+    const configuredChannel = configuredChannelId ? await guild.channels.fetch(configuredChannelId).catch(() => null) : null;
     
     for (const event of events.values()) {
         scheduleRemindersForEvent(event, now);
         
         const eventData = eventDb[event.id];
-        if (eventData && eventData.reminderMessageIds && eventData.reminderMessageIds.length > 0 && channel) {
+        if (eventData && eventData.reminderMessageIds && eventData.reminderMessageIds.length > 0) {
+            const targetChannel = (eventData.channelId && eventData.channelId !== configuredChannelId)
+                ? await guild.channels.fetch(eventData.channelId).catch(() => configuredChannel)
+                : configuredChannel;
+            if (!targetChannel) continue;
+
             const intervals = getReminderIntervals(guild.id);
             const maxIntervalMs = intervals.length > 0 ? Math.max(...intervals.map(i => i.ms)) : 0;
             const thresholdTime = event.scheduledStartTimestamp - maxIntervalMs - 60000; 
@@ -368,7 +373,7 @@ async function syncEventReminders(guild) {
                 try {
                     const msgTimestamp = Number((BigInt(rMsgId) >> 22n) + 1420070400000n);
                     if (msgTimestamp < thresholdTime) {
-                        const rMsg = await channel.messages.fetch(rMsgId).catch(() => null);
+                        const rMsg = await targetChannel.messages.fetch(rMsgId).catch(() => null);
                         if (rMsg) {
                             await rMsg.delete().catch(() => {});
                         }
@@ -397,4 +402,3 @@ module.exports = {
     scheduleRemindersForEvent,
     syncEventReminders
 };
-

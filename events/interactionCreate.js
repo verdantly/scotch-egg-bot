@@ -64,8 +64,13 @@ module.exports = {
                 let optedInCount = 0;
                 
                 for (const eventId of eventIdsToOptIn) {
-                    if (!eventDb[eventId]) eventDb[eventId] = { users: {} };
+                    if (eventDb[eventId] && eventDb[eventId].remindersDisabled) continue;
+                    const cachedEvent = interaction.guild?.scheduledEvents?.cache?.get(eventId);
+                    if (cachedEvent && isEventSilenced(cachedEvent)) continue;
+
+                    if (!eventDb[eventId]) eventDb[eventId] = { users: {}, guildId: interaction.guildId };
                     if (!eventDb[eventId].users) eventDb[eventId].users = {};
+                    if (!eventDb[eventId].guildId && interaction.guildId) eventDb[eventId].guildId = interaction.guildId;
                     
                     if (!eventDb[eventId].users[userId]) {
                         eventDb[eventId].users[userId] = true;
@@ -80,11 +85,11 @@ module.exports = {
                 const intervals = getReminderIntervals(interaction.guildId);
                 const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
                 
-                let successText = `Ã¢Å“â€¦ Successfully opted in to **${optedInCount}** event(s)!\n*${mode === 'public' ? 'You will be pinged in the announcement channel' : 'I will DM you'} at: ${intervalsStr} before they begin.*`;
-                if (userLocale === 'es') successText = `Ã¢Å“â€¦ Ã‚Â¡Te has inscrito con ÃƒÂ©xito en **${optedInCount}** evento(s)!\n*${mode === 'public' ? 'Se te mencionarÃƒÂ¡ en el canal de anuncios' : 'Te enviarÃƒÂ© un mensaje directo'}: ${intervalsStr} antes de que comiencen.*`;
-                else if (userLocale === 'de') successText = `Ã¢Å“â€¦ Erfolgreich fÃƒÂ¼r **${optedInCount}** Event(s) angemeldet!\n*${mode === 'public' ? 'Du wirst im AnkÃƒÂ¼ndigungskanal benachrichtigt' : 'Ich werde dir eine DM senden'}: ${intervalsStr} bevor sie beginnen.*`;
-                else if (userLocale === 'fr') successText = `Ã¢Å“â€¦ Inscrit avec succÃƒÂ¨s ÃƒÂ  **${optedInCount}** ÃƒÂ©vÃƒÂ©nement(s) !\n*${mode === 'public' ? 'Vous serez mentionnÃƒÂ© dans le salon d\'annonces' : 'Je vous enverrai un DM'} : ${intervalsStr} avant qu'ils ne commencent.*`;
-                else if (userLocale === 'pt') successText = `Ã¢Å“â€¦ Inscrito com sucesso em **${optedInCount}** evento(s)!\n*${mode === 'public' ? 'VocÃƒÂª serÃƒÂ¡ mencionado no canal de anÃƒÂºncios' : 'Eu lhe enviarei uma DM'}: ${intervalsStr} antes de comeÃƒÂ§arem.*`;
+                const successText = t(
+                    userLocale,
+                    mode === 'public' ? 'list_optin_success_public' : 'list_optin_success_private',
+                    { count: optedInCount, intervals: intervalsStr }
+                );
 
                 await interaction.editReply({ content: `${interaction.message.content}\n\n${successText}`, components: [] });
             }
@@ -105,11 +110,7 @@ module.exports = {
                 
                 if (cancelledCount > 0) await saveDb();
                 
-                let cancelText = `Ã¢Å“â€¦ Successfully canceled reminders for **${cancelledCount}** event(s).`;
-                if (userLocale === 'es') cancelText = `Ã¢Å“â€¦ Se cancelaron con ÃƒÂ©xito los recordatorios para **${cancelledCount}** evento(s).`;
-                else if (userLocale === 'de') cancelText = `Ã¢Å“â€¦ Erinnerungen fÃƒÂ¼r **${cancelledCount}** Event(s) erfolgreich abbestellt.`;
-                else if (userLocale === 'fr') cancelText = `Ã¢Å“â€¦ Rappels annulÃƒÂ©s avec succÃƒÂ¨s pour **${cancelledCount}** ÃƒÂ©vÃƒÂ©nement(s).`;
-                else if (userLocale === 'pt') cancelText = `Ã¢Å“â€¦ Lembretes cancelados com sucesso para **${cancelledCount}** evento(s).`;
+                const cancelText = t(userLocale, 'list_cancel_success', { count: cancelledCount });
 
                 await interaction.editReply({ content: `${interaction.message.content}\n\n${cancelText}`, components: [] });
             }
@@ -149,7 +150,6 @@ module.exports = {
                 const now = Date.now();
                 const timestamps = buttonCooldowns.get('pagination');
                 const cooldownAmount = 2000;
-                const userLocale = getNormalizedLocale(interaction.locale);
 
                 if (timestamps.has(interaction.user.id)) {
                     const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
@@ -209,30 +209,36 @@ module.exports = {
                     return interaction.editReply({ content: t(userLocale, 'button_reminders_disabled') });
                 }
 
-                const mode = getAnnouncementMode(interaction.guildId);
-                if (mode === 'private' || mode === 'hybrid') {
-                    try {
-                        const testMsg = await interaction.user.send(t(userLocale, 'button_dm_test'));
-                        await testMsg.delete().catch(() => {});
-                    } catch (err) {
-                        return interaction.editReply({ content: t(userLocale, 'button_dm_closed') });
-                    }
-                }
-
                 if (!eventDb[eventId]) {
-                    eventDb[eventId] = { users: {} };
+                    eventDb[eventId] = { users: {}, guildId: interaction.guildId };
                 }
                 if (!eventDb[eventId].users) {
                     eventDb[eventId].users = {};
                 }
+                if (!eventDb[eventId].guildId && interaction.guildId) {
+                    eventDb[eventId].guildId = interaction.guildId;
+                }
 
                 const userId = interaction.user.id;
+                const mode = getAnnouncementMode(interaction.guildId);
 
                 let replyMsg = '';
                 if (eventDb[eventId].users[userId]) {
                     delete eventDb[eventId].users[userId];
+                    if (eventDb[eventId].skippedUsers) {
+                        delete eventDb[eventId].skippedUsers[userId];
+                    }
                     replyMsg = t(userLocale, 'remind_removed');
                 } else {
+                    if (mode === 'private' || mode === 'hybrid') {
+                        try {
+                            const testMsg = await interaction.user.send(t(userLocale, 'button_dm_test'));
+                            await testMsg.delete().catch(() => {});
+                        } catch (err) {
+                            return interaction.editReply({ content: t(userLocale, 'button_dm_closed') });
+                        }
+                    }
+
                     eventDb[eventId].users[userId] = true;
                     const intervals = getReminderIntervals(interaction.guildId);
                     const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
@@ -249,137 +255,139 @@ module.exports = {
                 return interaction.editReply({ content: replyMsg });
             }
 
-    if (interaction.customId.startsWith('cancel_remind_')) {
-        await interaction.deferUpdate();
-        const eventId = interaction.customId.replace('cancel_remind_', '');
-        
-        if (eventDb[eventId]) {
-            const users = eventDb[eventId].users || {};
-            const userId = interaction.user.id;
-            
-            try {
-                if (users[userId]) {
-                    // Check if event is recurring
-                    const guildId = eventDb[eventId].guildId;
-                    const guild = guildId ? interaction.client.guilds.cache.get(guildId) : null;
-                    const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
+            if (interaction.customId.startsWith('cancel_remind_')) {
+                await interaction.deferUpdate();
+                const eventId = interaction.customId.replace('cancel_remind_', '');
+                
+                if (eventDb[eventId]) {
+                    const users = eventDb[eventId].users || {};
+                    const userId = interaction.user.id;
                     
-                    if (event && event.recurrenceRule && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active)) {
-                        // It is a recurring event series! Show interactive prompt
-                        const row = new ActionRowBuilder().addComponents(
-                            new ButtonBuilder().setCustomId(`cancel_occ_${eventId}`).setLabel(t(userLocale, 'cancel_button_next')).setStyle(ButtonStyle.Danger),
-                            new ButtonBuilder().setCustomId(`cancel_series_${eventId}`).setLabel(t(userLocale, 'cancel_button_series')).setStyle(ButtonStyle.Secondary)
-                        );
-                        
-                        let promptText = `\n\n⚠️ ${t(userLocale, 'cancel_recurring_prompt')}`;
-                        let newContent = `${interaction.message.content}${promptText}`;
-                        if (newContent.length > 2000) {
-                            newContent = `${interaction.message.content.substring(0, 2000 - promptText.length)}...${promptText}`;
+                    try {
+                        if (users[userId]) {
+                            // Check if event is recurring
+                            const guildId = eventDb[eventId].guildId || interaction.guildId;
+                            const guild = (guildId ? interaction.client.guilds.cache.get(guildId) : null) ||
+                                          interaction.client.guilds.cache.find(g => g.scheduledEvents?.cache?.has(eventId));
+                            const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
+                            
+                            if (event && event.recurrenceRule && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active)) {
+                                // It is a recurring event series! Show interactive prompt
+                                const row = new ActionRowBuilder().addComponents(
+                                    new ButtonBuilder().setCustomId(`cancel_occ_${eventId}`).setLabel(t(userLocale, 'cancel_button_next')).setStyle(ButtonStyle.Danger),
+                                    new ButtonBuilder().setCustomId(`cancel_series_${eventId}`).setLabel(t(userLocale, 'cancel_button_series')).setStyle(ButtonStyle.Secondary)
+                                );
+                                
+                                let promptText = `\n\n⚠️ ${t(userLocale, 'cancel_recurring_prompt')}`;
+                                let newContent = `${interaction.message.content}${promptText}`;
+                                if (newContent.length > 2000) {
+                                    newContent = `${interaction.message.content.substring(0, 2000 - promptText.length)}...${promptText}`;
+                                }
+                                await interaction.editReply({ content: newContent, components: [row] });
+                            } else {
+                                // Standard event cancellation (or fallback if event fetch fails)
+                                delete eventDb[eventId].users[userId];
+                                if (eventDb[eventId].skippedUsers) {
+                                    delete eventDb[eventId].skippedUsers[userId];
+                                }
+                                await saveDb();
+                                updateLiveCounter(eventId); // Fire asynchronously
+                                
+                                let cancelNotice = `*(${t(userLocale, 'cancel_remind_success')})*`;
+                                let newContent = `${interaction.message.content}\n\n${cancelNotice}`;
+                                if (newContent.length > 2000) {
+                                    newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
+                                }
+                                await interaction.editReply({ content: newContent, components: [] });
+                            }
+                        } else {
+                            let notOptedNotice = `*(${t(userLocale, 'cancel_remind_not_opted')})*`;
+                            let newContent = `${interaction.message.content}\n\n${notOptedNotice}`;
+                            if (newContent.length > 2000) {
+                                newContent = `${interaction.message.content.substring(0, 1930)}...\n\n${notOptedNotice}`;
+                            }
+                            await interaction.editReply({ content: newContent, components: [] });
                         }
-                        await interaction.editReply({ content: newContent, components: [row] });
-                    } else {
-                        // Standard event cancellation (or fallback if event fetch fails)
-                        delete eventDb[eventId].users[userId];
+                    } catch (error) {
+                        console.error('Failed to handle cancel_remind interaction:', error);
+                    }
+                } else {
+                    let inactiveNotice = `*(${t(userLocale, 'remind_inactive')})*`;
+                    let newContent = `${interaction.message.content}\n\n${inactiveNotice}`;
+                    if (newContent.length > 2000) {
+                        newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${inactiveNotice}`;
+                    }
+                    await interaction.editReply({ content: newContent, components: [] });
+                }
+            }
+
+            if (interaction.customId.startsWith('cancel_occ_')) {
+                await interaction.deferUpdate();
+                const eventId = interaction.customId.replace('cancel_occ_', '');
+                if (eventDb[eventId]) {
+                    const userId = interaction.user.id;
+                    try {
+                        const guildId = eventDb[eventId].guildId || interaction.guildId;
+                        const guild = (guildId ? interaction.client.guilds.cache.get(guildId) : null) ||
+                                      interaction.client.guilds.cache.find(g => g.scheduledEvents?.cache?.has(eventId));
+                        const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
+                        const startTime = event ? event.scheduledStartTimestamp : Date.now();
+                        
+                        if (!eventDb[eventId].skippedUsers) {
+                            eventDb[eventId].skippedUsers = {};
+                        }
+                        eventDb[eventId].skippedUsers[userId] = startTime;
+                        await saveDb();
+                        
+                        const timeString = getFormattedTimeString(startTime, null, 'f');
+                        const cancelNotice = t(userLocale, 'cancel_next_success', { time: timeString });
+                        
+                        // Remove prompt text and append success notice
+                        let newContent = interaction.message.content;
+                        const promptRegex = /\n\n⚠️.*$/;
+                        newContent = newContent.replace(promptRegex, '');
+                        newContent = `${newContent}\n\n${cancelNotice}`;
+                        if (newContent.length > 2000) {
+                            newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
+                        }
+                        await interaction.editReply({ content: newContent, components: [] });
+                    } catch (error) {
+                        console.error('Failed to handle cancel_occ interaction:', error);
+                    }
+                }
+            }
+
+            if (interaction.customId.startsWith('cancel_series_')) {
+                await interaction.deferUpdate();
+                const eventId = interaction.customId.replace('cancel_series_', '');
+                if (eventDb[eventId]) {
+                    const userId = interaction.user.id;
+                    try {
+                        if (eventDb[eventId].users && eventDb[eventId].users[userId]) {
+                            delete eventDb[eventId].users[userId];
+                        }
                         if (eventDb[eventId].skippedUsers) {
                             delete eventDb[eventId].skippedUsers[userId];
                         }
                         await saveDb();
                         updateLiveCounter(eventId); // Fire asynchronously
                         
-                        let cancelNotice = `*(${t(userLocale, 'cancel_remind_success')})*`;
-                        let newContent = `${interaction.message.content}\n\n${cancelNotice}`;
+                        const cancelNotice = t(userLocale, 'cancel_series_success');
+                        
+                        // Remove prompt text and append success notice
+                        let newContent = interaction.message.content;
+                        const promptRegex = /\n\n⚠️.*$/;
+                        newContent = newContent.replace(promptRegex, '');
+                        newContent = `${newContent}\n\n${cancelNotice}`;
                         if (newContent.length > 2000) {
-                            newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${cancelNotice}`;
+                            newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
                         }
                         await interaction.editReply({ content: newContent, components: [] });
+                    } catch (error) {
+                        console.error('Failed to handle cancel_series interaction:', error);
                     }
-                } else {
-                    let notOptedNotice = `*(${t(userLocale, 'cancel_remind_not_opted')})*`;
-                    let newContent = `${interaction.message.content}\n\n${notOptedNotice}`;
-                    if (newContent.length > 2000) {
-                        newContent = `${interaction.message.content.substring(0, 1930)}...\n\n${notOptedNotice}`;
-                    }
-                    await interaction.editReply({ content: newContent, components: [] });
                 }
-            } catch (error) {
-                console.error('Failed to handle cancel_remind interaction:', error);
             }
-        } else {
-            let inactiveNotice = `*(${t(userLocale, 'remind_inactive')})*`;
-            let newContent = `${interaction.message.content}\n\n${inactiveNotice}`;
-            if (newContent.length > 2000) {
-                newContent = `${interaction.message.content.substring(0, 1950)}...\n\n${inactiveNotice}`;
-            }
-            await interaction.editReply({ content: newContent, components: [] });
-        }
-    }
-
-    if (interaction.customId.startsWith('cancel_occ_')) {
-        await interaction.deferUpdate();
-        const eventId = interaction.customId.replace('cancel_occ_', '');
-        if (eventDb[eventId]) {
-            const userId = interaction.user.id;
-            try {
-                const guildId = eventDb[eventId].guildId;
-                const guild = guildId ? interaction.client.guilds.cache.get(guildId) : null;
-                const event = guild ? await guild.scheduledEvents.fetch(eventId).catch(() => null) : null;
-                const startTime = event ? event.scheduledStartTimestamp : Date.now();
-                
-                if (!eventDb[eventId].skippedUsers) {
-                    eventDb[eventId].skippedUsers = {};
-                }
-                eventDb[eventId].skippedUsers[userId] = startTime;
-                await saveDb();
-                
-                const timeString = getFormattedTimeString(startTime, null, 'f');
-                const cancelNotice = t(userLocale, 'cancel_next_success', { time: timeString });
-                
-                // Remove prompt text and append success notice
-                let newContent = interaction.message.content;
-                const promptRegex = /\n\n⚠️.*$/;
-                newContent = newContent.replace(promptRegex, '');
-                newContent = `${newContent}\n\n${cancelNotice}`;
-                if (newContent.length > 2000) {
-                    newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
-                }
-                await interaction.editReply({ content: newContent, components: [] });
-            } catch (error) {
-                console.error('Failed to handle cancel_occ interaction:', error);
-            }
-        }
-    }
-
-    if (interaction.customId.startsWith('cancel_series_')) {
-        await interaction.deferUpdate();
-        const eventId = interaction.customId.replace('cancel_series_', '');
-        if (eventDb[eventId]) {
-            const userId = interaction.user.id;
-            try {
-                if (eventDb[eventId].users && eventDb[eventId].users[userId]) {
-                    delete eventDb[eventId].users[userId];
-                }
-                if (eventDb[eventId].skippedUsers) {
-                    delete eventDb[eventId].skippedUsers[userId];
-                }
-                await saveDb();
-                updateLiveCounter(eventId); // Fire asynchronously
-                
-                const cancelNotice = t(userLocale, 'cancel_series_success');
-                
-                // Remove prompt text and append success notice
-                let newContent = interaction.message.content;
-                const promptRegex = /\n\n⚠️.*$/;
-                newContent = newContent.replace(promptRegex, '');
-                newContent = `${newContent}\n\n${cancelNotice}`;
-                if (newContent.length > 2000) {
-                    newContent = `${newContent.substring(0, 1950)}...\n\n${cancelNotice}`;
-                }
-                await interaction.editReply({ content: newContent, components: [] });
-            } catch (error) {
-                console.error('Failed to handle cancel_series interaction:', error);
-            }
-        }
-    }
         }
         } catch (error) {
             if (error.code === 10062 || error.code === 40060) {

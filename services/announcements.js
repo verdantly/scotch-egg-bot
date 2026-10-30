@@ -11,7 +11,7 @@ function setRemindersService(service) {
 }
 
 function toUnicodeStrikeThrough(text) {
-    return text.split('').map(char => char + '\u0336').join('');
+    return Array.from(text || '').map(char => char.codePointAt(0) > 0xFFFF ? char : char + '\u0336').join('');
 }
 
 function buildAnnouncementEmbed(event) {
@@ -99,6 +99,7 @@ async function postAnnouncement(event, channel) {
         const existing = eventDb[event.id] || {};
         eventDb[event.id] = {
             messageId: message.id,
+            channelId: channel.id,
             users: existing.users || {},
             guildId: event.guild.id,
             remindersDisabled: !!existing.remindersDisabled,
@@ -185,7 +186,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
     }
     if (!eventDb[eventId].messageId) return;
     try {
-        const channelId = getAnnouncementChannelId(guild.id);
+        const channelId = eventDb[eventId].channelId || getAnnouncementChannelId(guild.id);
         const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
         if (channel) {
             const msg = existingMsg || await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
@@ -210,7 +211,7 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
                     .replace(/ \[[^\]]+\]$/g, '');
                 let newTitle = toUnicodeStrikeThrough(cleanTitle);
                 if (newTitle.length > 256) {
-                    newTitle = `${toUnicodeStrikeThrough(cleanTitle.substring(0, 124))}...`;
+                    newTitle = `${toUnicodeStrikeThrough(Array.from(cleanTitle).slice(0, 120).join(''))}...`;
                 }
                 originalEmbed.setTitle(newTitle);
                 originalEmbed.setColor('#808080'); 

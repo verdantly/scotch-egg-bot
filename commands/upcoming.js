@@ -2,6 +2,7 @@ const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBu
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb } = require('../storage.js');
 const { getFormattedTimeString } = require('../utils.js');
+const { isEventSilenced } = require('../services/config.js');
 
 async function generateUpcomingPage(interaction, page = 0) {
     const userId = interaction.user.id;
@@ -9,7 +10,9 @@ async function generateUpcomingPage(interaction, page = 0) {
     
     const upcomingEvents = Array.from(guildEvents.values()).filter(event => {
         const users = eventDb[event.id]?.users || {};
-        return !users[userId] && (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active);
+        return !users[userId] &&
+            !isEventSilenced(event) &&
+            (event.status === GuildScheduledEventStatus.Scheduled || event.status === GuildScheduledEventStatus.Active);
     }).sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp);
 
     const userLocale = getNormalizedLocale(interaction.locale);

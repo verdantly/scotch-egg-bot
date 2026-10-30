@@ -5,7 +5,7 @@ const { eventDb } = require('../storage.js');
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
- * Checks if a thread is a discussion thread eligible for pruning.
+ * Checks if a thread is a bot-created discussion thread eligible for pruning.
  * @param {import('discord.js').ThreadChannel} thread 
  * @param {import('discord.js').Guild} guild 
  * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} [channel]
@@ -13,34 +13,33 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
  */
 function isScotchEggDiscussionThread(thread, guild, channel = null) {
     if (!thread) return false;
-    const name = thread.name || '';
-    
-    // 1. Thread name matches discussion pattern or emoji
-    if (name.startsWith('💬') || /discussion/i.test(name) || /discus/i.test(name) || /diskussion/i.test(name) || /débat/i.test(name) || /event/i.test(name)) {
-        return true;
+
+    // 1. Explicitly tracked in eventDb (by threadId, messageId, or key)
+    if (eventDb) {
+        if (eventDb[thread.id]) return true;
+        for (const data of Object.values(eventDb)) {
+            if (data && (data.threadId === thread.id || data.messageId === thread.id)) {
+                return true;
+            }
+        }
     }
-    
-    // 2. Created by or owned by the bot
+
+    // 2. Verify thread ownership when bot ID and thread owner/creator are available
     const botId = guild?.client?.user?.id;
-    if (botId && (thread.ownerId === botId || thread.creatorId === botId)) {
-        return true;
-    }
-    
-    // 3. Thread ID matches an announcement message ID in eventDb
-    if (eventDb && eventDb[thread.id]) {
-        return true;
-    }
-    
-    // 4. Any thread inside the announcement channel
-    if (channel && (thread.parentId === channel.id || thread.parent?.id === channel.id)) {
+    const ownerId = thread.ownerId || thread.creatorId;
+    if (botId && ownerId) {
+        if (ownerId !== botId) {
+            return false;
+        }
         return true;
     }
 
-    const announcementChannelId = guild ? getAnnouncementChannelId(guild.id) : null;
-    if (announcementChannelId && (thread.parentId === announcementChannelId || thread.parent?.id === announcementChannelId)) {
+    // 3. Fallback for partial thread objects without ownerId: only match Scotch Egg's discussion prefix
+    const name = thread.name || '';
+    if (name.startsWith('💬')) {
         return true;
     }
-    
+
     return false;
 }
 
@@ -218,7 +217,7 @@ async function pruneChannelThreads(channel, guild) {
 }
 
 /**
- * Prunes inactive bot-created discussion threads that are at least 30 days old across a guild.
+ * Prunes inactive bot-created discussion threads that are at least 30 days old across a guild's announcement channel(s).
  * @param {import('discord.js').Guild} guild 
  * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} [customChannel] 
  * @returns {Promise<{count: number, permissionError: boolean, valueOf: () => number}>}
@@ -240,28 +239,24 @@ async function pruneInactiveThreads(guild, customChannel = null) {
         channelsToScan.add(customChannel);
     }
 
+    const channelIdsToResolve = new Set();
     const configuredChannelId = getAnnouncementChannelId(guild.id);
     if (configuredChannelId) {
-        const primaryChannel = (guild.channels && guild.channels.cache ? guild.channels.cache.get(configuredChannelId) : null) || 
-                              (guild.channels && typeof guild.channels.fetch === 'function' ? await guild.channels.fetch(configuredChannelId).catch(() => null) : null);
-        if (primaryChannel) channelsToScan.add(primaryChannel);
+        channelIdsToResolve.add(configuredChannelId);
     }
 
-    const botMember = guild.members?.me || (guild.client?.user && guild.members?.cache ? guild.members.cache.get(guild.client.user.id) : null);
-
-    // Also scan all text channels in guild cache that the bot can view and read history in
-    if (guild.channels && guild.channels.cache) {
-        for (const ch of guild.channels.cache.values()) {
-            if (ch.threads && (ch.type === 0 || ch.type === 5)) {
-                if (botMember && typeof ch.permissionsFor === 'function') {
-                    const perms = ch.permissionsFor(botMember);
-                    if (!perms || !perms.has(PermissionFlagsBits.ViewChannel) || !perms.has(PermissionFlagsBits.ReadMessageHistory)) {
-                        continue;
-                    }
-                }
-                channelsToScan.add(ch);
+    if (eventDb) {
+        for (const data of Object.values(eventDb)) {
+            if (data && data.guildId === guild.id && data.channelId) {
+                channelIdsToResolve.add(data.channelId);
             }
         }
+    }
+
+    for (const channelId of channelIdsToResolve) {
+        const ch = (guild.channels && guild.channels.cache ? guild.channels.cache.get(channelId) : null) || 
+                   (guild.channels && typeof guild.channels.fetch === 'function' ? await guild.channels.fetch(channelId).catch(() => null) : null);
+        if (ch) channelsToScan.add(ch);
     }
 
     for (const ch of channelsToScan) {

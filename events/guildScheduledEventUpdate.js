@@ -26,7 +26,7 @@ module.exports = {
                 }
             } else {
                 const isRollover = o && n.recurrenceRule && o.scheduledStartTimestamp <= Date.now();
-                if (!eventDb[n.id] && n.status === GuildScheduledEventStatus.Scheduled && !isRollover) {
+                if ((!eventDb[n.id] || !eventDb[n.id].messageId) && n.status === GuildScheduledEventStatus.Scheduled && !isRollover) {
                     const channelId = getAnnouncementChannelId(n.guild.id);
                     const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                     if (channel) {
@@ -82,7 +82,7 @@ module.exports = {
                         
                         if (isRecurringRollover) {
                             const reminderMessageIds = eventDb[n.id].reminderMessageIds || [];
-                            const channelId = getAnnouncementChannelId(n.guild.id);
+                            const channelId = eventDb[n.id].channelId || getAnnouncementChannelId(n.guild.id);
                             const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                             if (channel) {
                                 for (const rMsgId of reminderMessageIds) {
@@ -116,7 +116,7 @@ module.exports = {
                             
                             if (timeChanged && o.scheduledStartTimestamp <= Date.now()) {
                                 const reminderMessageIds = eventDb[n.id].reminderMessageIds || [];
-                                const channelId = getAnnouncementChannelId(n.guild.id);
+                                const channelId = eventDb[n.id].channelId || getAnnouncementChannelId(n.guild.id);
                                 const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                                 if (channel) {
                                     for (const rMsgId of reminderMessageIds) {
@@ -147,7 +147,7 @@ module.exports = {
 
                 if (!rescheduled && eventDb[n.id] && eventDb[n.id].messageId) {
                     try {
-                        const channelId = getAnnouncementChannelId(n.guild.id);
+                        const channelId = eventDb[n.id].channelId || getAnnouncementChannelId(n.guild.id);
                         const channel = channelId ? await n.guild.channels.fetch(channelId).catch(() => null) : null;
                         if (channel) {
                             const msg = await channel.messages.fetch(eventDb[n.id].messageId).catch(() => null);

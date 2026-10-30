@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { executeLiveCounterUpdate, setClient } = require('../services/reminders.js');
+const { toUnicodeStrikeThrough } = require('../services/announcements.js');
 const storage = require('../storage.js');
 
 describe('Services Unit Tests', () => {
@@ -146,7 +147,7 @@ describe('Services Unit Tests', () => {
             Object.assign(storage.serverConfig, originalServerConfig);
         });
 
-        it('should prune bot-created archived threads older than 30 days', async () => {
+        it('should prune bot-created archived threads older than 30 days and never prune human-created threads', async () => {
             const now = Date.now();
             let deletedThreadIds = [];
 
@@ -154,6 +155,7 @@ describe('Services Unit Tests', () => {
                 id: 'thread_old',
                 name: '💬 Discussion: Old Event',
                 ownerId: 'bot_id',
+                parentId: 'channel_threads',
                 createdTimestamp: now - (THIRTY_DAYS_MS + 10000),
                 archiveTimestamp: now - (THIRTY_DAYS_MS + 5000),
                 archived: true,
@@ -166,6 +168,7 @@ describe('Services Unit Tests', () => {
                 id: 'thread_recent',
                 name: '💬 Discussion: Recent Event',
                 ownerId: 'bot_id',
+                parentId: 'channel_threads',
                 createdTimestamp: now - (5 * 24 * 60 * 60 * 1000),
                 archiveTimestamp: now - (2 * 24 * 60 * 60 * 1000),
                 archived: true,
@@ -176,9 +179,9 @@ describe('Services Unit Tests', () => {
 
             const userCreatedOldThread = {
                 id: 'thread_user',
-                name: 'Random Off-topic',
+                name: 'General Event Discussion',
                 ownerId: 'user_123',
-                parentId: 'different_channel_id',
+                parentId: 'channel_threads',
                 createdTimestamp: now - (40 * 24 * 60 * 60 * 1000),
                 archiveTimestamp: now - (35 * 24 * 60 * 60 * 1000),
                 archived: true,
@@ -332,7 +335,6 @@ describe('Services Unit Tests', () => {
         it('should NOT prune threads older than 30 days if their scheduled event is upcoming', async () => {
             const now = Date.now();
             let deletedThreadIds = [];
-            const oldMessageId = (BigInt(now - (THIRTY_DAYS_MS + 5000) - 1420070400000) << 22n).toString();
             const threadSnowflake = (BigInt(now - (THIRTY_DAYS_MS + 10000) - 1420070400000) << 22n).toString();
 
             const upcomingEventThread = {
@@ -382,6 +384,17 @@ describe('Services Unit Tests', () => {
             const count = await pruneInactiveThreads(mockGuild);
             assert.strictEqual(Number(count), 0);
             assert.deepStrictEqual(deletedThreadIds, []);
+            delete storage.eventDb[futureEventId];
+        });
+    });
+
+    describe('Announcements Service - toUnicodeStrikeThrough', () => {
+        it('should apply strikethrough without splitting 4-byte UTF-16 emoji surrogate pairs', () => {
+            const input = 'New Event: 🎮 Game Night 🎉';
+            const result = toUnicodeStrikeThrough(input);
+            assert.ok(result.includes('🎮'), 'Should preserve 🎮 intact without splitting surrogate pair');
+            assert.ok(result.includes('🎉'), 'Should preserve 🎉 intact without splitting surrogate pair');
+            assert.ok(!result.includes('\uD83C\u0336'), 'Should never insert U+0336 after a high surrogate');
         });
     });
 
@@ -413,6 +426,28 @@ describe('Services Unit Tests', () => {
                 const msg = t(loc, 'thread_rescheduled_announcement', { time: '<t:123456789:F>' });
                 assert.ok(msg, `Missing thread_rescheduled_announcement for locale: ${loc}`);
                 assert.ok(msg.includes('<t:123456789:F>'));
+            });
+        });
+
+        it('should have localized interactionCreate button and list keys across all supported locales', () => {
+            const locales = ['en', 'es', 'de', 'fr', 'pt'];
+            const keys = [
+                'button_dm_test',
+                'button_dm_closed',
+                'button_reminders_disabled',
+                'button_event_not_found',
+                'button_mock_remind',
+                'button_mock_cancel',
+                'list_optin_success_public',
+                'list_optin_success_private',
+                'list_cancel_success'
+            ];
+            locales.forEach(loc => {
+                keys.forEach(key => {
+                    const val = t(loc, key, { count: 2, intervals: '24h, 1h' });
+                    assert.ok(val, `Missing ${key} for locale: ${loc}`);
+                    assert.notStrictEqual(val, key, `Untranslated key ${key} for locale: ${loc}`);
+                });
             });
         });
     });

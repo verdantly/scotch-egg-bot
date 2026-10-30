@@ -65,13 +65,14 @@ function salvageEventsJson(content) {
 // Load and restore events database with fallback support
 function loadEventsDb() {
     const backupPath = `${DB_PATH}.bak`;
-    let fileContent = '';
+    let primaryContent = '';
+    let backupContent = '';
     let loadedFromBackup = false;
 
     // 1. Try to read from main events.json
     try {
         if (fs.existsSync(DB_PATH)) {
-            fileContent = fs.readFileSync(DB_PATH, 'utf8');
+            primaryContent = fs.readFileSync(DB_PATH, 'utf8');
         }
     } catch (err) {
         console.error('Failed to read primary events.json file:', err);
@@ -79,9 +80,9 @@ function loadEventsDb() {
 
     // 2. Try to parse events.json. If empty or invalid, try backup events.json.bak
     let rawDb = null;
-    if (fileContent.trim() !== '') {
+    if (primaryContent.trim() !== '') {
         try {
-            rawDb = JSON.parse(fileContent);
+            rawDb = JSON.parse(primaryContent);
         } catch (parseErr) {
             console.error('Failed to parse primary events.json. Attempting to load from backup events.json.bak...', parseErr);
         }
@@ -91,9 +92,9 @@ function loadEventsDb() {
     if (!rawDb) {
         try {
             if (fs.existsSync(backupPath)) {
-                fileContent = fs.readFileSync(backupPath, 'utf8');
-                if (fileContent.trim() !== '') {
-                    rawDb = JSON.parse(fileContent);
+                backupContent = fs.readFileSync(backupPath, 'utf8');
+                if (backupContent.trim() !== '') {
+                    rawDb = JSON.parse(backupContent);
                     loadedFromBackup = true;
                     console.log('Successfully recovered database from events.json.bak!');
                 }
@@ -103,10 +104,15 @@ function loadEventsDb() {
         }
     }
 
-    // 4. Fallback to regex salvaging if both standard loads failed but we have some fileContent
-    if (!rawDb && fileContent.trim() !== '') {
+    // 4. Fallback to regex salvaging if both standard loads failed but we have some file content
+    if (!rawDb && (primaryContent.trim() !== '' || backupContent.trim() !== '')) {
         try {
-            rawDb = salvageEventsJson(fileContent);
+            const salvagedBackup = backupContent.trim() !== '' ? salvageEventsJson(backupContent) : {};
+            const salvagedPrimary = primaryContent.trim() !== '' ? salvageEventsJson(primaryContent) : {};
+            rawDb = { ...salvagedBackup, ...salvagedPrimary };
+            if (Object.keys(rawDb).length > 0) {
+                loadedFromBackup = true;
+            }
             console.warn('Recovered a partial database using regex salvaging.');
         } catch (salvageErr) {
             console.error('Failed regex salvaging of database:', salvageErr);
@@ -132,6 +138,7 @@ function loadEventsDb() {
             }
             eventDb[key] = { 
                 messageId: value.messageId, 
+                channelId: value.channelId || null,
                 users: usersObj,
                 guildId: value.guildId,
                 reminderMessageIds: value.reminderMessageIds || [],
@@ -142,7 +149,7 @@ function loadEventsDb() {
         }
     }
 
-    // If we loaded from a backup, try to save the primary database file now to "heal" it
+    // If we loaded from a backup or regex salvage, save the primary database file now to "heal" it
     if (loadedFromBackup) {
         try {
             fs.writeFileSync(DB_PATH, JSON.stringify(rawDb));

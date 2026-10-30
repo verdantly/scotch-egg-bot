@@ -476,7 +476,7 @@ module.exports = {
 
                 if (eventDb[eventId].messageId) {
                     try {
-                        const channelId = getAnnouncementChannelId(interaction.guildId);
+                        const channelId = eventDb[eventId].channelId || getAnnouncementChannelId(interaction.guildId);
                         const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
                         if (channel) {
                             const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
@@ -507,7 +507,7 @@ module.exports = {
 
                     if (eventDb[eventId].messageId) {
                         try {
-                            const channelId = getAnnouncementChannelId(interaction.guildId);
+                            const channelId = eventDb[eventId].channelId || getAnnouncementChannelId(interaction.guildId);
                             const channel = channelId ? await interaction.guild.channels.fetch(channelId).catch(() => null) : null;
                             if (channel) {
                                 const msg = await channel.messages.fetch(eventDb[eventId].messageId).catch(() => null);
