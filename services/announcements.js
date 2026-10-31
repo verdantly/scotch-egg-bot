@@ -19,12 +19,12 @@ function buildAnnouncementEmbed(event) {
     const endTime = event.scheduledEndTimestamp;
     const location = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
     const description = event.description ? `\n\n${event.description}` : '';
-    const timeString = getFormattedTimeString(startTime, endTime, 'F');
+    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
+    const timeString = getFormattedTimeString(startTime, endTime, 'F', guildLocale);
 
     const mode = getAnnouncementMode(event.guild.id);
     const intervals = getReminderIntervals(event.guild.id);
     const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
     
     let reminderText;
     if (isEventSilenced(event)) {
@@ -58,7 +58,7 @@ function buildAnnouncementEmbed(event) {
         .setDescription(fullDescription)
         .setColor('#0099ff');
 
-    const duration = formatDuration(startTime, endTime);
+    const duration = formatDuration(startTime, endTime, guildLocale);
     if (event.creatorId || duration) {
         const fields = [];
         if (event.creatorId) {

@@ -38,7 +38,7 @@ function parseIntervals(input) {
  * @param {string} [format='F'] - The Discord timestamp format (e.g., 'F', 'f', 'R').
  * @returns {string} The formatted timestamp string.
  */
-function getFormattedTimeString(startTimestamp, endTimestamp = null, format = 'F') {
+function getFormattedTimeString(startTimestamp, endTimestamp = null, format = 'F', locale = 'en') {
     // Handle legacy signature: getFormattedTimeString(timestamp, format)
     if (typeof endTimestamp === 'string') {
         format = endTimestamp;
@@ -51,12 +51,17 @@ function getFormattedTimeString(startTimestamp, endTimestamp = null, format = 'F
     if (endTimestamp) {
         const startDate = new Date(startTimestamp);
         const endDate = new Date(endTimestamp);
-        const isSameDay = startDate.toDateString() === endDate.toDateString();
+        const isSameDay = startDate.getUTCFullYear() === endDate.getUTCFullYear() &&
+                          startDate.getUTCMonth() === endDate.getUTCMonth() &&
+                          startDate.getUTCDate() === endDate.getUTCDate() &&
+                          (endTimestamp - startTimestamp) < 24 * 60 * 60 * 1000;
         
         // If it's on the same day, only show the time portion for the end time.
         // Otherwise, show full date and time for the end time.
-        const endFormat = isSameDay ? 't' : format; 
-        timeString = `${startStr} to <t:${Math.floor(endTimestamp / 1000)}:${endFormat}>`;
+        const endFormat = isSameDay ? 't' : format;
+        const norm = (locale || 'en').toLowerCase().split('-')[0];
+        const toWord = norm === 'es' ? 'a' : norm === 'de' ? 'bis' : norm === 'fr' ? 'à' : norm === 'pt' ? 'até' : 'to';
+        timeString = `${startStr} ${toWord} <t:${Math.floor(endTimestamp / 1000)}:${endFormat}>`;
     }
 
     const timeUntil = startTimestamp - Date.now();
@@ -73,7 +78,7 @@ function getFormattedTimeString(startTimestamp, endTimestamp = null, format = 'F
  * @param {number} endMs - The end epoch timestamp in milliseconds.
  * @returns {string|null} The formatted duration or null.
  */
-function formatDuration(startMs, endMs) {
+function formatDuration(startMs, endMs, locale = 'en') {
     if (!endMs) return null;
     const diffMs = endMs - startMs;
     if (diffMs <= 0) return null;
@@ -81,13 +86,22 @@ function formatDuration(startMs, endMs) {
     const totalMinutes = Math.floor(diffMs / (60 * 1000));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
+    const norm = (locale || 'en').toLowerCase().split('-')[0];
     
     const parts = [];
     if (hours > 0) {
-        parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+        if (norm === 'es') parts.push(`${hours} hora${hours > 1 ? 's' : ''}`);
+        else if (norm === 'de') parts.push(`${hours} Stunde${hours > 1 ? 'n' : ''}`);
+        else if (norm === 'fr') parts.push(`${hours} heure${hours > 1 ? 's' : ''}`);
+        else if (norm === 'pt') parts.push(`${hours} hora${hours > 1 ? 's' : ''}`);
+        else parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
     }
     if (minutes > 0) {
-        parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+        if (norm === 'es') parts.push(`${minutes} minuto${minutes > 1 ? 's' : ''}`);
+        else if (norm === 'de') parts.push(`${minutes} Minute${minutes > 1 ? 'n' : ''}`);
+        else if (norm === 'fr') parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+        else if (norm === 'pt') parts.push(`${minutes} minuto${minutes > 1 ? 's' : ''}`);
+        else parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
     }
     return parts.join(' ') || null;
 }

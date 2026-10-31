@@ -101,6 +101,19 @@ describe('Utils Unit Tests', () => {
             assert.strictEqual(formatDuration(start, start + (1 * 60 * 1000)), '1 minute');
         });
 
+        it('should localize time range connector and duration units across locales', () => {
+            const start = 1780272000000;
+            const end = start + (2 * 60 * 60 * 1000) + (15 * 60 * 1000);
+            assert.ok(getFormattedTimeString(start, end, 'F', 'es').includes(' a <t:'));
+            assert.ok(getFormattedTimeString(start, end, 'F', 'de').includes(' bis <t:'));
+            assert.ok(getFormattedTimeString(start, end, 'F', 'fr').includes(' à <t:'));
+            assert.ok(getFormattedTimeString(start, end, 'F', 'pt').includes(' até <t:'));
+            assert.strictEqual(formatDuration(start, end, 'es'), '2 horas 15 minutos');
+            assert.strictEqual(formatDuration(start, end, 'de'), '2 Stunden 15 Minuten');
+            assert.strictEqual(formatDuration(start, end, 'fr'), '2 heures 15 minutes');
+            assert.strictEqual(formatDuration(start, end, 'pt'), '2 horas 15 minutos');
+        });
+
         it('should return null if no end time or non-positive duration', () => {
             assert.strictEqual(formatDuration(1000, null), null);
             assert.strictEqual(formatDuration(2000, 1000), null);

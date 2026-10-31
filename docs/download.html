@@ -154,13 +154,57 @@
             </div>
 
             <div class="space-y-12">
+                <!-- Release: v2.3.4 -->
+                <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.3.4</h3>
+                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
+                            </div>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">October 30, 2026</span>
+                        </div>
+                        <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> New Features
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Public Mention Setting in <code>/settings view</code> &amp; <code>/help</code>:</strong> Surfaced the <code>/settings mentions</code> configuration inside <code>/settings view</code> and <code>/help</code> across all 5 supported locales (<code>en</code>, <code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>).</li>
+                                <li><strong>Complete Localization for Interactive Responses:</strong> Added localized translations across all 5 languages for DM reachability checks, closed-DM errors, disabled reminder notices, mock button previews, and dropdown opt-in/cancel confirmations.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Changed</span> Enhancements
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Raspberry Pi Memory &amp; Gateway Optimization:</strong> Removed the unused <code>GuildMessages</code> gateway intent, configured bounded <code>discord.js</code> caches (<code>Options.cacheWithLimits</code>), eliminated redundant thread fetches with <code>O(1)</code> lookup maps, and added <code>channel.bulkDelete()</code> batching in <code>/settings cleanup</code>.</li>
+                                <li><strong>Docker Hardening &amp; Node 22 LTS Upgrade:</strong> Upgraded <code>Dockerfile</code> to <code>node:22-alpine</code> with non-root execution (<code>USER node</code>).</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Fixed</span> Bug Fixes
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Human Discussion Thread Protection:</strong> Fixed thread ownership checks so user-created threads in announcement channels and threads in non-announcement channels are never deleted during 30-day inactivity pruning.</li>
+                                <li><strong>Unconditional Opt-Out when DMs are Closed:</strong> Reordered the <code>Remind Me!</code> button handler so already-subscribed users can always opt out immediately without triggering a DM test probe.</li>
+                                <li><strong>Silenced Event Filtering &amp; <code>/announceevent</code> Scheduling:</strong> Excluded silenced events from <code>/upcoming</code> and ensured manual announcements via <code>/announceevent</code> reject concluded events and immediately schedule reminder jobs.</li>
+                                <li><strong>Offline Garbage Collection, Dual-File Regex Salvage &amp; Emoji Strikethrough:</strong> Ensured offline concluded events archive their announcement embeds before database removal, merged regex salvage records from both primary and backup files, and preserved 4-byte emojis during Unicode strikethrough archival.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Release: v2.3.3 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.3.3</h3>
-                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
                             </div>
                             <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">October 23, 2026</span>
                         </div>

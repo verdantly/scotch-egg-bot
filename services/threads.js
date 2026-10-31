@@ -9,13 +9,16 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
  * @param {import('discord.js').ThreadChannel} thread 
  * @param {import('discord.js').Guild} guild 
  * @param {import('discord.js').TextChannel|import('discord.js').AnnouncementChannel} [channel]
+ * @param {Set<string>} [trackedIds] - Optional precomputed Set of tracked thread/message/event IDs for O(1) lookup.
  * @returns {boolean}
  */
-function isScotchEggDiscussionThread(thread, guild, channel = null) {
+function isScotchEggDiscussionThread(thread, guild, channel = null, trackedIds = null) {
     if (!thread) return false;
 
     // 1. Explicitly tracked in eventDb (by threadId, messageId, or key)
-    if (eventDb) {
+    if (trackedIds) {
+        if (trackedIds.has(thread.id)) return true;
+    } else if (eventDb) {
         if (eventDb[thread.id]) return true;
         for (const data of Object.values(eventDb)) {
             if (data && (data.threadId === thread.id || data.messageId === thread.id)) {
@@ -110,11 +113,13 @@ async function pruneChannelThreads(channel, guild) {
         }
     }
 
-    // 2. Fetch standard thread fetch / active threads
+    // 2. Fetch active threads once (only fall back to channel.threads.fetch() if fetchActive is unavailable)
+    let fetchedActiveSuccessfully = false;
     try {
         if (typeof channel.threads.fetchActive === 'function') {
             const activeData = await channel.threads.fetchActive().catch(() => null);
             if (activeData && activeData.threads) {
+                fetchedActiveSuccessfully = true;
                 for (const [id, thread] of activeData.threads) {
                     candidateThreads.set(id, thread);
                 }
@@ -124,17 +129,19 @@ async function pruneChannelThreads(channel, guild) {
         // Quietly handle access errors
     }
 
-    try {
-        if (typeof channel.threads.fetch === 'function') {
-            const fetched = await channel.threads.fetch().catch(() => null);
-            if (fetched && fetched.threads) {
-                for (const [id, thread] of fetched.threads) {
-                    candidateThreads.set(id, thread);
+    if (!fetchedActiveSuccessfully) {
+        try {
+            if (typeof channel.threads.fetch === 'function') {
+                const fetched = await channel.threads.fetch().catch(() => null);
+                if (fetched && fetched.threads) {
+                    for (const [id, thread] of fetched.threads) {
+                        candidateThreads.set(id, thread);
+                    }
                 }
             }
+        } catch (err) {
+            // Quietly handle access errors
         }
-    } catch (err) {
-        // Quietly handle access errors
     }
 
     // 3. Check thread cache on the channel and guild
@@ -152,6 +159,28 @@ async function pruneChannelThreads(channel, guild) {
         }
     }
 
+    // Precompute O(1) lookup structures from eventDb once per channel prune
+    const trackedIds = new Set();
+    const threadToEventsMap = new Map();
+    if (eventDb) {
+        for (const [eventId, data] of Object.entries(eventDb)) {
+            trackedIds.add(eventId);
+            if (data) {
+                if (data.threadId) trackedIds.add(data.threadId);
+                if (data.messageId) trackedIds.add(data.messageId);
+                for (const key of [eventId, data.threadId, data.messageId]) {
+                    if (!key) continue;
+                    let list = threadToEventsMap.get(key);
+                    if (!list) {
+                        list = [];
+                        threadToEventsMap.set(key, list);
+                    }
+                    list.push({ eventId, data });
+                }
+            }
+        }
+    }
+
     // Process all collected candidate threads
     for (const [id, thread] of candidateThreads.entries()) {
         if (processedThreadIds.has(id)) continue;
@@ -160,27 +189,26 @@ async function pruneChannelThreads(channel, guild) {
         const createdTs = thread.createdTimestamp || Number((BigInt(id) >> 22n) + 1420070400000n);
         const age = now - createdTs;
 
-        if (isScotchEggDiscussionThread(thread, guild, channel) && age >= THIRTY_DAYS_MS) {
-            // Check if this thread belongs to an upcoming or active scheduled event
+        if (isScotchEggDiscussionThread(thread, guild, channel, trackedIds) && age >= THIRTY_DAYS_MS) {
+            // Check if this thread belongs to an upcoming or active scheduled event in O(1)
             let isUpcomingOrActiveEvent = false;
-            if (eventDb) {
-                for (const [eventId, data] of Object.entries(eventDb)) {
-                    if (data && (data.threadId === id || data.messageId === id || eventId === id)) {
-                        const event = guild?.scheduledEvents?.cache?.get(eventId);
-                        if (event) {
-                            const isScheduledOrActive = event.status === GuildScheduledEventStatus?.Scheduled ||
-                                                        event.status === GuildScheduledEventStatus?.Active ||
-                                                        event.status === 1 ||
-                                                        event.status === 2;
-                            const isFuture = (event.scheduledStartTimestamp && event.scheduledStartTimestamp > now);
-                            if (isScheduledOrActive || isFuture) {
-                                isUpcomingOrActiveEvent = true;
-                                break;
-                            }
-                        } else if (data.scheduledStartTimestamp && data.scheduledStartTimestamp > now) {
+            const matchedEvents = threadToEventsMap.get(id);
+            if (matchedEvents) {
+                for (const { eventId, data } of matchedEvents) {
+                    const event = guild?.scheduledEvents?.cache?.get(eventId);
+                    if (event) {
+                        const isScheduledOrActive = event.status === GuildScheduledEventStatus?.Scheduled ||
+                                                    event.status === GuildScheduledEventStatus?.Active ||
+                                                    event.status === 1 ||
+                                                    event.status === 2;
+                        const isFuture = (event.scheduledStartTimestamp && event.scheduledStartTimestamp > now);
+                        if (isScheduledOrActive || isFuture) {
                             isUpcomingOrActiveEvent = true;
                             break;
                         }
+                    } else if (data.scheduledStartTimestamp && data.scheduledStartTimestamp > now) {
+                        isUpcomingOrActiveEvent = true;
+                        break;
                     }
                 }
             }

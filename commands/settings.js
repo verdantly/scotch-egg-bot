@@ -282,6 +282,7 @@ module.exports = {
             const botMessages = messages ? Array.from(messages.values()).filter(msg => msg.author.id === interaction.client.user.id) : [];
             const foundEvents = new Map();
             const deletedMessageIds = new Set();
+            const remindersToDelete = new Map();
             const activeEventsCollection = await interaction.guild.scheduledEvents.fetch().catch(() => null);
             const activeEventsList = activeEventsCollection ? Array.from(activeEventsCollection.values()) : [];
 
@@ -336,8 +337,11 @@ module.exports = {
                     }
 
                     if (isConcluded) {
-                        await msg.delete().catch(() => {});
-                        if (!deletedMessageIds.has(msg.id)) { deletedMessageIds.add(msg.id); remindersDeletedCount++; }
+                        if (!deletedMessageIds.has(msg.id)) {
+                            deletedMessageIds.add(msg.id);
+                            remindersToDelete.set(msg.id, msg);
+                            remindersDeletedCount++;
+                        }
                     } else if (eventId && eventName) {
                         if (!foundEvents.has(eventId)) foundEvents.set(eventId, { eventName, isAnnouncement: false, msg });
                     }
@@ -432,11 +436,42 @@ module.exports = {
 
                     for (const remMsg of matchingReminders) {
                         if (!deletedMessageIds.has(remMsg.id)) {
-                            await remMsg.delete().catch(() => {});
                             deletedMessageIds.add(remMsg.id);
+                            remindersToDelete.set(remMsg.id, remMsg);
                             remindersDeletedCount++;
                         }
                     }
+                }
+            }
+
+            if (remindersToDelete.size > 0) {
+                const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+                const nowMs = Date.now();
+                const bulkEligible = [];
+                const individualDelete = [];
+
+                for (const remMsg of remindersToDelete.values()) {
+                    const createdTs = remMsg.createdTimestamp || (/^\d{17,19}$/.test(remMsg.id) ? Number((BigInt(remMsg.id) >> 22n) + 1420070400000n) : 0);
+                    if (createdTs > 0 && (nowMs - createdTs) < FOURTEEN_DAYS_MS) {
+                        bulkEligible.push(remMsg);
+                    } else {
+                        individualDelete.push(remMsg);
+                    }
+                }
+
+                if (bulkEligible.length > 1 && typeof channel.bulkDelete === 'function') {
+                    const bulkResult = await channel.bulkDelete(bulkEligible, true).catch(() => null);
+                    if (!bulkResult) {
+                        for (const remMsg of bulkEligible) {
+                            await remMsg.delete().catch(() => {});
+                        }
+                    }
+                } else {
+                    individualDelete.push(...bulkEligible);
+                }
+
+                for (const remMsg of individualDelete) {
+                    await remMsg.delete().catch(() => {});
                 }
             }
 
