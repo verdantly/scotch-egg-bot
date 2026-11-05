@@ -78,21 +78,84 @@ function buildAnnouncementEmbed(event) {
     return embed;
 }
 
-async function postAnnouncement(event, channel) {
-    const embed = buildAnnouncementEmbed(event);
-    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
+function buildAnnouncementComponents(event, userCount = null) {
+    const guildLocale = getNormalizedLocale(event.guild ? event.guild.preferredLocale : 'en');
+    const baseLabel = t(guildLocale, 'announcement_button_remind');
+    const count = userCount !== null
+        ? userCount
+        : (eventDb[event.id] && eventDb[event.id].users ? Object.keys(eventDb[event.id].users).length : 0);
+    const label = count > 0 ? `${baseLabel} (${count})` : baseLabel;
 
-    const remindButton = new ButtonBuilder().setCustomId(`remind_${event.id}`).setLabel(t(guildLocale, 'announcement_button_remind')).setStyle(ButtonStyle.Primary).setEmoji('⏰');
+    const remindButton = new ButtonBuilder()
+        .setCustomId(`remind_${event.id}`)
+        .setLabel(label)
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('⏰');
     if (isEventSilenced(event)) {
         remindButton.setDisabled(true);
     }
     const row = new ActionRowBuilder().addComponents(remindButton);
 
     if (getCalendarEnabled(event.guild.id)) {
-        row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_calendar')).setStyle(ButtonStyle.Link).setURL(generateGoogleCalendarLink(event)).setEmoji('📅'));
+        row.addComponents(
+            new ButtonBuilder()
+                .setLabel(t(guildLocale, 'announcement_button_calendar'))
+                .setStyle(ButtonStyle.Link)
+                .setURL(generateGoogleCalendarLink(event))
+                .setEmoji('📅')
+        );
     }
 
-    row.addComponents(new ButtonBuilder().setLabel(t(guildLocale, 'announcement_button_view')).setStyle(ButtonStyle.Link).setURL(`https://discord.com/events/${event.guild.id}/${event.id}`).setEmoji('🔗'));
+    row.addComponents(
+        new ButtonBuilder()
+            .setLabel(t(guildLocale, 'announcement_button_view'))
+            .setStyle(ButtonStyle.Link)
+            .setURL(`https://discord.com/events/${event.guild.id}/${event.id}`)
+            .setEmoji('🔗')
+    );
+
+    return row;
+}
+
+async function refreshGuildAnnouncements(guild) {
+    if (!guild || !guild.scheduledEvents || typeof guild.scheduledEvents.fetch !== 'function') return 0;
+    let updatedCount = 0;
+    try {
+        const events = await guild.scheduledEvents.fetch().catch(() => null);
+        if (!events) return 0;
+
+        for (const [eventId, data] of Object.entries(eventDb)) {
+            if (!data || !data.messageId) continue;
+            if (data.guildId && data.guildId !== guild.id) continue;
+
+            const event = typeof events.get === 'function' ? events.get(eventId) : null;
+            if (!event) continue;
+            if (event.status !== 1 && event.status !== 2) continue; // Only Scheduled (1) or Active (2)
+
+            const channelId = data.channelId || getAnnouncementChannelId(guild.id);
+            const channel = channelId && guild.channels && typeof guild.channels.fetch === 'function'
+                ? await guild.channels.fetch(channelId).catch(() => null)
+                : null;
+            if (!channel || !channel.messages || typeof channel.messages.fetch !== 'function') continue;
+
+            const msg = await channel.messages.fetch(data.messageId).catch(() => null);
+            if (!msg || typeof msg.edit !== 'function') continue;
+
+            const updatedEmbed = buildAnnouncementEmbed(event);
+            const updatedRow = buildAnnouncementComponents(event);
+            await msg.edit({ embeds: [updatedEmbed], components: [updatedRow] }).catch(() => {});
+            updatedCount++;
+        }
+    } catch (err) {
+        console.error(`Failed to refresh guild announcements for guild ${guild.id}:`, err);
+    }
+    return updatedCount;
+}
+
+async function postAnnouncement(event, channel) {
+    const embed = buildAnnouncementEmbed(event);
+    const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
+    const row = buildAnnouncementComponents(event, 0);
 
     try {
         const message = await channel.send({ embeds: [embed], components: [row] });
@@ -265,6 +328,8 @@ async function archiveAnnouncementMessage(guild, eventId, statusText, existingMs
 module.exports = {
     setRemindersService,
     buildAnnouncementEmbed,
+    buildAnnouncementComponents,
+    refreshGuildAnnouncements,
     postAnnouncement,
     archiveAnnouncementMessage,
     toUnicodeStrikeThrough

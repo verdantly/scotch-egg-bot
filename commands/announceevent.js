@@ -36,9 +36,36 @@ module.exports = {
                     'fr': 'Le lien vers l\'événement ou son ID',
                     'pt-BR': 'O link para o evento ou o ID dele'
                 })
-                .setRequired(true))
+                .setRequired(true)
+                .setAutocomplete(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false),
+    async autocomplete(interaction) {
+        try {
+            const focusedValue = (interaction.options.getFocused() || '').toLowerCase();
+            let events = interaction.guild?.scheduledEvents?.cache;
+            if (!events || events.size === 0) {
+                events = await interaction.guild.scheduledEvents.fetch().catch(() => null);
+            }
+            if (!events) return interaction.respond([]);
+
+            const choices = Array.from(events.values())
+                .filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active || e.status === 1 || e.status === 2)
+                .filter(e => !(eventDb[e.id] && eventDb[e.id].messageId))
+                .sort((a, b) => (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0))
+                .map(e => {
+                    const dateStr = e.scheduledStartTimestamp ? new Date(e.scheduledStartTimestamp).toISOString().slice(0, 10) : '';
+                    const label = dateStr ? `${e.name} (${dateStr})` : e.name;
+                    return { name: label.substring(0, 100), value: e.id };
+                })
+                .filter(c => c.name.toLowerCase().includes(focusedValue) || c.value.includes(focusedValue))
+                .slice(0, 25);
+
+            await interaction.respond(choices);
+        } catch (err) {
+            await interaction.respond([]).catch(() => {});
+        }
+    },
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const userLocale = getNormalizedLocale(interaction.locale);

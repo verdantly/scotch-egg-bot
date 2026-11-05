@@ -1,15 +1,24 @@
-const { Events, Collection, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle, GuildScheduledEventStatus } = require('discord.js');
+const { Events, Collection, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, GuildScheduledEventStatus } = require('discord.js');
 const { getFormattedTimeString } = require('../utils.js');
 const { t, getNormalizedLocale } = require('../i18n.js');
-const { eventDb, saveDb } = require('../storage.js');
+const { eventDb, serverConfig, saveDb, saveConfig } = require('../storage.js');
 const { updateLiveCounter } = require('../services/reminders.js');
-const { getAnnouncementMode, getReminderIntervals, isEventSilenced } = require('../services/config.js');
+const { getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled, isEventSilenced } = require('../services/config.js');
+const { refreshGuildAnnouncements } = require('../services/announcements.js');
 
 const buttonCooldowns = new Map();
 
 module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
+        if (typeof interaction.isAutocomplete === 'function' && interaction.isAutocomplete()) {
+            const command = interaction.client.commands.get(interaction.commandName);
+            if (command && typeof command.autocomplete === 'function') {
+                await command.autocomplete(interaction).catch(() => {});
+            }
+            return;
+        }
+
         if (interaction.isChatInputCommand()) {
             const command = interaction.client.commands.get(interaction.commandName);
             if (!command) return;
@@ -94,6 +103,27 @@ module.exports = {
                 await interaction.editReply({ content: `${interaction.message.content}\n\n${successText}`, components: [] });
             }
 
+            if (interaction.customId === 'settings_select_mode') {
+                if (interaction.member && interaction.member.permissions && !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                    return interaction.reply({ content: 'You do not have permission to modify server settings.', flags: MessageFlags.Ephemeral });
+                }
+                await interaction.deferUpdate();
+                const selectedMode = interaction.values[0];
+                if (typeof serverConfig[interaction.guildId] !== 'object' || serverConfig[interaction.guildId] === null) {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: selectedMode };
+                } else {
+                    serverConfig[interaction.guildId].mode = selectedMode;
+                }
+                await saveConfig();
+                if (interaction.guild) {
+                    await refreshGuildAnnouncements(interaction.guild);
+                }
+                const settingsCmd = require('../commands/settings.js');
+                const payload = settingsCmd.buildSettingsDashboard(interaction.guildId, userLocale);
+                await interaction.editReply(payload);
+                return;
+            }
+
             if (interaction.customId === 'list_cancel_select') {
                 await interaction.deferUpdate();
                 const eventIdsToCancel = interaction.values;
@@ -166,6 +196,38 @@ module.exports = {
             }
 
             const userLocale = getNormalizedLocale(interaction.locale);
+
+            if (interaction.customId.startsWith('settings_toggle_')) {
+                if (interaction.member && interaction.member.permissions && !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                    return interaction.reply({ content: 'You do not have permission to modify server settings.', flags: MessageFlags.Ephemeral });
+                }
+                await interaction.deferUpdate();
+                const key = interaction.customId.replace('settings_toggle_', '');
+                if (typeof serverConfig[interaction.guildId] !== 'object' || serverConfig[interaction.guildId] === null) {
+                    serverConfig[interaction.guildId] = { channelId: null, mode: 'private' };
+                }
+                let shouldRefreshAnnouncements = false;
+                if (key === 'calendar') {
+                    serverConfig[interaction.guildId].calendarEnabled = !getCalendarEnabled(interaction.guildId);
+                    shouldRefreshAnnouncements = true;
+                } else if (key === 'threads') {
+                    serverConfig[interaction.guildId].threadsEnabled = !getThreadsEnabled(interaction.guildId);
+                } else if (key === 'prune') {
+                    serverConfig[interaction.guildId].threadPruneEnabled = !getThreadPruneEnabled(interaction.guildId);
+                } else if (key === 'mentions') {
+                    serverConfig[interaction.guildId].pingsEnabled = !getPingsEnabled(interaction.guildId);
+                } else if (key === 'autodelete') {
+                    serverConfig[interaction.guildId].autoDeleteEnabled = !getAutoDeleteEnabled(interaction.guildId);
+                }
+                await saveConfig();
+                if (shouldRefreshAnnouncements && interaction.guild) {
+                    await refreshGuildAnnouncements(interaction.guild);
+                }
+                const settingsCmd = require('../commands/settings.js');
+                const payload = settingsCmd.buildSettingsDashboard(interaction.guildId, userLocale);
+                await interaction.editReply(payload);
+                return;
+            }
 
             if (interaction.customId === 'mock_remind') {
                 return interaction.reply({ content: t(userLocale, 'button_mock_remind'), flags: MessageFlags.Ephemeral });

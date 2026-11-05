@@ -1,13 +1,99 @@
-const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, GuildScheduledEventStatus } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, GuildScheduledEventStatus } = require('discord.js');
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, serverConfig, saveConfig, saveDb } = require('../storage.js');
 const { parseIntervals, getFormattedTimeString } = require('../utils.js');
 const { getAnnouncementChannelId, getAnnouncementMode, getModeText, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled } = require('../services/config.js');
-const { buildAnnouncementEmbed, archiveAnnouncementMessage } = require('../services/announcements.js');
+const { buildAnnouncementEmbed, buildAnnouncementComponents, refreshGuildAnnouncements, archiveAnnouncementMessage } = require('../services/announcements.js');
 const { scheduleRemindersForEvent, cancelEventReminders } = require('../services/reminders.js');
 const { pruneInactiveThreads } = require('../services/threads.js');
 
+function buildSettingsDashboard(guildId, userLocale) {
+    const channelId = getAnnouncementChannelId(guildId);
+    const mode = getAnnouncementMode(guildId);
+    const intervals = getReminderIntervals(guildId);
+    const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
+    
+    const modeText = getModeText(mode, userLocale);
+    let enabledText = 'Enabled ✅';
+    let disabledText = 'Disabled ❌';
+    let notConfiguredText = '*Not configured*';
+    
+    if (userLocale === 'es') { enabledText = 'Activado ✅'; disabledText = 'Desactivado ❌'; notConfiguredText = '*No configurado*'; }
+    else if (userLocale === 'de') { enabledText = 'Aktiviert ✅'; disabledText = 'Deaktiviert ❌'; notConfiguredText = '*Nicht konfiguriert*'; }
+    else if (userLocale === 'fr') { enabledText = 'Activé ✅'; disabledText = 'Désactivé ❌'; notConfiguredText = '*Non configuré*'; }
+    else if (userLocale === 'pt') { enabledText = 'Ativado ✅'; disabledText = 'Desativado ❌'; notConfiguredText = '*Não configurado*'; }
+
+    let replyMessage = t(userLocale, 'settings_view_title');
+    replyMessage += t(userLocale, 'settings_view_channel', { channel: channelId ? `<#${channelId}>` : notConfiguredText });
+    replyMessage += t(userLocale, 'settings_view_mode', { mode: modeText });
+    replyMessage += t(userLocale, 'settings_view_intervals', { intervals: intervalsStr });
+    const calEnabled = getCalendarEnabled(guildId);
+    replyMessage += t(userLocale, 'settings_view_calendar', { status: calEnabled ? enabledText : disabledText });
+    const threadsEnabled = getThreadsEnabled(guildId);
+    const pruneEnabled = getThreadPruneEnabled(guildId);
+    const threadsStatusStr = `${threadsEnabled ? enabledText : disabledText} (${pruneEnabled ? (userLocale === 'es' ? 'Purga 30d: Activada' : userLocale === 'de' ? '30d-Bereinigung: Aktiv' : userLocale === 'fr' ? 'Purge 30j : Activée' : userLocale === 'pt' ? 'Purga 30d: Ativada' : '30-Day Prune: Enabled') : (userLocale === 'es' ? 'Purga 30d: Desactivada' : userLocale === 'de' ? '30d-Bereinigung: Inaktiv' : userLocale === 'fr' ? 'Purge 30j : Désactivée' : userLocale === 'pt' ? 'Purga 30d: Desativada' : '30-Day Prune: Disabled')})`;
+    replyMessage += t(userLocale, 'settings_view_threads', { status: threadsStatusStr });
+    const pingsEnabled = getPingsEnabled(guildId);
+    replyMessage += t(userLocale, 'settings_view_mentions', { status: pingsEnabled ? enabledText : disabledText });
+    
+    const autoDeleteEnabled = getAutoDeleteEnabled(guildId);
+    const autoDeleteStatus = autoDeleteEnabled
+        ? (userLocale === 'es' ? 'Activado ✅ (Eliminado)' : userLocale === 'de' ? 'Aktiviert ✅ (Gelöscht)' : userLocale === 'fr' ? 'Activé ✅ (Supprimé)' : userLocale === 'pt' ? 'Ativado ✅ (Excluído)' : 'Enabled ✅ (Deleted)')
+        : (userLocale === 'es' ? 'Desactivado ❌ (Archivado)' : userLocale === 'de' ? 'Deaktiviert ❌ (Archiviert)' : userLocale === 'fr' ? 'Désactivé ❌ (Archivé)' : userLocale === 'pt' ? 'Desativado ❌ (Arquivado)' : 'Disabled ❌ (Archived)');
+    
+    replyMessage += t(userLocale, 'settings_view_autodelete', { status: autoDeleteStatus });
+
+    const toggleRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('settings_toggle_calendar')
+            .setLabel(`📅 Calendar: ${calEnabled ? 'ON' : 'OFF'}`)
+            .setStyle(calEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('settings_toggle_threads')
+            .setLabel(`💬 Threads: ${threadsEnabled ? 'ON' : 'OFF'}`)
+            .setStyle(threadsEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('settings_toggle_prune')
+            .setLabel(`🧹 30d Prune: ${pruneEnabled ? 'ON' : 'OFF'}`)
+            .setStyle(pruneEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('settings_toggle_mentions')
+            .setLabel(`🔔 Mentions: ${pingsEnabled ? 'ON' : 'OFF'}`)
+            .setStyle(pingsEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('settings_toggle_autodelete')
+            .setLabel(`🗑️ Auto-Delete: ${autoDeleteEnabled ? 'ON' : 'OFF'}`)
+            .setStyle(autoDeleteEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
+    );
+
+    const modeSelect = new StringSelectMenuBuilder()
+        .setCustomId('settings_select_mode')
+        .setPlaceholder('Select Reminder Delivery Mode')
+        .addOptions(
+            new StringSelectMenuOptionBuilder()
+                .setLabel('Private DM Reminders (Opt-in)')
+                .setValue('private')
+                .setEmoji('🔒')
+                .setDefault(mode === 'private'),
+            new StringSelectMenuOptionBuilder()
+                .setLabel('Public Channel Reminders')
+                .setValue('public')
+                .setEmoji('📢')
+                .setDefault(mode === 'public'),
+            new StringSelectMenuOptionBuilder()
+                .setLabel('Hybrid (Public Channel & DM)')
+                .setValue('hybrid')
+                .setEmoji('⚡')
+                .setDefault(mode === 'hybrid')
+        );
+
+    const selectRow = new ActionRowBuilder().addComponents(modeSelect);
+
+    return { content: replyMessage, components: [toggleRow, selectRow] };
+}
+
 module.exports = {
+    buildSettingsDashboard,
     data: new SlashCommandBuilder()
         .setName('settings')
         .setNameLocalizations({'es-ES': 'configuracion', 'de': 'einstellungen', 'fr': 'parametres', 'pt-BR': 'configuracoes'})
@@ -25,8 +111,40 @@ module.exports = {
         .addSubcommand(subcommand => subcommand.setName('mentions').setDescription('Toggle whether public reminders mention/ping opted-in users.').addBooleanOption(option => option.setName('enabled').setDescription('Enable to ping users, disable for silent reminders').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('testreminder').setDescription('Test what an event reminder will look like in your server.'))
         .addSubcommand(subcommand => subcommand.setName('cleanup').setDescription('Scan and archive any unarchived concluded event announcements.'))
-        .addSubcommand(subcommand => subcommand.setName('silenceevent').setDescription('Disable reminder scheduling for a specific event (stops DMs and pings).').addStringOption(option => option.setName('event').setDescription('The event link or ID to silence').setRequired(true)))
-        .addSubcommand(subcommand => subcommand.setName('unsilenceevent').setDescription('Re-enable reminder scheduling for a silenced event.').addStringOption(option => option.setName('event').setDescription('The event link or ID to unsilence').setRequired(true))),
+        .addSubcommand(subcommand => subcommand.setName('silenceevent').setDescription('Disable reminder scheduling for a specific event (stops DMs and pings).').addStringOption(option => option.setName('event').setDescription('The event link or ID to silence').setRequired(true).setAutocomplete(true)))
+        .addSubcommand(subcommand => subcommand.setName('unsilenceevent').setDescription('Re-enable reminder scheduling for a silenced event.').addStringOption(option => option.setName('event').setDescription('The event link or ID to unsilence').setRequired(true).setAutocomplete(true))),
+    async autocomplete(interaction) {
+        try {
+            const subcommand = interaction.options.getSubcommand(false);
+            const focusedValue = (interaction.options.getFocused() || '').toLowerCase();
+            let events = interaction.guild?.scheduledEvents?.cache;
+            if (!events || events.size === 0) {
+                events = await interaction.guild.scheduledEvents.fetch().catch(() => null);
+            }
+            if (!events) return interaction.respond([]);
+
+            const activeEvents = Array.from(events.values())
+                .filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active || e.status === 1 || e.status === 2)
+                .filter(e => {
+                    const isDbSilenced = !!(eventDb[e.id] && eventDb[e.id].remindersDisabled);
+                    if (subcommand === 'silenceevent') return !isDbSilenced;
+                    if (subcommand === 'unsilenceevent') return isDbSilenced;
+                    return true;
+                })
+                .sort((a, b) => (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0))
+                .map(e => {
+                    const dateStr = e.scheduledStartTimestamp ? new Date(e.scheduledStartTimestamp).toISOString().slice(0, 10) : '';
+                    const label = dateStr ? `${e.name} (${dateStr})` : e.name;
+                    return { name: label.substring(0, 100), value: e.id };
+                })
+                .filter(c => c.name.toLowerCase().includes(focusedValue) || c.value.includes(focusedValue))
+                .slice(0, 25);
+
+            await interaction.respond(activeEvents);
+        } catch (err) {
+            await interaction.respond([]).catch(() => {});
+        }
+    },
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const subcommand = interaction.options.getSubcommand();
@@ -63,6 +181,9 @@ module.exports = {
                 serverConfig[interaction.guildId] = { channelId: typeof existingChannel === 'string' ? existingChannel : null, mode: mode };
             }
             await saveConfig();
+            if (interaction.guild) {
+                await refreshGuildAnnouncements(interaction.guild);
+            }
             const modeText = getModeText(mode, userLocale);
             await interaction.editReply({ content: t(userLocale, 'settings_mode_success', { mode: modeText }), flags: MessageFlags.Ephemeral });
         }
@@ -75,6 +196,9 @@ module.exports = {
                 serverConfig[interaction.guildId] = { channelId: null, mode: 'private', calendarEnabled: enabled };
             }
             await saveConfig();
+            if (interaction.guild) {
+                await refreshGuildAnnouncements(interaction.guild);
+            }
             let statusText = enabled ? 'enabled' : 'disabled';
             if (userLocale === 'es') statusText = enabled ? 'activado' : 'desactivado';
             else if (userLocale === 'de') statusText = enabled ? 'aktiviert' : 'deaktiviert';
@@ -161,6 +285,7 @@ module.exports = {
             const guildEvents = await interaction.guild.scheduledEvents.fetch();
             const now = Date.now();
             guildEvents.forEach(event => { cancelEventReminders(event.id); scheduleRemindersForEvent(event, now); });
+            await refreshGuildAnnouncements(interaction.guild);
             
             const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
             await interaction.editReply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }) });
@@ -230,39 +355,8 @@ module.exports = {
         }
 
         if (subcommand === 'view') {
-            const channelId = getAnnouncementChannelId(interaction.guildId);
-            const mode = getAnnouncementMode(interaction.guildId);
-            const intervals = getReminderIntervals(interaction.guildId);
-            const intervalsStr = intervals.map(i => `${i.value}${i.unit}`).join(', ');
-            
-            const modeText = getModeText(mode, userLocale);
-            let enabledText = 'Enabled ✅';
-            let disabledText = 'Disabled ❌';
-            let notConfiguredText = '*Not configured*';
-            
-            if (userLocale === 'es') { enabledText = 'Activado ✅'; disabledText = 'Desactivado ❌'; notConfiguredText = '*No configurado*'; }
-            else if (userLocale === 'de') { enabledText = 'Aktiviert ✅'; disabledText = 'Deaktiviert ❌'; notConfiguredText = '*Nicht konfiguriert*'; }
-            else if (userLocale === 'fr') { enabledText = 'Activé ✅'; disabledText = 'Désactivé ❌'; notConfiguredText = '*Non configuré*'; }
-            else if (userLocale === 'pt') { enabledText = 'Ativado ✅'; disabledText = 'Desativado ❌'; notConfiguredText = '*Não configurado*'; }
-
-            let replyMessage = t(userLocale, 'settings_view_title');
-            replyMessage += t(userLocale, 'settings_view_channel', { channel: channelId ? `<#${channelId}>` : notConfiguredText });
-            replyMessage += t(userLocale, 'settings_view_mode', { mode: modeText });
-            replyMessage += t(userLocale, 'settings_view_intervals', { intervals: intervalsStr });
-            replyMessage += t(userLocale, 'settings_view_calendar', { status: getCalendarEnabled(interaction.guildId) ? enabledText : disabledText });
-            const threadsEnabled = getThreadsEnabled(interaction.guildId);
-            const pruneEnabled = getThreadPruneEnabled(interaction.guildId);
-            const threadsStatusStr = `${threadsEnabled ? enabledText : disabledText} (${pruneEnabled ? (userLocale === 'es' ? 'Purga 30d: Activada' : userLocale === 'de' ? '30d-Bereinigung: Aktiv' : userLocale === 'fr' ? 'Purge 30j : Activée' : userLocale === 'pt' ? 'Purga 30d: Ativada' : '30-Day Prune: Enabled') : (userLocale === 'es' ? 'Purga 30d: Desactivada' : userLocale === 'de' ? '30d-Bereinigung: Inaktiv' : userLocale === 'fr' ? 'Purge 30j : Désactivée' : userLocale === 'pt' ? 'Purga 30d: Desativada' : '30-Day Prune: Disabled')})`;
-            replyMessage += t(userLocale, 'settings_view_threads', { status: threadsStatusStr });
-            replyMessage += t(userLocale, 'settings_view_mentions', { status: getPingsEnabled(interaction.guildId) ? enabledText : disabledText });
-            
-            const autoDeleteStatus = getAutoDeleteEnabled(interaction.guildId) 
-                ? (userLocale === 'es' ? 'Activado ✅ (Eliminado)' : userLocale === 'de' ? 'Aktiviert ✅ (Gelöscht)' : userLocale === 'fr' ? 'Activé ✅ (Supprimé)' : userLocale === 'pt' ? 'Ativado ✅ (Excluído)' : 'Enabled ✅ (Deleted)')
-                : (userLocale === 'es' ? 'Desactivado ❌ (Archivado)' : userLocale === 'de' ? 'Deaktiviert ❌ (Archiviert)' : userLocale === 'fr' ? 'Désactivé ❌ (Archivé)' : userLocale === 'pt' ? 'Desativado ❌ (Arquivado)' : 'Disabled ❌ (Archived)');
-            
-            replyMessage += t(userLocale, 'settings_view_autodelete', { status: autoDeleteStatus });
-
-            await interaction.editReply({ content: replyMessage });
+            const payload = buildSettingsDashboard(interaction.guildId, userLocale);
+            await interaction.editReply(payload);
         }
 
         if (subcommand === 'cleanup') {
