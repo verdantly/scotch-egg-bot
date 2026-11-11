@@ -45,6 +45,16 @@ describe('Utils Unit Tests', () => {
             assert.strictEqual(result[0].value, 1);
         });
 
+        it('should support 0m and "now" for starting-now intervals (5.3)', () => {
+            const res1 = parseIntervals('24h, 1h, 0m');
+            assert.strictEqual(res1.length, 3);
+            assert.deepStrictEqual(res1[2], { value: 0, unit: 'm', ms: 0 });
+
+            const res2 = parseIntervals('1h, now, 0h');
+            assert.strictEqual(res2.length, 2, '0h and now should deduplicate to a single 0m interval');
+            assert.deepStrictEqual(res2[1], { value: 0, unit: 'm', ms: 0 });
+        });
+
         it('should return an empty array for invalid inputs', () => {
             const result = parseIntervals('invalid input');
             assert.deepStrictEqual(result, []);

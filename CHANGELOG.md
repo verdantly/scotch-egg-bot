@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-11-11
+
+### Added
+- **Interactive `/settings view` Control Panel:** Upgraded `/settings view` into an interactive ephemeral dashboard featuring one-click toggle buttons (`Calendar`, `Threads`, `30d Prune`, `Mentions`, `Auto-Delete`, and `Interested Sync`) and a reminder delivery mode dropdown menu (`Private`, `Public`, `Hybrid`).
+- **Optional Native Discord "Interested" Sync (`/settings syncinterested`):** Added an optional per-server setting (and dashboard toggle) that listens to `GuildScheduledEventUserAdd` and `GuildScheduledEventUserRemove` events (requiring zero privileged intents) to automatically opt users in or out of reminders when they click Discord's native **🔔 Interested** button.
+- **"Starting Now!" (`0m` / `now`) Reminder Interval:** Updated `/settings intervals` and `parseIntervals()` to accept `0m`, `0h`, `0d`, `0`, or `now`, dispatching a localized *"🔴 **{name}** is starting now!"* notification right as the event begins.
+- **Searchable Event Autocomplete Picker:** Added live Discord autocomplete dropdowns to `/announceevent`, `/settings silenceevent`, and `/settings unsilenceevent` so admins and event hosts can select events by name instead of copying event IDs or URLs.
+- **Live Refresh of Active Announcements:** Changing `/settings mode`, `/settings intervals`, `/settings calendar`, or toggling them via the `/settings view` dashboard now automatically updates the footer text and action buttons on all active announcement messages in the server.
+- **Recurring Event "Skipped" Badge & Resume in `/myreminders`:** Users who skip the next occurrence of a recurring series now see a localized `*(⏸️ Next occurrence skipped)*` badge in `/myreminders` along with a `▶️ Resume Next Occurrence` dropdown option to re-enable alerts for that session.
+- **Event Host Controls for `/announceevent`:** Event creators (`event.creatorId`) can now use `/announceevent` to manually post announcements for their own scheduled events without requiring full `Manage Server` permissions.
+
 ## [2.3.4] - 2026-10-30
 
 ### Added

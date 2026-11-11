@@ -183,13 +183,19 @@ function scheduleRemindersForEvent(event, now = Date.now()) {
                         const currentFormattedTime = getFormattedTimeString(event.scheduledStartTimestamp, null, 'F');
                         const currentLocation = event.entityMetadata?.location || (event.channelId ? `<#${event.channelId}>` : 'Discord');
                         const guildLocale = getNormalizedLocale(event.guild.preferredLocale);
-                        const baseMsg = t(guildLocale, mode === 'public' ? 'reminder_body_public' : 'reminder_body_private', {
-                            value: alert.value,
-                            unit: alert.unit,
-                            name: event.name,
-                            time: currentFormattedTime,
-                            location: currentLocation
-                        });
+                        const baseMsg = alert.ms === 0
+                            ? t(guildLocale, 'reminder_starting_now', {
+                                name: event.name,
+                                time: currentFormattedTime,
+                                location: currentLocation
+                            })
+                            : t(guildLocale, mode === 'public' ? 'reminder_body_public' : 'reminder_body_private', {
+                                value: alert.value,
+                                unit: alert.unit,
+                                name: event.name,
+                                time: currentFormattedTime,
+                                location: currentLocation
+                            });
                         
                         let truncatedDesc = '';
                         if (event.description) {

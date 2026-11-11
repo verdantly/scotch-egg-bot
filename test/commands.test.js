@@ -154,9 +154,10 @@ describe('Commands Unit Tests', () => {
         it('should return interactive dashboard components on /settings view', () => {
             const payload = settingsCommand.buildSettingsDashboard('guild_123', 'en');
             assert.ok(payload.content.includes('Current Server Settings'));
-            assert.strictEqual(payload.components.length, 2, 'Dashboard should include toggle button row and mode select row');
-            assert.strictEqual(payload.components[0].components.length, 5, 'Toggle row should have 5 toggle buttons');
-            assert.strictEqual(payload.components[1].components.length, 1, 'Select row should have 1 select menu');
+            assert.strictEqual(payload.components.length, 3, 'Dashboard should include 2 toggle button rows and 1 mode select row');
+            assert.strictEqual(payload.components[0].components.length, 5, 'First toggle row should have 5 toggle buttons');
+            assert.strictEqual(payload.components[1].components.length, 1, 'Second toggle row should have Interested Sync button');
+            assert.strictEqual(payload.components[2].components.length, 1, 'Select row should have 1 select menu');
         });
 
         it('should support autocomplete for /settings silenceevent and /announceevent', async () => {
@@ -256,4 +257,115 @@ describe('Commands Unit Tests', () => {
             delete serverConfig['guild_refresh'];
         });
     });
+    describe('Interested Sync, Skipped Resume, and Event Host Controls (5.1, 5.8, 5.9)', () => {
+        it('should automatically opt users in and out via GuildScheduledEventUserAdd/Remove when syncInterested is enabled (5.1)', async () => {
+            const userAddEvent = require('../events/guildScheduledEventUserAdd.js');
+            const userRemoveEvent = require('../events/guildScheduledEventUserRemove.js');
+            const { eventDb, serverConfig } = require('../storage.js');
+
+            serverConfig['guild_sync'] = { syncInterested: true };
+            const mockScheduledEvent = { id: 'evt_sync_1', guildId: 'guild_sync', name: 'Sync Party' };
+            const mockUser = { id: 'user_sync_1', bot: false };
+
+            await userAddEvent.execute(mockScheduledEvent, mockUser);
+            assert.ok(eventDb['evt_sync_1']);
+            assert.strictEqual(eventDb['evt_sync_1'].users['user_sync_1'], true);
+
+            await userRemoveEvent.execute(mockScheduledEvent, mockUser);
+            assert.strictEqual(eventDb['evt_sync_1'].users['user_sync_1'], undefined);
+
+            delete eventDb['evt_sync_1'];
+            delete serverConfig['guild_sync'];
+        });
+
+        it('should display skipped badge and resume option in /myreminders when next occurrence is skipped (5.8)', async () => {
+            const myremindersCmd = require('../commands/myreminders.js');
+            const { eventDb } = require('../storage.js');
+            const startTime = Date.now() + 86400000;
+
+            eventDb['evt_skip_1'] = {
+                users: { 'user_skip_1': true },
+                skippedUsers: { 'user_skip_1': startTime }
+            };
+
+            const mockInteraction = {
+                user: { id: 'user_skip_1' },
+                locale: 'en',
+                guild: {
+                    scheduledEvents: {
+                        fetch: async () => new Map([
+                            ['evt_skip_1', { id: 'evt_skip_1', name: 'Weekly Trivia', status: 1, scheduledStartTimestamp: startTime }]
+                        ])
+                    }
+                }
+            };
+
+            const page = await myremindersCmd.generateMyRemindersPage(mockInteraction, 0);
+            assert.ok(page.content.includes('Next occurrence skipped'), 'Should show skipped badge in /myreminders list');
+            const selectOptions = page.components[0].components[0].options;
+            assert.strictEqual(selectOptions.length, 2, 'Should include both cancel and resume options in select menu');
+            assert.strictEqual(selectOptions[1].data.value, 'resume_evt_skip_1');
+
+            delete eventDb['evt_skip_1'];
+        });
+
+        it('should allow event creator without ManageGuild to run /announceevent while blocking unrelated non-admins (5.9)', async () => {
+            const announceCmd = require('../commands/announceevent.js');
+            const { serverConfig, eventDb } = require('../storage.js');
+            serverConfig['guild_host'] = { channelId: 'chan_host' };
+
+            const mockEvent = {
+                id: '123456789012345678',
+                name: 'Host Event',
+                creatorId: 'creator_user',
+                status: 1,
+                scheduledStartTimestamp: Date.now() + 86400000,
+                guild: { id: 'guild_host', preferredLocale: 'en' },
+                coverImageURL: () => null
+            };
+
+            let replyMsg = '';
+            const baseInteraction = {
+                locale: 'en',
+                guildId: 'guild_host',
+                options: { getString: () => '123456789012345678' },
+                member: {
+                    permissions: { has: () => false } // Not a server admin
+                },
+                guild: {
+                    id: 'guild_host',
+                    preferredLocale: 'en',
+                    members: { me: {} },
+                    scheduledEvents: { fetch: async () => mockEvent },
+                    channels: {
+                        fetch: async () => ({
+                            id: 'chan_host',
+                            permissionsFor: () => ({ has: () => true }),
+                            send: async () => ({ id: 'msg_host_1', startThread: async () => null })
+                        })
+                    }
+                },
+                deferReply: async () => {},
+                editReply: async (p) => { replyMsg = p.content; }
+            };
+
+            // 1. Unrelated non-admin user should be rejected
+            await announceCmd.execute({
+                ...baseInteraction,
+                user: { id: 'random_user' }
+            });
+            assert.ok(replyMsg.includes('Only server administrators') || replyMsg.includes('creator'), 'Unrelated non-admin should be blocked');
+
+            // 2. Event creator should succeed
+            await announceCmd.execute({
+                ...baseInteraction,
+                user: { id: 'creator_user' }
+            });
+            assert.ok(replyMsg.includes('Successfully posted'), 'Event creator should be allowed to announce their own event');
+
+            delete eventDb['123456789012345678'];
+            delete serverConfig['guild_host'];
+        });
+    });
 });
+

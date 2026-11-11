@@ -38,7 +38,6 @@ module.exports = {
                 })
                 .setRequired(true)
                 .setAutocomplete(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .setDMPermission(false),
     async autocomplete(interaction) {
         try {
@@ -49,9 +48,11 @@ module.exports = {
             }
             if (!events) return interaction.respond([]);
 
+            const isAdmin = !!(interaction.member && interaction.member.permissions && interaction.member.permissions.has(PermissionFlagsBits.ManageGuild));
             const choices = Array.from(events.values())
                 .filter(e => e.status === GuildScheduledEventStatus.Scheduled || e.status === GuildScheduledEventStatus.Active || e.status === 1 || e.status === 2)
                 .filter(e => !(eventDb[e.id] && eventDb[e.id].messageId))
+                .filter(e => isAdmin || !e.creatorId || e.creatorId === interaction.user?.id)
                 .sort((a, b) => (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0))
                 .map(e => {
                     const dateStr = e.scheduledStartTimestamp ? new Date(e.scheduledStartTimestamp).toISOString().slice(0, 10) : '';
@@ -85,6 +86,14 @@ module.exports = {
         const event = await interaction.guild.scheduledEvents.fetch(eventId).catch(() => null);
         if (!event) {
             return interaction.editReply({ content: t(userLocale, 'announce_not_found') });
+        }
+
+        const isAdmin = !!(interaction.member && interaction.member.permissions && typeof interaction.member.permissions.has === 'function'
+            ? interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)
+            : true);
+        const isCreator = !!(event.creatorId && interaction.user && event.creatorId === interaction.user.id);
+        if (!isAdmin && !isCreator) {
+            return interaction.editReply({ content: t(userLocale, 'announce_not_authorized') });
         }
 
         if (event.status === GuildScheduledEventStatus.Completed || event.status === GuildScheduledEventStatus.Canceled) {

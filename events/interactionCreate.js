@@ -3,7 +3,7 @@ const { getFormattedTimeString } = require('../utils.js');
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, serverConfig, saveDb, saveConfig } = require('../storage.js');
 const { updateLiveCounter } = require('../services/reminders.js');
-const { getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled, isEventSilenced } = require('../services/config.js');
+const { getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled, getSyncInterestedEnabled, isEventSilenced } = require('../services/config.js');
 const { refreshGuildAnnouncements } = require('../services/announcements.js');
 
 const buttonCooldowns = new Map();
@@ -126,23 +126,39 @@ module.exports = {
 
             if (interaction.customId === 'list_cancel_select') {
                 await interaction.deferUpdate();
-                const eventIdsToCancel = interaction.values;
+                const selectedValues = interaction.values;
                 const userId = interaction.user.id;
                 let cancelledCount = 0;
+                let resumedCount = 0;
                 
-                for (const eventId of eventIdsToCancel) {
-                    if (eventDb[eventId] && eventDb[eventId].users && eventDb[eventId].users[userId]) {
-                        delete eventDb[eventId].users[userId];
-                        cancelledCount++;
-                        updateLiveCounter(eventId);
+                for (const val of selectedValues) {
+                    if (val.startsWith('resume_')) {
+                        const eventId = val.replace('resume_', '');
+                        if (eventDb[eventId] && eventDb[eventId].skippedUsers && eventDb[eventId].skippedUsers[userId]) {
+                            delete eventDb[eventId].skippedUsers[userId];
+                            resumedCount++;
+                        }
+                    } else {
+                        const eventId = val;
+                        if (eventDb[eventId] && eventDb[eventId].users && eventDb[eventId].users[userId]) {
+                            delete eventDb[eventId].users[userId];
+                            if (eventDb[eventId].skippedUsers) {
+                                delete eventDb[eventId].skippedUsers[userId];
+                            }
+                            cancelledCount++;
+                            updateLiveCounter(eventId);
+                        }
                     }
                 }
                 
-                if (cancelledCount > 0) await saveDb();
+                if (cancelledCount > 0 || resumedCount > 0) await saveDb();
                 
-                const cancelText = t(userLocale, 'list_cancel_success', { count: cancelledCount });
+                const messages = [];
+                if (cancelledCount > 0) messages.push(t(userLocale, 'list_cancel_success', { count: cancelledCount }));
+                if (resumedCount > 0) messages.push(t(userLocale, 'list_resume_success', { count: resumedCount }));
+                const statusText = messages.length > 0 ? messages.join('\n') : t(userLocale, 'list_cancel_success', { count: 0 });
 
-                await interaction.editReply({ content: `${interaction.message.content}\n\n${cancelText}`, components: [] });
+                await interaction.editReply({ content: `${interaction.message.content}\n\n${statusText}`, components: [] });
             }
             return;
         }
@@ -218,6 +234,8 @@ module.exports = {
                     serverConfig[interaction.guildId].pingsEnabled = !getPingsEnabled(interaction.guildId);
                 } else if (key === 'autodelete') {
                     serverConfig[interaction.guildId].autoDeleteEnabled = !getAutoDeleteEnabled(interaction.guildId);
+                } else if (key === 'syncinterested') {
+                    serverConfig[interaction.guildId].syncInterested = !getSyncInterestedEnabled(interaction.guildId);
                 }
                 await saveConfig();
                 if (shouldRefreshAnnouncements && interaction.guild) {

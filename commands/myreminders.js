@@ -45,13 +45,22 @@ async function generateMyRemindersPage(interaction, page = 0) {
 
     pageEvents.forEach(event => {
         const timeString = getFormattedTimeString(event.scheduledStartTimestamp, 'f');
-        const nextLine = `• **${event.name}** - ${timeString}\n`;
+        const isSkippedNext = !!(eventDb[event.id]?.skippedUsers && eventDb[event.id].skippedUsers[userId] === event.scheduledStartTimestamp);
+        const skippedBadge = isSkippedNext ? t(userLocale, 'myreminders_skipped_badge') : '';
+        const nextLine = `• **${event.name}** - ${timeString}${skippedBadge}\n`;
         if (replyMessage.length + nextLine.length < 1900) {
             replyMessage += nextLine;
         }
         let label = event.name;
         if (label.length > 100) label = label.substring(0, 97) + '...';
-        selectMenu.addOptions({ label: label, value: event.id, emoji: '🔕' });
+        if (selectMenu.options.length < 25) {
+            selectMenu.addOptions({ label: label, value: event.id, emoji: '🔕' });
+        }
+        if (isSkippedNext && selectMenu.options.length < 25) {
+            let resumeLabel = t(userLocale, 'myreminders_resume_option', { name: event.name });
+            if (resumeLabel.length > 100) resumeLabel = resumeLabel.substring(0, 97) + '...';
+            selectMenu.addOptions({ label: resumeLabel, value: `resume_${event.id}`, emoji: '▶️' });
+        }
     });
 
     const components = [new ActionRowBuilder().addComponents(selectMenu)];

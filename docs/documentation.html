@@ -635,8 +635,7 @@ cp config.json data/config.json</pre>
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings view</code>
-                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Admin command that shows current bot
-                                configurations.</span>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Opens an interactive control panel displaying current server settings with one-click toggle buttons (<code>Calendar</code>, <code>Threads</code>, <code>30d Prune</code>, <code>Mentions</code>, <code>Auto-Delete</code>, <code>Interested Sync</code>) and a reminder mode dropdown selector.</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -644,7 +643,7 @@ cp config.json data/config.json</pre>
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings calendar</code>
                             <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles the "Add to Calendar" button
                                 on
-                                announcements.</span>
+                                announcements (and automatically refreshes active announcements).</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -667,7 +666,19 @@ cp config.json data/config.json</pre>
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings intervals</code>
                             <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets custom reminder intervals using
                                 a
-                                comma-separated list.</span>
+                                comma-separated list (e.g., <code>24h, 1h, 15m, 0m</code> or <code>now</code> for a "Starting Now!" alert) and automatically refreshes active announcements.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings mentions</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether public channel reminders mention/ping opted-in users or post silently.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings syncinterested</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether clicking Discord's native <strong>Interested</strong> button on a scheduled event automatically opts the user in or out of reminders.</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -680,13 +691,13 @@ cp config.json data/config.json</pre>
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings silenceevent</code>
-                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.</span>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Disables reminder scheduling for a specific event (supports searchable autocomplete by event name, or an event link/ID), updating the announcement message and disabling the "Remind Me!" button.</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings unsilenceevent</code>
-                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Re-enables reminder scheduling for a silenced event.</span>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Re-enables reminder scheduling for a silenced event (supports searchable autocomplete).</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -701,8 +712,7 @@ cp config.json data/config.json</pre>
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/announceevent</code>
                             <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Manually forces the bot to post an
-                                announcement for an existing event (useful if the bot was offline when the event was
-                                originally created).</span>
+                                announcement for an existing event (supports searchable autocomplete; usable by server administrators or the creator of the event).</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
@@ -730,7 +740,7 @@ cp config.json data/config.json</pre>
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/myreminders</code>
                             <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Lists a paginated view of all
                                 upcoming
-                                events you are currently receiving reminders for.</span>
+                                events you are currently receiving reminders for, highlights skipped recurring occurrences with a <code>⏸️ Next occurrence skipped</code> badge, and lets you resume skipped occurrences or cancel reminders via the dropdown menu.</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">

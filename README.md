@@ -6,8 +6,9 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 
 ### 💬 Discord & User-Facing Features
 - **Native Discord Events:** Automatically posts an embedded announcement to a designated channel when a new Guild Scheduled Event is created. No need to learn complicated `!create` commands.
-- **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about. Keep your community in the loop exactly how you prefer via Private DMs, Public Mentions, or a Hybrid configuration (Public reminders + Private DM alerts).
-- **Automated Alerts:** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time.
+- **Strictly Opt-In Reminders:** Built on a core philosophy of user consent. Instead of annoying mass `@everyone` pings, users explicitly choose which events they want to be notified about (or servers can optionally enable `/settings syncinterested` to automatically subscribe members who click Discord's native **🔔 Interested** button). Keep your community in the loop exactly how you prefer via Private DMs, Public Mentions, or a Hybrid configuration (Public reminders + Private DM alerts).
+- **Automated Alerts (Including "Starting Now!"):** Sends out reminders at customizable intervals (defaults to 24 hours and 1 hour) before an event's start time, including support for `0m` / `now` ("🔴 **Event** is starting now!") alerts.
+- **Interactive Settings Control Panel & Live Refresh:** `/settings view` renders an interactive dashboard with toggle buttons and a delivery mode selector, and updating settings (`/settings mode`, `/settings intervals`, `/settings calendar`) automatically refreshes active announcement embeds in the background.
 - **Auto-Cleanup / Auto-Archive:** Automatically grays out and archives (or optionally deletes entirely) old announcements when events conclude, while **always deleting** the associated public reminders to keep channels completely clutter-free.
 - **Add to Calendar, View Event & Discussion Thread Buttons:** Event announcements and reminders feature dedicated interactive link buttons. The **Add to Calendar** button lets users add the event directly to Google Calendar pre-filled with the details. The **View Event** button links directly to Discord's native event window. Reminders also feature a **Join Discussion** button that opens the event's dedicated discussion thread.
 - **Auto-Create Discussion Threads & Pruning:** The bot automatically creates a dedicated discussion thread on new event announcements to encourage community engagement, greets the event host with a welcome mention, links to the thread in all reminder messages, and automatically prunes inactive discussion threads older than 30 days to keep channels completely clutter-free.
@@ -130,10 +131,10 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** Sets the reminder delivery mode: public channel reminders with user mentions (`Public`), private DM-only reminders (`Private`), or public channel reminders without mentions while DMed privately to opted-in users (`Hybrid`).
 
 *   `/settings view`
-    -   **Action:** Displays the currently configured channel and reminder mode for this server.
+    -   **Action:** Opens an interactive control panel displaying the server's current configuration with one-click toggle buttons (`Calendar`, `Threads`, `30d Prune`, `Mentions`, `Auto-Delete`, `Interested Sync`) and a reminder mode selector.
 
 *   `/settings calendar [enabled]`
-    -   **Action:** Toggles whether the bot includes an "Add to Calendar" button on event announcements.
+    -   **Action:** Toggles whether the bot includes an "Add to Calendar" button on event announcements (and live-refreshes active announcements).
 
 *   `/settings threads [enabled] [prune]`
     -   **Action:** Configures discussion thread creation (enabled) and toggles automatic 30-day inactive discussion thread pruning (prune).
@@ -142,25 +143,28 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** Toggles whether event announcements are completely deleted from the channel when the event ends, rather than just being gracefully archived. *(Note: If enabled, deleting the announcement message will also automatically delete any attached discussion thread).*
 
 *   `/settings intervals [times]`
-    -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m`). Up to 5 intervals can be set per server.
+    -   **Action:** Sets custom reminder intervals using a comma-separated list (e.g., `24h, 1h, 15m, 0m` or `now` for a "Starting Now!" alert). Up to 5 intervals can be set per server, and active announcements update automatically.
 
 *   `/settings mentions [enabled]`
     -   **Action:** Toggles whether public channel reminders mention/ping opted-in users or post silently.
+
+*   `/settings syncinterested [enabled]`
+    -   **Action:** Toggles whether clicking Discord's native **Interested** button on a scheduled event automatically opts the user in or out of Scotch Egg reminders.
 
 *   `/settings testreminder`
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.
 
 *   `/settings silenceevent [event]`
-    -   **Action:** Disables reminder scheduling for a specific event (stops DMs and channel pings), updating the announcement message and disabling the "Remind Me!" button.
+    -   **Action:** Disables reminder scheduling for a specific event (supports searchable autocomplete by event name, or an event link/ID), updating the announcement message and disabling the "Remind Me!" button.
 
 *   `/settings unsilenceevent [event]`
-    -   **Action:** Re-enables reminder scheduling for a silenced event.
+    -   **Action:** Re-enables reminder scheduling for a silenced event (supports searchable autocomplete).
 
 *   `/settings cleanup`
     -   **Action:** Scans the announcement channel's recent messages, automatically archives (or deletes) concluded event announcements, performs a deep fail-safe scan (matching event links and event names in message text) to delete **all** matching public event reminder messages, and prunes inactive discussion threads older than 30 days to keep the channel clean.
 
 *   `/announceevent [event_link_or_id]`
-    -   **Action:** Manually posts an announcement for an existing event. The bot proactively verifies channel permissions before posting. This is useful if the bot was offline when the event was created.
+    -   **Action:** Manually posts an announcement for an existing event (supports searchable autocomplete). Can be used by server administrators (`Manage Server`) or by the creator/host of the event.
 
 *   `/stats`
     -   **Action:** View opt-in statistics for upcoming events in this server.
@@ -171,7 +175,7 @@ Administrators can prevent specific events from being announced or having automa
     -   **Action:** View a paginated list of upcoming events in this server and easily opt-in to reminders for them.
 
 *   `/myreminders`
-    -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server.
+    -   **Action:** Lists all upcoming events you are currently receiving reminders for in this server, displays a `⏸️ Next occurrence skipped` badge for skipped recurring sessions, and lets you resume skipped occurrences or cancel reminders via the dropdown menu.
 
 *   `/help`
     -   **Action:** Displays information on how to use the bot and a list of available commands.

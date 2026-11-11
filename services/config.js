@@ -90,6 +90,12 @@ function getAutoDeleteEnabled(guildId) {
     return false;
 }
 
+function getSyncInterestedEnabled(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.syncInterested !== undefined) return config.syncInterested;
+    return false;
+}
+
 function isEventSilenced(event) {
     if (!event) return false;
     const silentPattern = /\[silent\]|\[exclude\]/i;
@@ -112,5 +118,6 @@ module.exports = {
     getThreadPruneEnabled,
     getPingsEnabled,
     getAutoDeleteEnabled,
+    getSyncInterestedEnabled,
     isEventSilenced
 };

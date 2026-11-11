@@ -154,13 +154,42 @@
             </div>
 
             <div class="space-y-12">
+                <!-- Release: v2.4.0 -->
+                <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.4.0</h3>
+                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
+                            </div>
+                            <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">November 11, 2026</span>
+                        </div>
+                        <a href="#download" class="mt-4 md:mt-0 bg-breadcrumb text-white px-5 py-2 rounded-full font-medium hover:bg-breadcrumb-dark transition-colors shadow-sm inline-block text-center text-sm">Download Release</a>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="flex items-center text-xl font-bold text-charcoal dark:text-white mb-3">
+                                <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mr-3">Added</span> New Features
+                            </h4>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li><strong>Interactive <code>/settings view</code> Control Panel:</strong> Upgraded <code>/settings view</code> into an interactive ephemeral dashboard with one-click toggle buttons (<code>Calendar</code>, <code>Threads</code>, <code>30d Prune</code>, <code>Mentions</code>, <code>Auto-Delete</code>, <code>Interested Sync</code>) and a reminder mode dropdown selector.</li>
+                                <li><strong>Optional Native Discord "Interested" Sync (<code>/settings syncinterested</code>):</strong> Added a per-server setting that listens to native Discord event RSVPs (zero privileged intents required) to automatically opt users in or out of reminders when they click Discord's <strong>🔔 Interested</strong> button.</li>
+                                <li><strong>"Starting Now!" (<code>0m</code> / <code>now</code>) Reminder Interval:</strong> Updated <code>/settings intervals</code> to support <code>0m</code> or <code>now</code>, dispatching a localized <em>"🔴 <strong>{name}</strong> is starting now!"</em> alert right when an event begins.</li>
+                                <li><strong>Searchable Event Autocomplete Picker:</strong> Added live autocomplete dropdowns to <code>/announceevent</code>, <code>/settings silenceevent</code>, and <code>/settings unsilenceevent</code> so events can be selected by name.</li>
+                                <li><strong>Live Refresh of Active Announcements:</strong> Updating <code>/settings mode</code>, <code>/settings intervals</code>, or <code>/settings calendar</code> (via command or dashboard) now automatically updates all active announcement messages in the server.</li>
+                                <li><strong>Recurring Event "Skipped" Visibility &amp; Resume in <code>/myreminders</code>:</strong> Displays a <code>⏸️ Next occurrence skipped</code> badge for skipped recurring sessions and adds a <code>▶️ Resume Next Occurrence</code> option in the dropdown menu.</li>
+                                <li><strong>Event Host Controls for <code>/announceevent</code>:</strong> Event creators can now manually trigger <code>/announceevent</code> for their own scheduled events without requiring <code>Manage Server</code> permissions.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Release: v2.3.4 -->
                 <div class="bg-white dark:bg-gray-800 rounded-md p-8 shadow-lg border border-cream-dark dark:border-gray-700 transition-colors">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-cream-dark dark:border-gray-700 pb-6">
                         <div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-3xl font-serif font-bold text-charcoal dark:text-white">v2.3.4</h3>
-                                <span class="bg-breadcrumb/10 dark:bg-eggyolk/15 text-breadcrumb dark:text-eggyolk text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Latest Release</span>
                             </div>
                             <span class="inline-block mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">October 30, 2026</span>
                         </div>

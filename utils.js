@@ -4,11 +4,19 @@
  * @returns {Array<{value: number, unit: string, ms: number}>} Parsed, deduplicated, and sorted intervals.
  */
 function parseIntervals(input) {
-    const matches = input.matchAll(/(\d+)\s*([mhd])/gi);
+    if (typeof input !== 'string') return [];
     const intervals = [];
+    if (/\bnow\b/i.test(input) || /(?:^|[,\s])0(?:$|[,\s])/.test(input)) {
+        intervals.push({ value: 0, unit: 'm', ms: 0 });
+    }
+    const matches = input.matchAll(/(\d+)\s*([mhd])/gi);
     for (const match of matches) {
         const value = parseInt(match[1], 10);
         const unit = match[2].toLowerCase();
+        if (value === 0) {
+            intervals.push({ value: 0, unit: 'm', ms: 0 });
+            continue;
+        }
         let ms = 0;
         if (unit === 'm') ms = value * 60 * 1000;
         else if (unit === 'h') ms = value * 60 * 60 * 1000;
