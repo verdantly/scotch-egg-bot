@@ -312,9 +312,13 @@
                                                 <span class="text-emerald-700 dark:text-emerald-400 font-black" aria-hidden="true">✓</span>
                                                 <span class="font-medium">Create Public Threads</span>
                                             </li>
-                                            <li class="flex items-center space-x-2 sm:col-span-2">
+                                            <li class="flex items-center space-x-2">
                                                 <span class="text-emerald-700 dark:text-emerald-400 font-black" aria-hidden="true">✓</span>
                                                 <span><strong class="font-medium">Manage Threads</strong> <span class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">(for 30-day thread auto-pruning)</span></span>
+                                            </li>
+                                            <li class="flex items-center space-x-2">
+                                                <span class="text-emerald-700 dark:text-emerald-400 font-black" aria-hidden="true">✓</span>
+                                                <span><strong class="font-medium">Manage Messages</strong> <span class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">(for bulk reminder cleanup)</span></span>
                                             </li>
                                         </ul>
                                     </div>
@@ -679,6 +683,12 @@ cp config.json data/config.json</pre>
                             <code
                                 class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings syncinterested</code>
                             <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Toggles whether clicking Discord's native <strong>Interested</strong> button on a scheduled event automatically opts the user in or out of reminders.</span>
+                        </li>
+                        <li
+                            class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">
+                            <code
+                                class="text-breadcrumb-dark dark:text-breadcrumb font-bold text-lg mb-2 md:mb-0 md:w-1/3">/settings pingrole</code>
+                            <span class="md:w-2/3 text-gray-700 dark:text-gray-300">Sets or clears an optional role to ping once when a new event announcement is posted (leave <code>role</code> empty to clear).</span>
                         </li>
                         <li
                             class="bg-cream dark:bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center border border-cream-dark dark:border-gray-700">

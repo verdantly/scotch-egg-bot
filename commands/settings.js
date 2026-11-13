@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, PermissionFlagsBits, MessageFlags, Emb
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, serverConfig, saveConfig, saveDb } = require('../storage.js');
 const { parseIntervals, getFormattedTimeString } = require('../utils.js');
-const { getAnnouncementChannelId, getAnnouncementMode, getModeText, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled, getSyncInterestedEnabled } = require('../services/config.js');
+const { getAnnouncementChannelId, getAnnouncementMode, getModeText, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getThreadPruneEnabled, getPingsEnabled, getAutoDeleteEnabled, getSyncInterestedEnabled, getPingRoleId } = require('../services/config.js');
 const { buildAnnouncementEmbed, buildAnnouncementComponents, refreshGuildAnnouncements, archiveAnnouncementMessage } = require('../services/announcements.js');
 const { scheduleRemindersForEvent, cancelEventReminders } = require('../services/reminders.js');
 const { pruneInactiveThreads } = require('../services/threads.js');
@@ -37,6 +37,9 @@ function buildSettingsDashboard(guildId, userLocale) {
     replyMessage += t(userLocale, 'settings_view_mentions', { status: pingsEnabled ? enabledText : disabledText });
     const syncInterested = getSyncInterestedEnabled(guildId);
     replyMessage += t(userLocale, 'settings_view_syncinterested', { status: syncInterested ? enabledText : disabledText });
+    const pingRoleId = getPingRoleId(guildId);
+    const noneText = userLocale === 'es' ? 'Ninguno' : userLocale === 'de' ? 'Keine' : userLocale === 'fr' ? 'Aucun' : userLocale === 'pt' ? 'Nenhum' : 'None';
+    replyMessage += t(userLocale, 'settings_view_pingrole', { role: pingRoleId ? `<@&${pingRoleId}>` : noneText });
     
     const autoDeleteEnabled = getAutoDeleteEnabled(guildId);
     const autoDeleteStatus = autoDeleteEnabled
@@ -119,6 +122,7 @@ module.exports = {
         .addSubcommand(subcommand => subcommand.setName('intervals').setDescription('Set custom reminder intervals (e.g., 24h, 1h, 15m).').addStringOption(option => option.setName('times').setDescription('Comma-separated list of times (max 5). Examples: "24h, 1h"').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('mentions').setDescription('Toggle whether public reminders mention/ping opted-in users.').addBooleanOption(option => option.setName('enabled').setDescription('Enable to ping users, disable for silent reminders').setRequired(true)))
         .addSubcommand(subcommand => subcommand.setName('syncinterested').setDescription('Toggle automatic reminder opt-in/out when users click Discord\'s native Interested button.').addBooleanOption(option => option.setName('enabled').setDescription('Enable or disable native Interested button sync').setRequired(true)))
+        .addSubcommand(subcommand => subcommand.setName('pingrole').setDescription('Set or clear an optional role to ping once when a new event announcement is posted.').addRoleOption(option => option.setName('role').setDescription('Role to ping (leave empty to clear)').setRequired(false)))
         .addSubcommand(subcommand => subcommand.setName('testreminder').setDescription('Test what an event reminder will look like in your server.'))
         .addSubcommand(subcommand => subcommand.setName('cleanup').setDescription('Scan and archive any unarchived concluded event announcements.'))
         .addSubcommand(subcommand => subcommand.setName('silenceevent').setDescription('Disable reminder scheduling for a specific event (stops DMs and pings).').addStringOption(option => option.setName('event').setDescription('The event link or ID to silence').setRequired(true).setAutocomplete(true)))
@@ -299,6 +303,22 @@ module.exports = {
             
             const intervalsStr = parsed.map(i => `${i.value}${i.unit}`).join(', ');
             await interaction.editReply({ content: t(userLocale, 'settings_intervals_success', { intervals: intervalsStr }) });
+        }
+
+        if (subcommand === 'pingrole') {
+            const role = interaction.options.getRole('role');
+            const roleId = role ? role.id : null;
+            if (typeof serverConfig[interaction.guildId] === 'object' && serverConfig[interaction.guildId] !== null) {
+                serverConfig[interaction.guildId].pingRoleId = roleId;
+            } else {
+                serverConfig[interaction.guildId] = { channelId: null, mode: 'private', pingRoleId: roleId };
+            }
+            await saveConfig();
+            if (roleId) {
+                await interaction.editReply({ content: t(userLocale, 'settings_pingrole_set', { role: `<@&${roleId}>` }), flags: MessageFlags.Ephemeral });
+            } else {
+                await interaction.editReply({ content: t(userLocale, 'settings_pingrole_cleared'), flags: MessageFlags.Ephemeral });
+            }
         }
 
         if (subcommand === 'syncinterested') {

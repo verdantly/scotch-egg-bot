@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Live Refresh of Active Announcements:** Changing `/settings mode`, `/settings intervals`, `/settings calendar`, or toggling them via the `/settings view` dashboard now automatically updates the footer text and action buttons on all active announcement messages in the server.
 - **Recurring Event "Skipped" Badge & Resume in `/myreminders`:** Users who skip the next occurrence of a recurring series now see a localized `*(⏸️ Next occurrence skipped)*` badge in `/myreminders` along with a `▶️ Resume Next Occurrence` dropdown option to re-enable alerts for that session.
 - **Event Host Controls for `/announceevent`:** Event creators (`event.creatorId`) can now use `/announceevent` to manually post announcements for their own scheduled events without requiring full `Manage Server` permissions.
+- **Optional Announcement Ping Role (`/settings pingrole`):** Added `/settings pingrole` to optionally ping a configured role once when a new event announcement is posted (leave `role` empty to clear).
 
 ## [2.3.4] - 2026-10-30
 

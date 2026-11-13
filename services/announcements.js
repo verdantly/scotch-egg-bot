@@ -2,7 +2,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { t, getNormalizedLocale } = require('../i18n.js');
 const { eventDb, saveDb } = require('../storage.js');
 const { getFormattedTimeString, generateGoogleCalendarLink, formatDuration } = require('../utils.js');
-const { getAnnouncementChannelId, getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getAutoDeleteEnabled, isEventSilenced } = require('./config.js');
+const { getAnnouncementChannelId, getAnnouncementMode, getReminderIntervals, getCalendarEnabled, getThreadsEnabled, getAutoDeleteEnabled, getPingRoleId, isEventSilenced } = require('./config.js');
 const { notifyAdmin } = require('./admin.js');
 
 let remindersService = null;
@@ -158,7 +158,12 @@ async function postAnnouncement(event, channel) {
     const row = buildAnnouncementComponents(event, 0);
 
     try {
-        const message = await channel.send({ embeds: [embed], components: [row] });
+        const pingRoleId = getPingRoleId(event.guild.id);
+        const sendPayload = { embeds: [embed], components: [row] };
+        if (pingRoleId) {
+            sendPayload.content = `<@&${pingRoleId}>`;
+        }
+        const message = await channel.send(sendPayload);
         const existing = eventDb[event.id] || {};
         eventDb[event.id] = {
             messageId: message.id,

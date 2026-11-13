@@ -40,7 +40,7 @@ A completely free Discord bot that hooks seamlessly into native Discord events. 
 2. On the "General Information" page, copy your **Application ID** (this will be your `CLIENT_ID`).
 3. Navigate to the "Bot" tab on the left, click **Reset Token**, and copy the new token (this will be your `DISCORD_TOKEN`).
 4. Go to "OAuth2" > "OAuth2 URL Generator". Check the `bot` and `applications.commands` scopes.
-   - **Tip:** After checking the `bot` scope, a "Bot Permissions" grid will appear. It is highly recommended to select **Send Messages**, **Send Messages in Threads**, **Read Message History**, **View Channels**, **Embed Links**, **Create Public Threads**, and **Manage Threads** (if using discussion threads and auto-pruning) so the bot's permissions are automatically configured.
+   - **Tip:** After checking the `bot` scope, a "Bot Permissions" grid will appear. It is highly recommended to select **Send Messages**, **Send Messages in Threads**, **Read Message History**, **View Channels**, **Embed Links**, **Create Public Threads**, **Manage Threads** (for 30-day thread auto-pruning), and **Manage Messages** (for bulk reminder cleanup) so the bot's permissions are automatically configured.
    > **Important:** You must select BOTH the `bot` and `applications.commands` scopes, or the bot will not function correctly.
 5. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.
 6. Ensure you have **Node.js (v18.17.0 or higher; v22 LTS recommended)** installed, OR **Docker** if you prefer containerized deployment.
@@ -150,6 +150,9 @@ Administrators can prevent specific events from being announced or having automa
 
 *   `/settings syncinterested [enabled]`
     -   **Action:** Toggles whether clicking Discord's native **Interested** button on a scheduled event automatically opts the user in or out of Scotch Egg reminders.
+
+*   `/settings pingrole [role]`
+    -   **Action:** Sets or clears an optional role to ping once when a new event announcement is posted (leave `role` empty to clear).
 
 *   `/settings testreminder`
     -   **Action:** Displays a mock preview of what a reminder message will look like with the server's current settings.

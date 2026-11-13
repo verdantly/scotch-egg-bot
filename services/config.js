@@ -96,6 +96,12 @@ function getSyncInterestedEnabled(guildId) {
     return false;
 }
 
+function getPingRoleId(guildId) {
+    const config = serverConfig[guildId];
+    if (typeof config === 'object' && config !== null && config.pingRoleId) return config.pingRoleId;
+    return null;
+}
+
 function isEventSilenced(event) {
     if (!event) return false;
     const silentPattern = /\[silent\]|\[exclude\]/i;
@@ -119,5 +125,6 @@ module.exports = {
     getPingsEnabled,
     getAutoDeleteEnabled,
     getSyncInterestedEnabled,
+    getPingRoleId,
     isEventSilenced
 };

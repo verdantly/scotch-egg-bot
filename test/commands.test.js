@@ -367,5 +367,60 @@ describe('Commands Unit Tests', () => {
             delete serverConfig['guild_host'];
         });
     });
+
+    describe('Settings Ping Role (5.7)', () => {
+        it('should set and clear pingRoleId via /settings pingrole and include role mention in postAnnouncement', async () => {
+            const { serverConfig, eventDb } = require('../storage.js');
+            const { getPingRoleId } = require('../services/config.js');
+            const { postAnnouncement } = require('../services/announcements.js');
+            const settingsCommand = require('../commands/settings.js');
+
+            let replyMsg = '';
+            const makeInteraction = (role) => ({
+                guildId: 'guild_pingrole',
+                locale: 'en-US',
+                member: { permissions: { has: () => true } },
+                options: {
+                    getSubcommand: () => 'pingrole',
+                    getRole: () => role
+                },
+                deferReply: async () => {},
+                editReply: async (payload) => { replyMsg = payload.content; }
+            });
+
+            await settingsCommand.execute(makeInteraction({ id: '999888777' }));
+            assert.strictEqual(getPingRoleId('guild_pingrole'), '999888777');
+            assert.ok(replyMsg.includes('<@&999888777>'));
+
+            let sentPayload = null;
+            const fakeChannel = {
+                id: 'ch_1',
+                send: async (payload) => {
+                    sentPayload = payload;
+                    return { id: 'msg_1' };
+                }
+            };
+            const fakeEvent = {
+                id: 'evt_pingrole',
+                name: 'Role Ping Event',
+                description: 'Desc',
+                scheduledStartTimestamp: Date.now() + 3600000,
+                scheduledEndTimestamp: Date.now() + 7200000,
+                url: 'https://discord.com/events/guild_pingrole/evt_pingrole',
+                coverImageURL: () => null,
+                guild: { id: 'guild_pingrole', preferredLocale: 'en-US' }
+            };
+
+            await postAnnouncement(fakeEvent, fakeChannel);
+            assert.strictEqual(sentPayload.content, '<@&999888777>');
+
+            await settingsCommand.execute(makeInteraction(null));
+            assert.strictEqual(getPingRoleId('guild_pingrole'), null);
+            assert.ok(replyMsg.includes('cleared'));
+
+            delete eventDb['evt_pingrole'];
+            delete serverConfig['guild_pingrole'];
+        });
+    });
 });
 
